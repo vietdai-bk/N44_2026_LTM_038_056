@@ -1,0 +1,10 @@
+3 run NS-3, song song 3 ...
+  xong kmeans-equal load=1 seed=2  (85s)
+  xong kmeans-equal load=1 seed=1  (89s)
+  xong kmeans-equal load=1 seed=0  (103s)
+algo              load   model_sum_mbps     ns3_sum_mbps  delivered_ratio     ns3_min_mbps     ns3_delay_ms         ns3_loss       cell_match
+kmeans-equal         1     43.36 ±0.39      33.71 ±0.32     0.7774 ±0.0004     1.573 ±0.046      3078 ±8.3      0.2226 ±0.00038         1 ±0    
+
+algo              load      sinr_db_p10   sinr_db_median      sinr_db_p90         mcs_mean    bler_first_tx   harq_retx_frac     active_cells   cell_busy_frac phy_goodput_mbps      se_per_cell
+kmeans-equal         1     23.03 ±4.2       38.72 ±4.9       48.64 ±0.44       27.8 ±0.13  0.0004782 ±0.0003 0.0004778 ±0.0003         1 ±0        0.9999 ±0         34.62 ±0.33      3.462 ±0.033
+Kết quả: /home/vietdai/LapTrinhMang/experiments/results/ns3-interference/C_1uav

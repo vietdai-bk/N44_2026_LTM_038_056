@@ -1,0 +1,4 @@
+$ /home/vietdai/simulation/ns-3.47/build/scratch/uav_lte/ns3.47-uav-lte-default --plan=experiments/results/ns3-demand-wpf-lte/kmeans-maxmin_load4_seed2/plan --out=experiments/results/ns3-demand-wpf-lte/kmeans-maxmin_load4_seed2 --numUavs=3 --numUsers=20 --slots=60 --dt=1.0 --altitude=100.0 --rb=50 --link=lte --bufferBytes=1048576 --txPowerDbm=30.0 --noiseFigure=5.0 --fc=2000000000.0 --channel=al_hourani --a=9.61 --b=0.16 --etaLos=1.0 --etaNlos=20.0 --beta0Db=-60.0 --scheduler=wpf --load=1.0 --seed=3 --reuse1=true --traces=false
+handover_start=5 handover_ok=5 weight_set=2400 weight_skipped=0
+
+exit=0 wall=203.0s

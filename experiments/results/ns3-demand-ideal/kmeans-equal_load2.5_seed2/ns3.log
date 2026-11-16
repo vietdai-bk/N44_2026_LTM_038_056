@@ -1,0 +1,4 @@
+$ /home/vietdai/simulation/ns-3.47/build/scratch/uav_lte/ns3.47-uav-lte-default --plan=experiments/results/ns3-demand-ideal/kmeans-equal_load2.5_seed2/plan --out=experiments/results/ns3-demand-ideal/kmeans-equal_load2.5_seed2 --numUavs=3 --numUsers=20 --slots=60 --dt=1.0 --altitude=100.0 --rb=50 --link=ideal --bufferBytes=1048576 --txPowerDbm=30.0 --noiseFigure=5.0 --fc=2000000000.0 --channel=al_hourani --a=9.61 --b=0.16 --etaLos=1.0 --etaNlos=20.0 --beta0Db=-60.0 --scheduler=pf --load=1.0 --seed=3 --reuse1=true --traces=false
+link=ideal
+
+exit=0 wall=6.3s

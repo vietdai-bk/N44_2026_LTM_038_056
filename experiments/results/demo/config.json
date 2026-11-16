@@ -1,0 +1,31 @@
+{
+  "num_uavs": 3,
+  "num_users": 20,
+  "area": 1000.0,
+  "altitude": 100.0,
+  "user_layout": "clustered",
+  "user_speed": 0.0,
+  "slots": 200,
+  "dt": 1.0,
+  "v_max": 20.0,
+  "channel": "al_hourani",
+  "environment": "urban",
+  "fc": 2000000000.0,
+  "beta0_db": -60.0,
+  "rician_k_db": null,
+  "bandwidth": 10000000.0,
+  "noise_psd_dbm": -169.0,
+  "p_max": 1.0,
+  "interference": true,
+  "r_min": 1000000.0,
+  "seed": 0,
+  "algos": [
+    "hover-equal",
+    "hover-maxmin",
+    "kmeans-equal",
+    "kmeans-maxmin",
+    "random-equal",
+    "random-maxmin"
+  ],
+  "seeds": 3
+}

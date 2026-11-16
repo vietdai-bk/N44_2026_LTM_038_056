@@ -1,0 +1,5 @@
+numpy==2.2.6
+matplotlib==3.9.4
+gymnasium==1.0.0
+pytest==8.4.2
+websockets==16.1.1  # uavsim.live (dashboard)

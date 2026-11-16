@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<FlowMonitor>
+  <FlowStats>
+    <Flow flowId="1" timeFirstTxPacket="+5.00039e+08ns" timeFirstRxPacket="+5.05e+08ns" timeLastTxPacket="+6.49997e+09ns" timeLastRxPacket="+6.5e+09ns" delaySum="+5.07295e+12ns" jitterSum="+1.91744e+09ns" lastDelay="+2.42905e+08ns" maxDelay="+2.43003e+08ns" minDelay="+4.8648e+06ns" txBytes="153497544" rxBytes="26263236" txPackets="124998" rxPackets="21387" lostPackets="0" timesForwarded="0">
+    </Flow>
+  </FlowStats>
+  <Ipv4FlowClassifier>
+    <Flow flowId="1" sourceAddress="1.0.0.2" destinationAddress="7.0.0.2" protocol="17" sourcePort="49153" destinationPort="9">
+      <Dscp value="0x0" packets="124998" />
+    </Flow>
+  </Ipv4FlowClassifier>
+  <Ipv6FlowClassifier>
+  </Ipv6FlowClassifier>
+</FlowMonitor>

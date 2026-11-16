@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UAV-BS Ground Station</title>
+<style>
+:root {
+  --bg: #f4f6f9; --surface: #ffffff; --surface-2: #f8fafc; --surface-hover: #f1f5f9;
+  --line: #dce3ec; --line-strong: #cbd5e1; --line-soft: #edf2f7;
+  --text: #172033; --text-2: #334155; --text-3: #64748b;
+  --primary: #2563eb; --primary-hover: #1d4ed8; --primary-bg: #eff6ff; --primary-line: #bfdbfe;
+  --ok: #15803d; --ok-bg: #dcfce7; --ok-line: #86efac;
+  --warn: #b45309; --warn-bg: #fef3c7; --warn-line: #fde68a;
+  --danger: #b91c1c; --danger-bg: #fee2e2; --danger-line: #fca5a5;
+  --s1: #2563eb; --s2: #ea580c; --s3: #0d9488; --s4: #ca8a04; --s5: #db2777; --s6: #16a34a; --s7: #7c3aed; --s8: #dc2626;
+  --map-bg: #f8fafc; --grid: #e8edf3; --user-ink: #172033;
+  --font: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --radius: 5px; --topbar-h: 48px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .05);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font: 13px/1.45 var(--font); color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+.mono, .v, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+
+/* shell */
+.app { display: grid; grid-template-rows: var(--topbar-h) auto 1fr; height: 100vh; }
+.topbar { display: flex; align-items: center; gap: 12px; padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--line); min-width: 0; }
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.logo { width: 28px; height: 28px; border-radius: 6px; background: var(--primary); color: #fff; display: grid; place-items: center; font: 700 11px var(--mono); flex: none; }
+.brand b { font-size: 14px; white-space: nowrap; }
+.brand small { display: block; font-size: 11px; letter-spacing: .06em; color: var(--text-3); text-transform: uppercase; white-space: nowrap; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font: 600 11.5px var(--mono); color: var(--text-2); white-space: nowrap; }
+.pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); }
+.pill.ok { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok); } .pill.ok .dot { background: var(--ok); }
+.pill.warn { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn); } .pill.warn .dot { background: var(--warn); }
+.pill.danger { background: var(--danger-bg); border-color: var(--danger-line); color: var(--danger); } .pill.danger .dot { background: var(--danger); }
+.pill.info { background: var(--primary-bg); border-color: var(--primary-line); color: var(--primary); } .pill.info .dot { background: var(--primary); }
+
+.strip { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); background: var(--surface); border-bottom: 1px solid var(--line); }
+.strip > div { padding: 6px 14px; border-right: 1px solid var(--line-soft); min-width: 0; }
+.strip > div:last-child { border-right: 0; }
+.k { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip .v { font-size: 15px; font-weight: 600; white-space: nowrap; }
+.unit { font: 500 11px var(--mono); color: var(--text-3); margin-left: 2px; }
+.sub { font: 500 11px var(--mono); color: var(--text-3); white-space: nowrap; }
+
+.work { display: grid; grid-template-columns: 300px minmax(0, 1fr) 340px; gap: 12px; padding: 12px; min-height: 0; }
+.col { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto; }
+.center { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 12px; min-height: 0; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card-h { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line-soft); }
+.card-h h2 { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-2); margin-right: auto; }
+.card-b { padding: 10px 12px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-weight: 600; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--surface-hover); }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; } .btn.primary:hover { background: var(--primary-hover); }
+.btn.danger { color: var(--danger); border-color: var(--danger-line); } .btn.danger.on { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn.sm { height: 26px; padding: 0 9px; font-size: 12px; }
+.btn.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+.seg button { height: 26px; padding: 0 10px; border: 0; border-right: 1px solid var(--line); background: var(--surface); font: 600 12px var(--mono); cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button.on { background: var(--primary); color: #fff; }
+
+select, input[type=number] { height: 30px; padding: 0 8px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); width: 100%; }
+input[type=number] { font-family: var(--mono); }
+select:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37, 99, 235, .15); outline: none; }
+input[type=range] { width: 100%; accent-color: var(--primary); }
+label.f { display: grid; gap: 3px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.hint { font-size: 11.5px; color: var(--text-3); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+
+/* UAV list */
+.uav { display: grid; grid-template-columns: 4px 1fr auto; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line-soft); cursor: pointer; }
+.uav:last-child { border-bottom: 0; }
+.uav:hover { background: var(--surface-hover); }
+.uav.sel { background: var(--primary-bg); }
+.uav .bar { width: 4px; align-self: stretch; border-radius: 2px; }
+.uav .name { font-weight: 700; font-size: 12.5px; }
+.uav .meta { font: 500 11px var(--mono); color: var(--text-3); }
+.badge { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 3px; font: 700 11px var(--mono); letter-spacing: .04em; border: 1px solid var(--line); background: var(--surface-2); color: var(--text-2); }
+.badge.manual { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn); }
+.badge.auto { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok); }
+.badge.goto { background: var(--primary-bg); border-color: var(--primary-line); color: var(--primary); }
+.badge.warn { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn); }
+.badge.danger { background: var(--danger-bg); border-color: var(--danger-line); color: var(--danger); }
+
+/* joystick */
+.pad { display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(3, 44px); gap: 4px; justify-content: center; }
+.pad button { border: 1px solid var(--line-strong); background: var(--surface-2); border-radius: var(--radius); font-size: 16px; cursor: pointer; touch-action: none; }
+.pad button:active, .pad button.held { background: var(--primary); color: #fff; border-color: var(--primary); }
+.keys { font: 600 11px var(--mono); color: var(--text-3); text-align: center; margin-top: 6px; }
+
+/* map */
+.mapcard { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }
+.maptools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 6px 10px; border-bottom: 1px solid var(--line-soft); }
+.mapwrap { position: relative; min-height: 0; background: var(--map-bg); }
+#map { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; }
+.legend { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; padding: 5px 8px; background: rgba(255, 255, 255, .94); border: 1px solid var(--line); border-radius: var(--radius); font-size: 11px; color: var(--text-2); max-width: calc(100% - 20px); }
+.legend span { display: inline-flex; align-items: center; gap: 4px; }
+.tooltip { position: absolute; pointer-events: none; display: none; padding: 6px 8px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: 0 4px 12px rgba(15, 23, 42, .1); font: 500 11.5px var(--mono); white-space: nowrap; z-index: 2; }
+
+/* KPI compare */
+table.kpi { width: 100%; border-collapse: collapse; }
+table.kpi th { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-3); text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+table.kpi th:first-child { text-align: left; }
+table.kpi td { padding: 5px 6px; border-bottom: 1px solid var(--line-soft); text-align: right; font: 600 12.5px var(--mono); font-variant-numeric: tabular-nums; }
+table.kpi td:first-child { text-align: left; font: 500 12px var(--font); color: var(--text-2); }
+table.kpi tr:last-child td { border-bottom: 0; }
+.ns3col { color: var(--ok); }
+
+/* charts */
+.charts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.chart { position: relative; }
+.chart canvas { width: 100%; height: 118px; display: block; }
+.chart .card-h { padding: 6px 10px; }
+.clegend { display: flex; gap: 10px; font-size: 11px; color: var(--text-3); }
+.clegend i { display: inline-block; width: 12px; height: 2px; vertical-align: middle; margin-right: 4px; }
+
+/* measure */
+.result { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 12px; font: 600 12px var(--mono); }
+.result .h { font: 600 11px var(--font); letter-spacing: .05em; text-transform: uppercase; color: var(--text-3); }
+.result .l { font: 500 12px var(--font); color: var(--text-2); }
+.progress { height: 6px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
+.progress > div { height: 100%; background: var(--primary); width: 0; transition: width .2s linear; }
+.alert { border-left: 4px solid var(--primary); background: var(--primary-bg); padding: 6px 10px; font-size: 12px; border-radius: 0 var(--radius) var(--radius) 0; }
+.alert.err { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); }
+.alert.ok { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+
+.toast { position: fixed; right: 16px; bottom: 16px; max-width: 420px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--primary); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(15, 23, 42, .12); font-size: 12.5px; display: none; z-index: 10; }
+.toast.err { border-left-color: var(--danger); }
+
+@media (max-width: 1360px) { .work { grid-template-columns: 270px minmax(0, 1fr) 310px; } .strip { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 1100px) {
+  .app { height: auto; min-height: 100vh; }
+  .work { grid-template-columns: 1fr; }
+  .center { grid-template-rows: 60vh auto; }
+  .col { overflow: visible; }
+  .charts { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } .brand small { display: none; } .pills .opt { display: none; } input, select { font-size: 16px; } }
+@media (prefers-reduced-motion: reduce) { .progress > div { transition: none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="logo">BS</div><div><b>UAV-BS Ground Station</b><small>Cấp phát tài nguyên · mô hình + NS-3</small></div></div>
+    <div class="pills" role="status" aria-live="polite">
+      <span class="pill danger" id="pConn"><span class="dot"></span>Mất kết nối</span>
+      <span class="pill" id="pRun"><span class="dot"></span>–</span>
+      <span class="pill opt" id="pGz"><span class="dot"></span>Gazebo</span>
+      <span class="pill opt" id="pRec" hidden><span class="dot"></span>Ghi</span>
+      <span class="pill info mono" id="pTime">T+ 0.0 s</span>
+    </div>
+  </header>
+
+  <section class="strip" aria-label="Chỉ số tức thời">
+    <div><div class="k">Thuật toán</div><div class="v" id="sAlgo" style="font-size:13px">–</div><div class="sub" id="sSlot">khe –</div></div>
+    <div><div class="k">Tổng rate · Shannon</div><div class="v"><span id="sSum">–</span><span class="unit">Mbps</span></div><div class="sub">như paper</div></div>
+    <div><div class="k">Tổng rate · LTE dự đoán</div><div class="v"><span id="sLte">–</span><span class="unit">Mbps</span></div><div class="sub">α 0.401, trần 3.514</div></div>
+    <div><div class="k">Min rate · LTE</div><div class="v"><span id="sMin">–</span><span class="unit">Mbps</span></div><div class="sub" id="sMinS">Shannon –</div></div>
+    <div><div class="k">Coverage · LTE</div><div class="v"><span id="sCov">–</span><span class="unit">%</span></div><div class="sub" id="sJain">Jain –</div></div>
+    <div><div class="k">Throughput</div><div class="v"><span id="sThr">–</span><span class="unit">Mbps</span></div><div class="sub" id="sDemand">lưu lượng –</div></div>
+    <div><div class="k">Độ trễ · mất gói</div><div class="v"><span id="sDelay">–</span><span class="unit">ms</span></div><div class="sub" id="sLoss">mất –</div></div>
+    <div><div class="k">Công suất bay</div><div class="v"><span id="sPow">–</span><span class="unit">W</span></div><div class="sub" id="sQueue">hàng đợi –</div></div>
+  </section>
+
+  <main class="work">
+    <!-- trái: UAV, lái tay, tham số -->
+    <div class="col">
+      <section class="card">
+        <div class="card-h"><h2>Đội UAV</h2><span class="hint">nhấp để chọn</span></div>
+        <div id="uavList"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>Lái tay</h2><span class="badge" id="selBadge">chưa chọn</span></div>
+        <div class="card-b" style="display:grid;gap:10px">
+          <div class="row">
+            <button class="btn sm" id="btnManual">Bật lái tay</button>
+            <button class="btn sm" id="btnStop">Dừng UAV</button>
+          </div>
+          <div class="pad" aria-label="Điều hướng">
+            <span></span><button data-d="0,1" aria-label="Bắc">▲</button><span></span>
+            <button data-d="-1,0" aria-label="Tây">◀</button><button data-d="0,0" aria-label="Dừng">■</button><button data-d="1,0" aria-label="Đông">▶</button>
+            <span></span><button data-d="0,-1" aria-label="Nam">▼</button><span></span>
+          </div>
+          <div class="keys">W A S D / mũi tên · nhấp bản đồ để bay tới</div>
+          <label class="f"><span class="k">Tốc độ lệnh <b class="mono" id="spdV">15</b> m/s</span><input id="spd" type="range" min="1" max="20" value="15"></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>Tham số kịch bản</h2></div>
+        <div class="card-b" style="display:grid;gap:8px">
+          <div class="grid2">
+            <label class="f"><span class="k">Số UAV</span><input type="number" id="c_num_uavs" min="1" max="8" step="1"></label>
+            <label class="f"><span class="k">Số user</span><input type="number" id="c_num_users" min="1" max="60" step="1"></label>
+            <label class="f"><span class="k">Độ cao (m)</span><input type="number" id="c_altitude" min="20" max="300" step="10"></label>
+            <label class="f"><span class="k">Công suất (W)</span><input type="number" id="c_p_max" min="0.05" max="5" step="0.05"></label>
+            <label class="f"><span class="k">Lưu lượng (Mbps/user)</span><input type="number" id="c_demand_mbps" min="0.1" max="20" step="0.1"></label>
+            <label class="f"><span class="k">V tối đa (m/s)</span><input type="number" id="c_v_max" min="1" max="40" step="1"></label>
+            <label class="f"><span class="k">User đi bộ (m/s)</span><input type="number" id="c_user_speed" min="0" max="5" step="0.5"></label>
+            <label class="f"><span class="k">Seed</span><input type="number" id="c_seed" min="0" max="9999" step="1"></label>
+            <label class="f"><span class="k">Môi trường</span><select id="c_environment"></select></label>
+            <label class="f"><span class="k">Phân bố user</span><select id="c_user_layout"></select></label>
+            <label class="f"><span class="k">Tỷ lệ important</span><input type="number" id="c_important_frac" min="0" max="1" step="0.05"></label>
+            <label class="f"><span class="k">Tỷ lệ critical</span><input type="number" id="c_critical_frac" min="0" max="1" step="0.05"></label>
+          </div>
+          <label class="check"><input type="checkbox" id="c_interference"> Nhiễu đồng kênh (dùng chung băng)</label>
+          <div class="row"><button class="btn primary sm" id="btnApply">Áp dụng</button><button class="btn sm" id="btnRevert">Hoàn tác</button></div>
+          <div class="hint" id="fixed">–</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- giữa: bản đồ + biểu đồ -->
+    <div class="center">
+      <section class="card mapcard">
+        <div class="maptools">
+          <div class="seg" role="group" aria-label="Chạy">
+            <button id="btnPause">❚❚ Tạm dừng</button><button id="btnReset">↺ Đặt lại</button>
+          </div>
+          <div class="seg" role="group" aria-label="Tốc độ mô phỏng" id="speedSeg">
+            <button data-x="0.5">0.5×</button><button data-x="1" class="on">1×</button><button data-x="2">2×</button><button data-x="4">4×</button>
+          </div>
+          <label class="row" style="gap:6px"><span class="k">Thuật toán</span><select id="algo" style="width:auto;height:26px"></select></label>
+          <div class="seg" role="group" aria-label="Tô màu user" id="colorSeg">
+            <button data-c="assoc" class="on">Màu theo UAV</button><button data-c="sinr">SINR</button>
+          </div>
+          <label class="check" style="margin-left:auto"><input type="checkbox" id="showHeat"> Bản đồ SINR</label>
+        </div>
+        <div class="mapwrap">
+          <canvas id="map" aria-label="Bản đồ UAV và user, nhấp để đưa UAV đang chọn tới điểm đó"></canvas>
+          <div class="legend" id="legend"></div>
+          <div class="tooltip" id="tip"></div>
+        </div>
+      </section>
+      <section class="charts">
+        <div class="card chart"><div class="card-h"><h2>Tổng rate</h2><div class="clegend"><span><i style="background:var(--text-3)"></i>Shannon</span><span><i style="background:var(--primary)"></i>LTE</span></div></div><canvas id="c_sum"></canvas></div>
+        <div class="card chart"><div class="card-h"><h2>Min rate</h2><div class="clegend"><span><i style="background:var(--text-3)"></i>Shannon</span><span><i style="background:var(--primary)"></i>LTE</span></div></div><canvas id="c_min"></canvas></div>
+        <div class="card chart"><div class="card-h"><h2>Độ trễ</h2><span class="clegend">ms</span></div><canvas id="c_delay"></canvas></div>
+      </section>
+    </div>
+
+    <!-- phải: so sánh, đo NS-3 -->
+    <div class="col">
+      <section class="card">
+        <div class="card-h"><h2>Ba tầng · khe hiện tại</h2></div>
+        <div class="card-b">
+          <table class="kpi">
+            <thead><tr><th>Chỉ số</th><th>Shannon</th><th>LTE dự đoán</th></tr></thead>
+            <tbody>
+              <tr><td>Tổng rate (Mbps)</td><td id="k_sum">–</td><td id="k_lsum">–</td></tr>
+              <tr><td>Min rate (Mbps)</td><td id="k_min">–</td><td id="k_lmin">–</td></tr>
+              <tr><td>Coverage</td><td id="k_cov">–</td><td id="k_lcov">–</td></tr>
+              <tr><td>Jain</td><td id="k_jain">–</td><td id="k_ljain">–</td></tr>
+            </tbody>
+          </table>
+          <p class="hint" style="margin-top:6px">Shannon là cách paper tính. LTE dự đoán dùng ánh xạ SINR → tốc độ đo được trên NS-3 (khớp ±2%). Số đo thật: chạy NS-3 ở dưới.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>Nhóm user · khe hiện tại</h2></div>
+        <div class="card-b">
+          <table class="kpi">
+            <thead><tr><th>Nhóm</th><th>Số user</th><th>Min LTE (Mbps)</th><th>Đạt QoS</th></tr></thead>
+            <tbody id="clsTbl"></tbody>
+          </table>
+          <p class="hint" style="margin-top:6px">Trọng số w = 1 / 2 / 4 trong Σ w·log r. Đạt QoS khi tốc độ ≥ min(r_min nhóm, 0,9 × lưu lượng); r_min = 0,5 / 1 / 2 Mbps.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>Đo bằng NS-3</h2><span class="badge" id="mBadge">sẵn sàng</span></div>
+        <div class="card-b" style="display:grid;gap:8px">
+          <div class="grid2">
+            <label class="f"><span class="k">Thời lượng ghi (s)</span><input type="number" id="mSec" min="2" max="120" step="1" value="15"></label>
+            <label class="f"><span class="k">Liên kết</span><select id="mLink"><option value="ideal">Lý tưởng (nhanh)</option><option value="lte">LTE đầy đủ</option></select></label>
+            <label class="f"><span class="k">Scheduler</span><select id="mSched"><option value="wpf">WPF (theo b_k)</option><option value="pf">PF</option><option value="rr">RR</option></select></label>
+            <div style="display:flex;align-items:flex-end"><button class="btn primary" id="btnMeasure" style="width:100%">Ghi &amp; đo</button></div>
+          </div>
+          <div class="progress" aria-hidden="true"><div id="mProg"></div></div>
+          <div id="mMsg" class="hint">Ghi lại một đoạn từ khe 0 với cấu hình hiện tại, rồi phát lại trong NS-3. Có thể vẫn lái tay trong lúc ghi.</div>
+          <div id="mRes"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>User · khe hiện tại</h2><span class="hint" id="uSum">–</span></div>
+        <div class="card-b" style="padding:0;max-height:260px;overflow:auto">
+          <table class="kpi" id="userTbl"><thead><tr><th>User</th><th>Nhóm</th><th>UAV</th><th>SINR dB</th><th>LTE Mbps</th></tr></thead><tbody></tbody></table>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast" role="alert"></div>
+
+<script src="/config.js"></script>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const color = j => css(`--s${(j % 8) + 1}`);
+const fmt = (v, d = 1) => v === null || v === undefined || !isFinite(v) ? "–" : (+v).toFixed(d);
+
+let ws, info = null, sel = null, prev = null, cur = null, tCur = 0, colorMode = "assoc", showHeat = false;
+const hist = { t: [], sum: [], lsum: [], min: [], lmin: [], delay: [] }, HMAX = 400;
+
+// ---------------- WebSocket
+function connect() {
+  ws = new WebSocket(`ws://${location.hostname}:${window.WS_PORT || 8001}`);
+  ws.onopen = () => setPill("pConn", "ok", "Đã kết nối");
+  ws.onclose = () => { setPill("pConn", "danger", "Mất kết nối"); setTimeout(connect, 1000); };
+  ws.onmessage = e => { const m = JSON.parse(e.data); m.type === "info" ? onInfo(m) : onState(m); };
+}
+const send = o => ws && ws.readyState === 1 && ws.send(JSON.stringify(o));
+function setPill(id, cls, text) { const p = $(id); p.className = "pill " + cls + (p.classList.contains("opt") ? " opt" : ""); p.innerHTML = `<span class="dot"></span>${text}`; }
+function toast(text, err) { const t = $("toast"); t.textContent = text; t.className = "toast" + (err ? " err" : ""); t.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = "none", 4500); }
+
+// ---------------- info: điều khiển, tham số, đo
+let lastNote = "", formDirty = false;
+function onInfo(m) {
+  const first = !info; info = m;
+  setPill("pRun", m.running ? "ok" : "warn", m.running ? `Đang chạy ${m.speed}×` : "Tạm dừng");
+  setPill("pGz", m.gazebo ? "ok" : "", m.gazebo ? "Gazebo 20 Hz" : "Không Gazebo");
+  $("pRec").hidden = !m.recording; setPill("pRec", "danger", `Ghi ${m.recorded} khe`);
+  $("btnPause").textContent = m.running ? "❚❚ Tạm dừng" : "▶ Chạy";
+  document.querySelectorAll("#speedSeg button").forEach(b => b.classList.toggle("on", +b.dataset.x === m.speed));
+  const sa = $("algo");
+  if (sa.options.length !== m.algos.length) sa.innerHTML = m.algos.map(a => `<option>${a}</option>`).join("");
+  sa.value = m.algo; $("sAlgo").textContent = m.algo;
+  if (m.note && m.note !== lastNote) toast(m.note, m.note.startsWith("Lệnh bị từ chối"));
+  lastNote = m.note;
+  if (sel !== null && sel >= m.num_uavs) sel = null;
+  if (sel === null && m.num_uavs) sel = m.manual.length ? m.manual[0] : 0;
+  if (first || !formDirty) fillForm(m);
+  $("fixed").textContent = `Cố định: vùng ${m.fixed.area} m, B ${m.fixed.bandwidth_mhz} MHz, f ${m.fixed.fc_ghz} GHz, khe ${m.fixed.dt} s, r_min ${m.fixed.r_min_mbps} Mbps, bộ đệm ${m.fixed.buffer_mib} MiB`;
+  renderUavs(); renderSel(); renderMeasure(m.measure); renderLegend();
+}
+function fillForm(m) {
+  for (const [k, v] of Object.entries(m.config)) {
+    const el = $("c_" + k); if (!el) continue;
+    if (el.tagName === "SELECT" && el.options.length === 0) el.innerHTML = m.limits[k].map(o => `<option>${o}</option>`).join("");
+    if (el.type === "checkbox") el.checked = !!v; else el.value = v;
+  }
+  formDirty = false; $("btnApply").disabled = true; $("btnRevert").disabled = true;
+}
+document.querySelectorAll("[id^=c_]").forEach(el => el.addEventListener("input", () => { formDirty = true; $("btnApply").disabled = false; $("btnRevert").disabled = false; }));
+$("btnRevert").onclick = () => info && fillForm(info);
+$("btnApply").onclick = () => {
+  const set = {};
+  for (const k of Object.keys(info.config)) {
+    const el = $("c_" + k); if (!el) continue;
+    const v = el.type === "checkbox" ? el.checked : el.tagName === "SELECT" ? el.value : Number(el.value);
+    if (v !== info.config[k]) set[k] = v;
+  }
+  formDirty = false;
+  if (Object.keys(set).length) { resetHist(); send({ cmd: "config", set }); } else fillForm(info);
+};
+
+function renderUavs() {
+  const n = info.num_uavs, s = cur;
+  $("uavList").innerHTML = Array.from({ length: n }, (_, j) => {
+    const manual = info.manual.includes(j), tgt = s && s.targets && s.targets[j];
+    const badge = tgt ? `<span class="badge goto">BAY TỚI</span>` : manual ? `<span class="badge manual">LÁI TAY</span>` : `<span class="badge auto">TỰ ĐỘNG</span>`;
+    const pos = s && s.uav[j] ? `${fmt(s.uav[j][0], 0)}, ${fmt(s.uav[j][1], 0)} m` : "–";
+    const meta = s ? `${pos} · ${fmt(s.uav_speed[j], 1)} m/s · ${s.uav_load[j]} user` : "–";
+    return `<div class="uav ${sel === j ? "sel" : ""}" data-j="${j}" role="button" tabindex="0" aria-pressed="${sel === j}">
+      <span class="bar" style="background:${color(j)}"></span><div><div class="name">UAV ${j}</div><div class="meta">${meta}</div></div>${badge}</div>`;
+  }).join("");
+  $("uavList").querySelectorAll(".uav").forEach(el => {
+    const pick = () => { sel = +el.dataset.j; renderUavs(); renderSel(); };
+    el.onclick = pick; el.onkeydown = e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), pick());
+  });
+}
+function renderSel() {
+  const manual = sel !== null && info.manual.includes(sel);
+  $("selBadge").textContent = sel === null ? "chưa chọn" : `UAV ${sel}`;
+  $("selBadge").className = "badge " + (manual ? "manual" : "");
+  $("btnManual").textContent = manual ? "Trả về tự động" : "Bật lái tay";
+  $("btnManual").classList.toggle("on", manual);
+  $("btnManual").disabled = sel === null;
+}
+$("btnManual").onclick = () => sel !== null && send({ cmd: "manual", uav: sel, on: !info.manual.includes(sel) });
+$("btnStop").onclick = () => { if (sel === null) return; if (!info.manual.includes(sel)) send({ cmd: "manual", uav: sel, on: true }); send({ cmd: "vel", uav: sel, vx: 0, vy: 0 }); };
+$("algo").onchange = e => send({ cmd: "algo", name: e.target.value });
+$("btnPause").onclick = () => send({ cmd: info.running ? "pause" : "resume" });
+$("btnReset").onclick = () => { resetHist(); send({ cmd: "reset" }); };
+document.querySelectorAll("#speedSeg button").forEach(b => b.onclick = () => send({ cmd: "speed", x: +b.dataset.x }));
+document.querySelectorAll("#colorSeg button").forEach(b => b.onclick = () => {
+  colorMode = b.dataset.c; document.querySelectorAll("#colorSeg button").forEach(x => x.classList.toggle("on", x === b)); renderLegend();
+});
+$("showHeat").onchange = e => { showHeat = e.target.checked; heatKey = ""; renderLegend(); };
+$("spd").oninput = e => { $("spdV").textContent = e.target.value; pushVel(true); };
+
+// ---------------- lái tay: phím + pad, gửi lại định kỳ khi đang giữ
+const keys = new Set();
+const KEYMAP = { w: [0, 1], arrowup: [0, 1], s: [0, -1], arrowdown: [0, -1], a: [-1, 0], arrowleft: [-1, 0], d: [1, 0], arrowright: [1, 0] };
+let padDir = [0, 0], lastSent = "";
+function dir() {
+  let x = padDir[0], y = padDir[1];
+  for (const k of keys) { x += KEYMAP[k][0]; y += KEYMAP[k][1]; }
+  const n = Math.hypot(x, y); return n ? [x / n, y / n] : [0, 0];
+}
+function pushVel(force) {
+  if (sel === null || !info) return;
+  const [x, y] = dir(), v = +$("spd").value;
+  if (!info.manual.includes(sel)) { if (x === 0 && y === 0) return; send({ cmd: "manual", uav: sel, on: true }); }
+  const msg = { cmd: "vel", uav: sel, vx: +(x * v).toFixed(2), vy: +(y * v).toFixed(2) }, k = JSON.stringify(msg);
+  if (force || k !== lastSent) { lastSent = k; send(msg); }
+}
+addEventListener("keydown", e => {
+  const k = e.key.toLowerCase();
+  if (!(k in KEYMAP) || ["INPUT", "SELECT"].includes(e.target.tagName)) return;
+  e.preventDefault(); if (!keys.has(k)) { keys.add(k); pushVel(); }
+});
+addEventListener("keyup", e => { if (keys.delete(e.key.toLowerCase())) pushVel(); });
+addEventListener("blur", () => { keys.clear(); padDir = [0, 0]; pushVel(); });
+document.querySelectorAll(".pad button").forEach(b => {
+  const d = b.dataset.d.split(",").map(Number);
+  b.onpointerdown = e => { e.preventDefault(); b.setPointerCapture(e.pointerId); b.classList.add("held"); padDir = d; pushVel(); };
+  b.onpointerup = b.onpointercancel = () => { b.classList.remove("held"); padDir = [0, 0]; pushVel(); };
+});
+
+// ---------------- state
+function resetHist() { for (const k in hist) hist[k].length = 0; prev = cur = null; heatKey = ""; }
+function onState(m) {
+  if (cur && (cur.uav.length !== m.uav.length || cur.users.length !== m.users.length || m.t < cur.t)) resetHist();
+  prev = cur; cur = m; tCur = performance.now();
+  const push = (k, v) => { hist[k].push(v); if (hist[k].length > HMAX) hist[k].shift(); };
+  push("t", m.time); push("sum", m.sum_rate); push("lsum", m.lte_sum); push("min", m.min_rate); push("lmin", m.lte_min); push("delay", m.delay_ms);
+  $("pTime").textContent = `T+ ${fmt(m.time, 1)} s`; $("sSlot").textContent = `khe ${m.t} · ${m.dt} s`;
+  $("sSum").textContent = fmt(m.sum_rate); $("sLte").textContent = fmt(m.lte_sum);
+  $("sMin").textContent = fmt(m.lte_min, 2); $("sMinS").textContent = `Shannon ${fmt(m.min_rate, 2)}`;
+  $("sCov").textContent = fmt(100 * m.lte_coverage, 0); $("sJain").textContent = `Jain ${fmt(m.lte_jain, 2)}`;
+  $("sThr").textContent = fmt(m.throughput); $("sDemand").textContent = info ? `lưu lượng ${fmt(info.config.demand_mbps, 1)} Mbps/user` : "";
+  $("sDelay").textContent = fmt(m.delay_ms, 0); $("sLoss").textContent = `mất ${m.loss === null ? "–" : fmt(100 * m.loss, 1) + "%"}`;
+  $("sPow").textContent = fmt(m.energy_w, 0); $("sQueue").textContent = `hàng đợi ${fmt(m.queue_mbit, 2)} Mbit`;
+  $("k_sum").textContent = fmt(m.sum_rate); $("k_lsum").textContent = fmt(m.lte_sum);
+  $("k_min").textContent = fmt(m.min_rate, 2); $("k_lmin").textContent = fmt(m.lte_min, 2);
+  $("k_cov").textContent = fmt(100 * m.coverage, 0) + "%"; $("k_lcov").textContent = fmt(100 * m.lte_coverage, 0) + "%";
+  $("k_jain").textContent = fmt(m.jain, 3); $("k_ljain").textContent = fmt(m.lte_jain, 3);
+  if (info) { setPill("pRec", "danger", `Ghi ${m.recorded} khe`); if (info.measure && info.measure.status === "recording") $("mProg").style.width = `${Math.min(100, 100 * m.recorded / info.measure.slots)}%`; }
+  if (m.t % 2 === 0) { renderUavs(); renderUsers(); drawCharts(); }
+}
+function renderUsers() {
+  const s = cur, rmin = s.r_min / 1e6;
+  // critical trước, rồi important, normal; trong mỗi nhóm user yếu nhất lên đầu
+  const rows = s.users.map((_, k) => [k, s.assoc[k], s.sinr_db[k], s.lte_rate[k], s.user_class[k]])
+    .sort((a, b) => b[4] - a[4] || a[3] - b[3]);
+  $("uSum").textContent = `${rows.filter(r => r[3] < rmin).length} dưới r_min`;
+  $("userTbl").tBodies[0].innerHTML = rows.map(([k, j, snr, r, c]) =>
+    `<tr style="${r < rmin ? "background:var(--danger-bg)" : ""}"><td>#${k}</td><td><span class="badge ${CLS_BADGE[c]}">${CLS_NAME[c]}</span></td><td><span style="color:${j >= 0 ? color(j) : "inherit"}">●</span> ${j >= 0 ? j : "–"}</td><td>${fmt(snr, 1)}</td><td>${fmt(r, 2)}</td></tr>`).join("");
+  const cnt = [0, 1, 2].map(c => s.user_class.filter(x => x === c).length);
+  $("clsTbl").innerHTML = [2, 1, 0].map(c => {
+    const n = CLS_KEY[c], has = cnt[c] > 0;
+    return `<tr><td><span class="badge ${CLS_BADGE[c]}">${CLS_NAME[c]}</span></td><td>${cnt[c]}</td><td>${has ? fmt(s.classes["min_" + n], 2) : "–"}</td><td>${has ? fmt(100 * s.classes["sat_" + n], 0) + "%" : "–"}</td></tr>`;
+  }).join("");
+}
+const CLS_KEY = ["normal", "important", "critical"], CLS_NAME = ["normal", "important", "critical"];
+const CLS_BADGE = ["neutral", "warn", "danger"];
+// hình của user trên bản đồ theo nhóm: normal tròn, important vuông, critical thoi
+function userShape(g, c, px, py, r) {
+  g.beginPath();
+  if (c === 2) { const d = r * 1.45; g.moveTo(px, py - d); g.lineTo(px + d, py); g.lineTo(px, py + d); g.lineTo(px - d, py); g.closePath(); }
+  else if (c === 1) g.rect(px - r * 0.9, py - r * 0.9, r * 1.8, r * 1.8);
+  else g.arc(px, py, r, 0, 7);
+}
+
+// ---------------- measure (NS-3)
+$("btnMeasure").onclick = () => {
+  const st = info && info.measure.status;
+  if (st === "recording") return send({ cmd: "measure_cancel" });
+  resetHist(); send({ cmd: "measure", seconds: +$("mSec").value, link: $("mLink").value, scheduler: $("mSched").value });
+};
+function renderMeasure(m) {
+  const b = $("mBadge"), btn = $("btnMeasure"), msg = $("mMsg"), res = $("mRes");
+  const st = m.status;
+  btn.disabled = st === "running"; btn.textContent = st === "recording" ? "Hủy" : "Ghi & đo";
+  b.className = "badge " + ({ recording: "manual", running: "goto", done: "auto", error: "" }[st] || "");
+  b.textContent = { idle: "sẵn sàng", recording: "đang ghi", running: "NS-3 đang chạy", done: "xong", error: "lỗi" }[st];
+  if (st === "idle") { $("mProg").style.width = "0"; if (m.note) msg.textContent = m.note; }
+  if (st === "recording") msg.textContent = `Đang ghi ${m.slots} khe (${m.algo}), rồi đo bằng NS-3 ${m.link === "lte" ? "LTE" : "liên kết lý tưởng"}, scheduler ${m.scheduler.toUpperCase()}.`;
+  if (st === "running") { $("mProg").style.width = "100%"; msg.textContent = m.link === "lte" ? "NS-3 LTE đang chạy (khoảng 4 s mỗi khe 1 s)…" : "NS-3 đang chạy…"; }
+  if (st === "error") { res.innerHTML = `<div class="alert err">${m.error}</div>`; msg.textContent = ""; }
+  if (st === "done") {
+    const r = m.result, row = (l, a, b, d = 2) => `<span class="l">${l}</span><span>${fmt(a, d)}</span><span class="ns3col">${fmt(b, d)}</span>`;
+    msg.textContent = `${r.slots} khe · NS-3 ${r.link === "lte" ? "LTE" : "lý tưởng"} · ${r.scheduler.toUpperCase()} · ${fmt(r.wall_s, 1)} s · ${m.algo}`;
+    res.innerHTML = `<div class="result"><span class="h">Chỉ số</span><span class="h">Mô hình</span><span class="h">NS-3 đo</span>
+      ${row("Throughput (Mbps)", r.model_thr_mbps, r.ns3_thr_mbps)}${row("Min (Mbps)", r.model_min_mbps, r.ns3_min_mbps)}
+      ${row("Độ trễ (ms)", r.model_delay_ms, r.ns3_delay_ms, 1)}${row("Mất gói (%)", 100 * r.model_loss, 100 * r.ns3_loss, 2)}</div>
+      <div class="hint" style="margin-top:6px">Kết quả lưu ở ${m.dir}</div>`;
+  } else if (st !== "error") res.innerHTML = "";
+}
+
+// ---------------- bản đồ: vẽ liên tục, nội suy giữa hai khe
+const map = $("map"), tip = $("tip");
+let view = null, heat = null, heatKey = "";
+function fit(c) {
+  const r = c.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  if (c.width !== Math.round(r.width * dpr) || c.height !== Math.round(r.height * dpr)) { c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr); }
+  const g = c.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); return [g, r.width, r.height];
+}
+function lerpPts(a, b, f) { return b.map((p, i) => a && a[i] ? [a[i][0] + f * (p[0] - a[i][0]), a[i][1] + f * (p[1] - a[i][1])] : p); }
+function sinrColor(db) {  // thang tuần tự một sắc độ cho chấm user: thấp nhạt, cao đậm
+  const t = Math.max(0, Math.min(1, (db + 5) / 45));
+  return `hsl(217, ${50 + 30 * t}%, ${88 - 50 * t}%)`;
+}
+function heatColor(db) {  // nền bản đồ SINR: xám trung tính để chấm màu của UAV, user vẫn nổi
+  const t = Math.max(0, Math.min(1, (db + 5) / 45));
+  return `hsl(215, 16%, ${99 - 27 * t}%)`;
+}
+// bản đồ SINR: user giả định ở mỗi ô, SNR từ UAV mạnh nhất trên nhiễu từ các UAV còn lại (cùng kênh Al-Hourani)
+const ENV = { suburban: [4.88, .43, .1, 21], urban: [9.61, .16, 1, 20], dense_urban: [12.08, .11, 1.6, 23], highrise: [27.23, .08, 2.3, 34] };
+function gainDb(h, H, fc, env) {
+  const [a, b, el, en] = ENV[env], d = Math.hypot(h, H), th = Math.atan2(H, h) * 180 / Math.PI;
+  const p = 1 / (1 + a * Math.exp(-b * (th - a)));
+  return -(20 * Math.log10(4 * Math.PI * fc * d / 299792458) + p * el + (1 - p) * en);
+}
+function buildHeat(uav, s) {
+  const c = info.config, N = 48, area = s.area, out = new Float32Array(N * N);
+  const noise = 10 ** ((-169 - 30) / 10), psd = c.p_max / 10e6, active = s.uav_load.map(n => n > 0);
+  for (let iy = 0; iy < N; iy++) for (let ix = 0; ix < N; ix++) {
+    const x = (ix + .5) * area / N, y = (iy + .5) * area / N;
+    let best = 0, tot = 0;
+    uav.forEach((q, j) => { if (!active[j]) return; const g = psd * 10 ** (gainDb(Math.hypot(q[0] - x, q[1] - y), c.altitude, 2e9, c.environment) / 10); tot += g; best = Math.max(best, g); });
+    const intf = c.interference ? tot - best : 0;
+    out[iy * N + ix] = best > 0 ? 10 * Math.log10(best / (intf + noise)) : -20;
+  }
+  return { N, data: out };
+}
+function draw() {
+  requestAnimationFrame(draw);
+  const [g, W, H] = fit(map);
+  g.fillStyle = css("--map-bg"); g.fillRect(0, 0, W, H);
+  if (!cur) { g.fillStyle = css("--text-3"); g.font = "13px system-ui"; g.fillText("Đang chờ dữ liệu từ server…", 16, 24); return; }
+  const s = cur, pad = 14, side = Math.min(W, H) - 2 * pad, S = side / s.area, ox = (W - side) / 2, oy = (H - side) / 2;
+  view = { S, ox, oy, side, area: s.area };
+  const X = x => ox + x * S, Y = y => oy + side - y * S;
+  const f = info && info.running ? Math.min(1, (performance.now() - tCur) / ((s.period || s.dt) * 1000)) : 1;
+  const uav = lerpPts(prev && prev.uav.length === s.uav.length ? prev.uav : null, s.uav, f);
+  const users = lerpPts(prev && prev.users.length === s.users.length ? prev.users : null, s.users, f);
+  g.fillStyle = "#fff"; g.fillRect(ox, oy, side, side);
+  if (showHeat && info) {
+    const key = s.t + ":" + s.uav.length;
+    if (key !== heatKey && s.t % 2 === 0) { heat = buildHeat(s.uav, s); heatKey = key; }
+    if (heat) { const c = side / heat.N; for (let iy = 0; iy < heat.N; iy++) for (let ix = 0; ix < heat.N; ix++) { g.fillStyle = heatColor(heat.data[iy * heat.N + ix]); g.fillRect(ox + ix * c, oy + side - (iy + 1) * c, c + .5, c + .5); } }
+  }
+  g.strokeStyle = css("--grid"); g.lineWidth = 1;
+  for (let i = 0; i <= 10; i++) { const v = i * s.area / 10; g.beginPath(); g.moveTo(X(v), Y(0)); g.lineTo(X(v), Y(s.area)); g.moveTo(X(0), Y(v)); g.lineTo(X(s.area), Y(v)); g.stroke(); }
+  g.strokeStyle = css("--line-strong"); g.strokeRect(ox, oy, side, side);
+  // liên kết
+  g.globalAlpha = .3; g.lineWidth = 1;
+  users.forEach(([x, y], k) => { const j = s.assoc[k]; if (j < 0 || !uav[j]) return; g.strokeStyle = color(j); g.beginPath(); g.moveTo(X(x), Y(y)); g.lineTo(X(uav[j][0]), Y(uav[j][1])); g.stroke(); });
+  g.globalAlpha = 1;
+  // điểm đến
+  Object.entries(s.targets || {}).forEach(([j, t]) => {
+    const p = uav[j]; if (!p) return; g.strokeStyle = color(+j); g.setLineDash([5, 4]); g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(X(p[0]), Y(p[1])); g.lineTo(X(t[0]), Y(t[1])); g.stroke(); g.setLineDash([]);
+    g.beginPath(); g.arc(X(t[0]), Y(t[1]), 6, 0, 7); g.stroke(); g.beginPath(); g.moveTo(X(t[0]) - 9, Y(t[1])); g.lineTo(X(t[0]) + 9, Y(t[1])); g.moveTo(X(t[0]), Y(t[1]) - 9); g.lineTo(X(t[0]), Y(t[1]) + 9); g.stroke();
+  });
+  // user
+  const rmin = s.r_min / 1e6, maxR = Math.max(...s.lte_rate, 1e-9);
+  users.forEach(([x, y], k) => {
+    const r = s.lte_rate[k], j = s.assoc[k], px = X(x), py = Y(y);
+    if (r < rmin) { g.strokeStyle = css("--danger"); g.lineWidth = 2; g.beginPath(); g.moveTo(px - 5, py - 5); g.lineTo(px + 5, py + 5); g.moveTo(px + 5, py - 5); g.lineTo(px - 5, py + 5); g.stroke(); return; }
+    g.fillStyle = colorMode === "sinr" ? sinrColor(s.sinr_db[k]) : j >= 0 ? color(j) : css("--text-3");
+    userShape(g, s.user_class[k], px, py, 3.5 + 4.5 * Math.sqrt(r / maxR)); g.fill();
+    g.strokeStyle = colorMode === "sinr" ? css("--text-2") : "#fff"; g.lineWidth = 1.5; g.stroke();
+  });
+  // UAV
+  uav.forEach(([x, y], j) => {
+    const px = X(x), py = Y(y), manual = info && info.manual.includes(j);
+    if (j === sel) { g.fillStyle = color(j) + "22"; g.beginPath(); g.arc(px, py, 22, 0, 7); g.fill(); }
+    if (manual) { g.strokeStyle = color(j); g.lineWidth = 2; g.setLineDash([4, 3]); g.beginPath(); g.arc(px, py, 17, 0, 7); g.stroke(); g.setLineDash([]); }
+    g.fillStyle = color(j); g.strokeStyle = "#fff"; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(px, py - 11); g.lineTo(px + 10, py + 8); g.lineTo(px - 10, py + 8); g.closePath(); g.fill(); g.stroke();
+    g.font = "700 11px " + css("--mono"); const label = `UAV ${j}`, w = g.measureText(label).width + 8;
+    g.fillStyle = "rgba(255,255,255,.92)"; g.fillRect(px + 13, py - 20, w, 16); g.fillStyle = color(j); g.fillText(label, px + 17, py - 8);
+  });
+  g.fillStyle = css("--text-3"); g.font = "11px " + css("--mono");
+  g.fillText(`${s.area} m × ${s.area} m · lưới ${s.area / 10} m`, ox + 6, oy + 14);
+}
+function toWorld(e) {
+  if (!view) return null; const r = map.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+  const x = (mx - view.ox) / view.S, y = (view.oy + view.side - my) / view.S;
+  return x < 0 || y < 0 || x > view.area || y > view.area ? null : [x, y, mx, my];
+}
+map.addEventListener("click", e => {
+  const p = toWorld(e); if (!p || !cur) return;
+  const hit = cur.uav.findIndex(q => Math.hypot(q[0] - p[0], q[1] - p[1]) * view.S < 16);
+  if (hit >= 0) { sel = hit; renderUavs(); renderSel(); return; }
+  if (sel === null) return toast("Chọn một UAV trước khi nhấp bản đồ");
+  send({ cmd: "goto", uav: sel, x: +p[0].toFixed(1), y: +p[1].toFixed(1) });
+});
+map.addEventListener("mousemove", e => {
+  const p = toWorld(e); if (!p || !cur) { tip.style.display = "none"; return; }
+  let best = -1, bd = 1e9;
+  cur.users.forEach((q, k) => { const d = Math.hypot(q[0] - p[0], q[1] - p[1]) * view.S; if (d < bd) { bd = d; best = k; } });
+  const u = cur.uav.findIndex(q => Math.hypot(q[0] - p[0], q[1] - p[1]) * view.S < 14);
+  let text = `(${fmt(p[0], 0)}, ${fmt(p[1], 0)}) m`;
+  if (u >= 0) text = `UAV ${u} · ${fmt(cur.uav_speed[u], 1)} m/s · ${cur.uav_load[u]} user`;
+  else if (bd < 10) text = `User #${best} (${CLS_NAME[cur.user_class[best]]}) → UAV ${cur.assoc[best]} · SINR ${fmt(cur.sinr_db[best], 1)} dB · LTE ${fmt(cur.lte_rate[best], 2)} Mbps · Shannon ${fmt(cur.rate[best], 2)} Mbps`;
+  else if (sel !== null) text += ` · nhấp để đưa UAV ${sel} tới`;
+  tip.textContent = text; tip.style.display = "block";
+  tip.style.left = Math.min(p[2] + 14, map.clientWidth - tip.offsetWidth - 6) + "px"; tip.style.top = Math.max(6, p[3] - 30) + "px";
+});
+map.addEventListener("mouseleave", () => tip.style.display = "none");
+function renderLegend() {
+  const n = info ? info.num_uavs : 0;
+  const uavs = Array.from({ length: n }, (_, j) => `<span><svg width="10" height="10"><polygon points="5,0 10,10 0,10" fill="${color(j)}"/></svg>UAV ${j}</span>`).join("");
+  const users = colorMode === "sinr" ? `<span><i style="display:inline-block;width:40px;height:8px;background:linear-gradient(90deg,${sinrColor(-5)},${sinrColor(40)})"></i>SINR −5…40 dB</span>` : `<span>● user, màu = UAV phục vụ, to = rate cao</span><span>● normal ■ important ◆ critical</span>`;
+  const heatLeg = showHeat ? `<span><i style="display:inline-block;width:40px;height:8px;border:1px solid var(--line);background:linear-gradient(90deg,${heatColor(-5)},${heatColor(40)})"></i>nền: SINR tốt nhất −5…40 dB</span>` : "";
+  $("legend").innerHTML = uavs + users + heatLeg + `<span style="color:var(--danger)">✕ dưới r_min</span><span>◌ lái tay</span>`;
+}
+
+// ---------------- biểu đồ
+function drawChart(id, series, unit) {
+  const c = $(id), [g, W, H] = fit(c), L = 38, R = 8, T = 8, B = 18;
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+  const t = hist.t; if (t.length < 2) return;
+  const vals = series.flatMap(s => s.data).filter(v => v !== null && isFinite(v));
+  const ymax = Math.max(1e-6, ...vals) * 1.12, t0 = t[0], t1 = t[t.length - 1];
+  const X = v => L + (v - t0) / Math.max(1e-9, t1 - t0) * (W - L - R), Y = v => H - B - v / ymax * (H - T - B);
+  g.strokeStyle = css("--grid"); g.fillStyle = css("--text-3"); g.font = "11px " + css("--mono"); g.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) { const v = ymax * i / 3; g.beginPath(); g.moveTo(L, Y(v)); g.lineTo(W - R, Y(v)); g.stroke(); g.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), 4, Y(v) + 4); }
+  g.fillText(`${t0.toFixed(0)} s`, L, H - 4); const lab = `${t1.toFixed(0)} s`; g.fillText(lab, W - R - g.measureText(lab).width, H - 4);
+  for (const s of series) {
+    g.strokeStyle = s.color; g.lineWidth = 2; g.beginPath(); let pen = false;
+    s.data.forEach((v, i) => { if (v === null || !isFinite(v)) { pen = false; return; } pen ? g.lineTo(X(t[i]), Y(v)) : g.moveTo(X(t[i]), Y(v)); pen = true; });
+    g.stroke();
+  }
+}
+function drawCharts() {
+  const grey = css("--text-3"), blue = css("--primary");
+  drawChart("c_sum", [{ data: hist.sum, color: grey }, { data: hist.lsum, color: blue }]);
+  drawChart("c_min", [{ data: hist.min, color: grey }, { data: hist.lmin, color: blue }]);
+  drawChart("c_delay", [{ data: hist.delay, color: css("--s2") }]);
+}
+addEventListener("resize", () => cur && drawCharts());
+requestAnimationFrame(draw);
+connect();
+</script>
+</body>
+</html>
