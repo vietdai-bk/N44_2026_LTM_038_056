@@ -2,7 +2,7 @@
 
 Phần này giới thiệu ngắn gọn dự án: nhóm giải bài toán gì, làm theo hướng nào, hệ thống gồm những phần nào, kết quả ra
 sao và còn thiếu gì. Công thức, thông số và chi tiết cài đặt có trong [`THIET_KE_MO_PHONG.md`](THIET_KE_MO_PHONG.md);
-cách cài đặt và chạy có trong [`README.md`](../README.md).
+cách cài đặt và chạy có trong [`HUONG_DAN_CHAY.md`](HUONG_DAN_CHAY.md).
 
 ---
 
@@ -185,7 +185,7 @@ LapTrinhMang/
 │   ├── MO_TA_DU_AN.md           # mô tả tổng quan
 │   ├── BAO_CAO_DU_AN.md         # báo cáo tóm tắt theo tiêu chí đánh giá
 │   └── THIET_KE_MO_PHONG.md     # thiết kế chi tiết
-└── README.md                    # cài đặt, lệnh chạy, kết quả
+└── README.md                    # giới thiệu, chạy nhanh
 ```
 
 ## 6. Tình trạng hiện tại
