@@ -23,22 +23,28 @@ chạy lưu trong `experiments/results/`; chi tiết kỹ thuật đầy đủ h
 
 ## 1. Đóng góp của các thành viên
 
-Nhóm tự thống nhất tỷ lệ. Bảng dưới liệt kê các hạng mục công việc đã làm để tiện phân chia.
+Nhóm gồm hai thành viên, cùng tham gia mọi hạng mục và thống nhất chia đều đóng góp: mỗi người 50%.
 
 | Hạng mục | Sản phẩm | Thành viên | Tỷ lệ |
 |---|---|---|---|
-| Khảo sát tài liệu, chọn mô hình | Chương 2, danh mục tài liệu tham khảo | | |
-| Mô hình Python `uavsim` | Kênh, rate, năng lượng, hàng đợi, 6 thuật toán baseline, môi trường DRL | | |
-| Thuật toán đề xuất | `calib-ifair` có ba nhóm user, bốn bản so sánh cùng mục tiêu, đo bằng NS-3 LTE | | |
-| Kịch bản NS-3 LTE | `uav-lte.cc`, mô hình kênh Al-Hourani trong NS-3, đo theo khe | | |
-| Scheduler Weighted PF | `wpf-ff-mac-scheduler` | | |
-| Liên kết lý tưởng, kiểm chứng ba tầng | Chế độ `--link ideal`, delay FIFO, biểu đồ ba tầng | | |
-| Phân tích nguyên nhân chênh lệch | `validate.py`, thí nghiệm một liên kết, phân rã | | |
-| Điều khiển thời gian thực | Server WebSocket, dashboard, tích hợp Gazebo | | |
-| Chạy và phân tích thí nghiệm | Các bảng, hình ở chương 6 | | |
-| Kiểm thử | 42 test tự động | | |
-| Báo cáo, slide | | | |
-| Tổng | | | 100% |
+| Khảo sát tài liệu, chọn mô hình | Chương 2, danh mục tài liệu tham khảo | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Mô hình Python `uavsim` | Kênh, rate, năng lượng, hàng đợi, 6 thuật toán baseline, môi trường DRL | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Thuật toán đề xuất | `calib-ifair` có ba nhóm user, bốn bản so sánh cùng mục tiêu, đo bằng NS-3 LTE | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Kịch bản NS-3 LTE | `uav-lte.cc`, mô hình kênh Al-Hourani trong NS-3, đo theo khe | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Scheduler Weighted PF | `wpf-ff-mac-scheduler` | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Liên kết lý tưởng, kiểm chứng ba tầng | Chế độ `--link ideal`, delay FIFO, biểu đồ ba tầng | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Phân tích nguyên nhân chênh lệch | `validate.py`, thí nghiệm một liên kết, phân rã | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Điều khiển thời gian thực | Server WebSocket, dashboard, tích hợp Gazebo | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Chạy và phân tích thí nghiệm | Các bảng, hình ở chương 6 | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Kiểm thử | 42 test tự động | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Báo cáo, slide | Báo cáo, slide, kịch bản thuyết trình | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| **Tổng** | | Thái Viết Đại / Nguyễn Quang Phúc | **50% / 50%** |
+
+| Thành viên | Tỷ lệ đóng góp |
+|---|---|
+| Thái Viết Đại | 50% |
+| Nguyễn Quang Phúc | 50% |
+| **Tổng** | **100%** |
 
 ---
 
