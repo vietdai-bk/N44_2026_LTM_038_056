@@ -1,15 +1,15 @@
 # Kịch bản thuyết trình
 
-Kịch bản đi theo bộ slide `slides/main.pdf` (29 trang). Tổng thời gian khoảng **20 phút**, cộng phần hỏi đáp. Mỗi slide
+Kịch bản đi theo bộ slide `slides/main.pdf` (32 trang). Tổng thời gian khoảng **22 phút**, cộng phần hỏi đáp. Mỗi slide
 có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thuộc từng chữ) và ghi chú cho người trình bày. Phần thuật toán
-(slide 8–17) là trọng tâm, nên chiếm gần nửa thời gian.
+(slide 8–20) là trọng tâm, nên chiếm gần nửa thời gian.
 
 | Phần | Slide | Thời gian |
 |---|---|---|
 | Mở đầu, bài toán | 1–7 | 5 phút |
-| Heuristic calib-ifair | 8–17 | 8 phút |
-| Thí nghiệm, kết quả | 18–24 | 5 phút |
-| Hệ thống, tổng kết | 25–29 | 2 phút |
+| Heuristic calib-ifair | 8–20 | 10 phút |
+| Thí nghiệm, kết quả | 21–27 | 5 phút |
+| Hệ thống, tổng kết | 28–32 | 2 phút |
 
 ---
 
@@ -88,7 +88,19 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > Mỗi khe, heuristic chia làm ba khối: liên kết và tính SINR, chia băng ifair, di chuyển calib, rồi áp quyết định xuống
 > tầng MAC.
 
-## Slide 9. Bài toán mỗi khe (Pₙ) (40 giây)
+## Slide 9. Ý tưởng của calib-ifair trong một hình (50 giây)
+
+> Trước khi vào công thức, nhóm xin tóm ý tưởng bằng ba hình. Thứ nhất, **nhìn đúng ai đang yếu**: một người đứng giữa
+> hai UAV có thể ở gần UAV phục vụ, nhưng lại bị UAV kia gây nhiễu nặng. Thuật toán tính SINR có nhiễu, không chỉ nhìn
+> khoảng cách.
+>
+> Thứ hai, **chia băng theo nhóm**: băng thông của mỗi UAV giống một chiếc bánh. Người critical có kênh xấu nhận miếng
+> lớn nhất, để cuối cùng tốc độ của ba nhóm theo tỷ lệ 1 : 2 : 4.
+>
+> Thứ ba, **dịch UAV về chỗ có lợi**: UAV thử 17 hướng di chuyển nhỏ, chọn hướng làm hàm mục tiêu tăng nhiều nhất.
+> Ba bước này lặp lại mỗi 0.25 giây, rồi phần băng được đưa xuống tầng MAC.
+
+## Slide 10. Bài toán mỗi khe (Pₙ) (40 giây)
 
 > Thay vì giải cả chu kỳ, heuristic giải tham lam từng khe. Tốc độ thật được thay bằng tốc độ dự đoán, tính theo đường
 > cong LTE có nhiễu.
@@ -96,7 +108,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > Có thêm một ràng buộc thực tế: không nhận nước đi làm một UAV mất hết người dùng. Khi chưa có ràng buộc này, thuật toán
 > hay "tắt" một UAV để giảm nhiễu tức thời và rơi vào nghiệm kém: ở seed 1, tổng tốc độ chỉ còn 13 Mbps so với 43 Mbps.
 
-## Slide 10. Lưu đồ calib-ifair (40 giây)
+## Slide 11. Lưu đồ calib-ifair (40 giây)
 
 > Đây là toàn bộ luồng một khe, gồm sáu bước. Nối người dùng với UAV có kênh mạnh nhất. Tính SINR có nhiễu. Chia băng
 > ifair theo trọng số. Với từng UAV, nếu còn xa tâm cụm thì bay thẳng tới. Nếu đã tới thì thử 17 nước đi và giữ nước
@@ -104,14 +116,14 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 >
 > Mỗi khe chỉ tốn khoảng 5.5 mili giây với 3 UAV và 20 người dùng, rất nhỏ so với khe 250 mili giây.
 
-## Slide 11. Khối 1: liên kết và SINR có nhiễu (40 giây)
+## Slide 12. Khối 1: liên kết và SINR có nhiễu (40 giây)
 
 > Khối đầu tiên nối người dùng với UAV có độ lợi kênh lớn nhất, rồi tính SINR có tính nhiễu từ mọi UAV đang phục vụ.
 >
 > Đây là điểm khác baseline. Baseline maxmin tính SNR không có nhiễu, nên một người đứng giữa hai UAV trông như kênh tốt
 > nhưng thật ra bị nhiễu nặng. calib-ifair tính đúng nhiễu nên biết ai thật sự yếu để bù băng thông.
 
-## Slide 12. Khối 2: chia băng ifair (50 giây)
+## Slide 13. Khối 2: chia băng ifair (50 giây)
 
 > Công thức chia băng là b_k tỷ lệ với trọng số chia cho hiệu suất phổ. Kết quả là trong một UAV, tốc độ chia cho
 > trọng số của mọi người bằng nhau: đây là max-min có trọng số. Người dùng critical luôn nhanh gấp 4 lần normal cùng
@@ -121,7 +133,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > thuộc kênh, nên người critical ở rìa vẫn chậm. Nhóm cố ý chia để **tốc độ** tỷ lệ với trọng số; hàm tổng log chỉ dùng
 > để chọn vị trí UAV.
 
-## Slide 13. Khối 2: ví dụ số (60 giây)
+## Slide 14. Khối 2: ví dụ số (60 giây)
 
 > Để dễ hình dung, xét một UAV có ba người dùng. Normal có kênh tốt nhất, hiệu suất phổ 3. Critical có kênh xấu nhất, 1.
 >
@@ -132,7 +144,13 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 
 *Ghi chú: nói rõ đây là ví dụ minh họa, số do nhóm tự đặt, không phải số đo.*
 
-## Slide 14. Khối 3: di chuyển calib (50 giây)
+## Slide 15. Khối 2: so sánh ba cách chia băng bằng biểu đồ (40 giây)
+
+> Biểu đồ này vẽ lại ví dụ vừa rồi. Cột xám là chia đều: người normal kênh tốt nhanh nhất, critical chậm nhất. Cột xanh
+> là max-min: ai cũng như nhau. Cột đỏ là ifair: critical cao nhất, đúng tỷ lệ 1 : 2 : 4. Tổng tốc độ giảm, đó là giá
+> phải trả cho việc ưu tiên.
+
+## Slide 16. Khối 3: di chuyển calib (50 giây)
 
 > Khối thứ ba điều khiển vị trí UAV, gồm hai pha. Khi UAV còn xa tâm cụm người dùng, nó bay thẳng tới tâm cụm. Khi đã
 > tới, nó thử 17 nước đi: đứng yên, hoặc 8 hướng với 2 cỡ bước 5 m và 1.25 m. Với mỗi nước đi, thuật toán tính lại hàm
@@ -141,13 +159,24 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > Các UAV được xét lần lượt, UAV sau thấy vị trí mới của UAV trước. Nước đi nào làm một UAV mất hết người dùng thì bị
 > loại.
 
-## Slide 15. Mã giả (1/2) (40 giây)
+## Slide 17. Thuật toán chạy thế nào (60 giây)
+
+> Đây là mô phỏng thật trên cùng một kịch bản, hàng trên là kmeans-equal, hàng dưới là calib-ifair, ở các khe 0, 10 và
+> 59. Hình thoi viền đỏ là người critical, dấu nhân là người chưa đạt chất lượng dịch vụ.
+>
+> Ở khe 0 hai thuật toán giống nhau. Tới khe 59, kmeans-equal chỉ có 1 trên 3 người critical đạt chất lượng. Với
+> calib-ifair, UAV màu xanh dịch xuống giữa hai cụm người dùng và cả 3 người critical đều đạt, trong khi throughput tổng
+> gần như bằng nhau, 30 so với 29 Mbps.
+
+*Ghi chú: chỉ tay vào hình thoi đỏ ở góc dưới phải của hai hàng để hội đồng thấy khác biệt.*
+
+## Slide 18. Mã giả (1/2) (40 giây)
 
 > Đây là hai hàm hỗ trợ. Hàm thứ nhất tính hiệu suất phổ dự đoán: tính độ lợi kênh, liên kết, rồi SINR có nhiễu. UAV
 > không có người dùng thì không phát, nên không gây nhiễu. Hàm thứ hai tính tiện ích U: với cách chia ifair, tốc độ dự
 > đoán của mỗi người là B nhân trọng số chia cho tải của UAV.
 
-## Slide 16. Mã giả (2/2) (40 giây)
+## Slide 19. Mã giả (2/2) (40 giây)
 
 > Đây là thủ tục một khe. Đầu tiên gán trọng số theo nhóm, tính SINR, chia băng ifair. Sau đó chạy k-means, và với từng
 > UAV, hoặc bay về tâm cụm, hoặc thử 16 nước đi quanh vị trí hiện tại. Điều kiện chấp nhận là tiện ích tăng và số UAV có
@@ -155,7 +184,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 >
 > Độ phức tạp mỗi khe là bậc M bình phương nhân K, đủ nhanh để chạy thời gian thực.
 
-## Slide 17. Áp quyết định ở tầng MAC và kiểm chứng ba tầng (50 giây)
+## Slide 20. Áp quyết định ở tầng MAC và kiểm chứng ba tầng (50 giây)
 
 > Một phát hiện quan trọng: nếu dùng scheduler PF mặc định của LTE, nó tự chia lại tài nguyên và quyết định chia băng
 > của thuật toán mất tác dụng. Vì vậy nhóm viết thêm scheduler Weighted PF trong NS-3, nhận b_k làm trọng số.
@@ -163,7 +192,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > Để tin được số đo, nhóm kiểm chứng ba tầng: lý thuyết, NS-3 với liên kết lý tưởng, và NS-3 LTE đầy đủ. Lý thuyết khớp
 > tầng giữa dưới 1% trên 105 lần chạy, nghĩa là mô hình đúng; chênh lệch còn lại là do giao thức LTE.
 
-## Slide 18. Các thuật toán tham chiếu (45 giây)
+## Slide 21. Các thuật toán tham chiếu (45 giây)
 
 > Nhóm so sánh với các baseline sau. Equal đứng yên hoặc bay về tâm cụm rồi chia đều băng, đại diện cho tối đa hiệu quả.
 > Maxmin chia băng để mọi người có tốc độ bằng nhau, đại diện cho tối đa công bằng.
@@ -173,25 +202,25 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 >
 > Ngoài ra có hai bản để tách nguồn gốc lợi ích: bỏ trọng số nhóm, và thay LTE bằng Shannon.
 
-## Slide 19. Cài đặt hệ thống (40 giây)
+## Slide 22. Cài đặt hệ thống (40 giây)
 
 > Mô hình và thuật toán viết bằng Python. Mô phỏng mạng dùng NS-3 phiên bản 3.47 với module LTE. Quy trình đo gồm bốn
 > bước: thuật toán ra quyết định, ghi thành kế hoạch, NS-3 phát lại kế hoạch với eNB bay thật, handover và lưu lượng UDP,
 > rồi đo từng người dùng từng khe. Mỗi thí nghiệm lưu kèm cấu hình, chạy lại cho kết quả trùng.
 
-## Slide 20. Thông số thí nghiệm (30 giây)
+## Slide 23. Thông số thí nghiệm (30 giây)
 
 > Thông số chính: 3 UAV, 20 người dùng gồm 3 critical, 5 important, 12 normal; băng 10 MHz, công suất 1 W; mỗi lần chạy
 > 60 khe; lưu lượng mỗi người từ 0.5 đến 4 Mbps; 3 seed, mọi thuật toán dùng cùng seed.
 
-## Slide 21. Thiết lập thí nghiệm (20 giây)
+## Slide 24. Thiết lập thí nghiệm (20 giây)
 
 > Slide này tóm tắt lại môi trường đo và bảng sáu thuật toán. Các chỉ số gồm throughput, tỷ lệ đạt chất lượng dịch vụ
 > theo nhóm, độ trễ và tỉ lệ mất gói.
 
-*Ghi chú: nếu thiếu thời gian, bỏ qua slide này vì đã nói ở slide 18–20.*
+*Ghi chú: nếu thiếu thời gian, bỏ qua slide này vì đã nói ở slide 21–23.*
 
-## Slide 22. Kết quả trên NS-3 LTE (50 giây)
+## Slide 25. Kết quả trên NS-3 LTE (50 giây)
 
 > Đây là kết quả đo bằng NS-3 LTE. Biểu đồ đầu tiên là tỷ lệ người dùng critical đạt chất lượng dịch vụ. calib-ifair,
 > đường đỏ đậm, giữ được 95 đến 100% ở mọi mức tải. Các baseline không biết nhóm tụt xuống 59 đến 69%. Max-min có trọng
@@ -200,7 +229,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > Biểu đồ cuối là throughput tổng: ở tải cao, calib-ifair thấp hơn các baseline không biết nhóm. Đây là cái giá nhóm sẽ
 > nói ở phần sau.
 
-## Slide 23. So sánh chi tiết (60 giây)
+## Slide 26. So sánh chi tiết (60 giây)
 
 > Xem số cụ thể ở tải 2 và 4 Mbps mỗi người. So với max-min có trọng số, calib-ifair cho tỷ lệ critical đạt QoS 97% so
 > với 87%; min throughput của critical cao hơn; và đặc biệt nhóm normal được đối xử tốt hơn hẳn, 0.95 so với 0.49 Mbps.
@@ -211,7 +240,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > Nhóm cũng xin nói thẳng chỗ calib-ifair không thắng: ở tải 4 Mbps, độ trễ critical của max-min có trọng số thấp hơn
 > một chút, 652 so với 720 mili giây; và throughput tổng thấp hơn baseline không biết nhóm khoảng 11%.
 
-## Slide 24. Lợi ích đến từ đâu (50 giây)
+## Slide 27. Lợi ích đến từ đâu (50 giây)
 
 > Để biết lợi ích đến từ đâu, nhóm bỏ từng yếu tố. Bỏ trọng số nhóm thì tỷ lệ critical đạt QoS rơi xuống 59%. Bỏ việc
 > tính nhiễu và tinh chỉnh vị trí, tức là max-min có trọng số, còn 86%. Bỏ khối chia băng hay khối di chuyển đều làm kết
@@ -221,7 +250,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > cong LTE giúp **dự đoán** số đo NS-3 rất tốt, nhưng **không** làm thuật toán tốt hơn. Lợi ích thật đến từ trọng số
 > nhóm, tính nhiễu, tinh chỉnh vị trí và áp ở tầng MAC.
 
-## Slide 25. Trạm điều khiển thời gian thực (40 giây)
+## Slide 28. Trạm điều khiển thời gian thực (40 giây)
 
 > Ngoài thí nghiệm, nhóm xây một trạm điều khiển thời gian thực. Dashboard web hiển thị bản đồ, các chỉ số và bảng nhóm
 > người dùng; có thể lái tay UAV, nhấp lên bản đồ để UAV bay tới, đổi 13 tham số khi đang chạy, và bấm "Ghi và đo" để
@@ -230,7 +259,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 *Ghi chú: nếu có demo trực tiếp, chạy `python -m uavsim.live --gazebo`, chọn UAV 0, nhấp một góc bản đồ cho UAV bay đi,
 chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và bảng nhóm user thay đổi.*
 
-## Slide 26. Đánh đổi và hạn chế (40 giây)
+## Slide 29. Đánh đổi và hạn chế (40 giây)
 
 > Về đánh đổi: ở tải cao, throughput tổng thấp hơn baseline không biết nhóm khoảng 11%, và nhóm normal chịu độ trễ cao
 > hơn, nhưng tốc độ tối thiểu của họ vẫn cao hơn mọi baseline. Mức đánh đổi chỉnh được bằng trọng số.
@@ -238,7 +267,7 @@ chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và
 > Về hạn chế: đây là heuristic nên không đảm bảo tối ưu toàn cục; ngưỡng tốc độ tối thiểu chưa là ràng buộc cứng; công
 > suất và độ cao chưa được tối ưu; nhóm mới đánh giá một cấu hình với 3 seed, và chưa có baseline tối ưu lồi.
 
-## Slide 27. Kết luận (40 giây)
+## Slide 30. Kết luận (40 giây)
 
 > Tóm lại, nhóm rút ra sáu kết luận đo trên NS-3. Mô hình hàng đợi đúng ở mức gói tin. Giá trị tốc độ theo Shannon lạc
 > quan, NS-3 chỉ đạt 25–40%. Chia băng chỉ có tác dụng khi áp ở tầng MAC. calib-ifair ưu tiên được người dùng critical,
@@ -247,11 +276,11 @@ chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và
 >
 > Hướng phát triển gồm ràng buộc cứng cho nhóm critical, baseline tối ưu lồi, mở rộng thí nghiệm và học tăng cường.
 
-## Slide 28. Tài liệu tham khảo (10 giây)
+## Slide 31. Tài liệu tham khảo (10 giây)
 
 > Đây là các tài liệu nhóm tham khảo chính.
 
-## Slide 29. Cảm ơn (10 giây)
+## Slide 32. Cảm ơn (10 giây)
 
 > Nhóm em xin cảm ơn thầy cô và các bạn đã lắng nghe. Nhóm rất mong nhận được câu hỏi và góp ý.
 

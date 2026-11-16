@@ -19,6 +19,8 @@
 \usepackage{tabularx}
 \usepackage{amsmath,amssymb}
 \usepackage{url}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
 \graphicspath{{../docs/figures/}{../experiments/results/}}
 
 % =================================================
@@ -376,6 +378,56 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 \end{frame}
 
 % =================================================
+% Ý TƯỞNG TRỰC QUAN
+% =================================================
+\begin{frame}{Ý tưởng của calib-ifair trong một hình}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+  % ---- Panel 1: nhìn thấy nhiễu
+  \begin{scope}[shift={(0,0)}]
+    \node[font=\small\bfseries,text=MainBlue] at (2,3.9) {1. Nhìn đúng ai đang yếu};
+    \fill[U0] (0.6,3) -- ++(0.35,0) -- ++(-0.175,0.3) -- cycle;
+    \fill[orange] (3.0,3) -- ++(0.35,0) -- ++(-0.175,0.3) -- cycle;
+    \node[font=\scriptsize] at (0.77,3.5) {UAV A};
+    \node[font=\scriptsize] at (3.17,3.5) {UAV B};
+    \fill[black!70] (1.9,0.7) circle (3pt);
+    \draw[-{Stealth},thick,Good] (0.8,2.95) -- (1.85,0.8) node[midway,left,font=\scriptsize] {tín hiệu};
+    \draw[-{Stealth},thick,Bad,dashed] (3.15,2.95) -- (1.95,0.8) node[midway,right,font=\scriptsize] {nhiễu};
+    \node[align=center,font=\scriptsize] at (2,0.1) {Tính SINR \textbf{có nhiễu},\\không chỉ khoảng cách};
+  \end{scope}
+  % ---- Panel 2: chia bánh theo trọng số
+  \begin{scope}[shift={(4.8,0)}]
+    \node[font=\small\bfseries,text=MainBlue] at (2,3.9) {2. Chia băng theo nhóm};
+    \fill[MainBlue!25] (2,1.8) -- ++(0:1.3) arc (0:22:1.3) -- cycle;
+    \fill[orange!45] (2,1.8) -- ++(22:1.3) arc (22:90:1.3) -- cycle;
+    \fill[Bad!55] (2,1.8) -- ++(90:1.3) arc (90:360:1.3) -- cycle;
+    \node[font=\scriptsize] at (3.6,2.05) {normal};
+    \node[font=\scriptsize] at (3.2,3.2) {important};
+    \node[font=\scriptsize,text=white] at (1.5,1.4) {critical};
+    \node[align=center,font=\scriptsize] at (2,-0.25) {Hình tròn: phần băng thông (ví dụ số);\\critical kênh xấu được nhiều băng nhất,\\tốc độ thành tỷ lệ $w = 1:2:4$};
+  \end{scope}
+  % ---- Panel 3: dịch UAV
+  \begin{scope}[shift={(9.6,0)}]
+    \node[font=\small\bfseries,text=MainBlue] at (2,3.9) {3. Dịch UAV về chỗ có lợi};
+    \foreach \a in {0,45,...,315} \draw[-{Stealth},Accent!80] (2,2.2) -- ++(\a:0.6);
+    \fill[U0] (1.82,2.05) -- ++(0.36,0) -- ++(-0.18,0.3) -- cycle;
+    \draw[-{Stealth},very thick,Good] (2,2.2) -- ++(-45:0.95);
+    \fill[Bad!70,draw=Bad] (2.9,1.0) -- ++(0.15,0.15) -- ++(0.15,-0.15) -- ++(-0.15,-0.15) -- cycle;
+    \fill[black!50] (1.2,1.1) circle (2.5pt); \fill[black!50] (1.5,0.85) circle (2.5pt);
+    \node[align=center,font=\scriptsize] at (2,0.1) {Thử 17 nước đi, giữ nước\\tăng $\sum w\log r$ nhiều nhất};
+  \end{scope}
+  \draw[arr] (3.95,2) -- (4.75,2);
+  \draw[arr] (8.75,2) -- (9.55,2);
+\end{tikzpicture}
+
+\vspace{3mm}
+\begin{beamercolorbox}[sep=2mm,rounded=true]{block title}
+  \small
+  Mỗi khe 0.25 s lặp lại ba bước trên, rồi đưa phần băng $b_k$ xuống \textbf{scheduler WPF ở tầng MAC} để LTE thực thi đúng.
+\end{beamercolorbox}
+\end{frame}
+
+% =================================================
 % SLIDE 8. BÀI TOÁN MỖI KHE
 % =================================================
 \begin{frame}{Bài toán mỗi khe mà heuristic giải (P$_n$)}
@@ -460,14 +512,29 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
   \end{block}
 \end{column}
 \begin{column}{0.44\textwidth}
-  \begin{block}{Khác baseline ở đâu}
-    \small
-    \begin{itemize}
-      \item Baseline \texttt{maxmin} tính \textbf{SNR không nhiễu}: user ở giữa hai UAV trông như kênh tốt, thật ra bị nhiễu nặng.
-      \item calib-ifair tính \hl{SINR có nhiễu}: biết đúng user nào thật sự yếu để bù băng.
-      \item UAV không có user thì không phát, nên không gây nhiễu.
-    \end{itemize}
-  \end{block}
+  \centering
+  \begin{tikzpicture}[x=1cm,y=1cm]
+    \fill[U0] (0,3) -- ++(0.4,0) -- ++(-0.2,0.35) -- cycle; \node[font=\scriptsize] at (0.2,3.6) {UAV A (phục vụ)};
+    \fill[orange] (4,3) -- ++(0.4,0) -- ++(-0.2,0.35) -- cycle; \node[font=\scriptsize] at (4.2,3.6) {UAV B};
+    \fill[Bad!70,draw=Bad] (2.05,0.6) -- ++(0.15,0.15) -- ++(0.15,-0.15) -- ++(-0.15,-0.15) -- cycle;
+    \node[font=\scriptsize] at (2.2,0.15) {user critical ở giữa};
+    \draw[-{Stealth},thick,Good] (0.25,2.95) -- (2.1,0.8);
+    \draw[-{Stealth},thick,Bad,dashed] (4.15,2.95) -- (2.3,0.8);
+  \end{tikzpicture}
+
+  \scriptsize
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    & \textbf{maxmin} & \hl{calib-ifair}\\
+    \midrule
+    Nhìn thấy & SNR, bỏ nhiễu & SINR, có nhiễu\\
+    Đánh giá user & ``kênh tốt'' & \alert{``kênh yếu''}\\
+    Kết quả & ít băng & \good{được bù băng}\\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{1mm}
+  UAV không có user thì không phát, nên không gây nhiễu.
 \end{column}
 \end{columns}
 \end{frame}
@@ -547,6 +614,42 @@ b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}
 \end{frame}
 
 % =================================================
+% KHỐI 2 - BIỂU ĐỒ
+% =================================================
+\begin{frame}{Khối 2: so sánh ba cách chia băng bằng biểu đồ}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.62\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  ybar, bar width=9pt, width=\linewidth, height=6.2cm,
+  symbolic x coords={normal,important,critical}, xtick=data,
+  ymin=0, ymax=11.5, ylabel={Tốc độ (Mbps)}, ylabel style={font=\small},
+  legend style={at={(0.5,1.03)},anchor=south,legend columns=3,font=\scriptsize,draw=none},
+  nodes near coords, nodes near coords style={font=\tiny},
+  every axis plot/.append style={draw=none},
+  tick label style={font=\small}, enlarge x limits=0.22]
+\addplot[fill=black!25] coordinates {(normal,10.0) (important,6.67) (critical,3.33)};
+\addplot[fill=Accent!60] coordinates {(normal,5.45) (important,5.45) (critical,5.45)};
+\addplot[fill=Bad!75] coordinates {(normal,1.88) (important,3.75) (critical,7.5)};
+\legend{Chia đều, max-min, ifair}
+\end{axis}
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.35\textwidth}
+  \small
+  Cùng ví dụ trang trước: một UAV 10 MHz, kênh của critical xấu nhất ($\SE = 1$), của normal tốt nhất ($\SE = 3$).
+  \begin{itemize}
+    \item \textbf{Chia đều}: tốc độ theo kênh, critical \alert{chậm nhất}.
+    \item \textbf{max-min}: ai cũng như nhau, critical \textbf{không} được ưu tiên.
+    \item \hl{ifair}: critical nhanh nhất, đúng tỷ lệ \hl{1 : 2 : 4}.
+  \end{itemize}
+  \scriptsize Giá phải trả: tổng 20.0 $\rightarrow$ 13.1 Mbps. Số liệu minh họa, không phải số đo.
+\end{column}
+\end{columns}
+\end{frame}
+
+% =================================================
 % SLIDE 13. KHỐI 3
 % =================================================
 \begin{frame}{Khối 3: di chuyển calib}
@@ -590,6 +693,17 @@ b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}
   {\scriptsize 17 ứng viên với $V_{\max}=20$ m/s, $\Delta t=0.25$ s. Mỗi ứng viên tính lại $U$ toàn mạng.}
 \end{column}
 \end{columns}
+\end{frame}
+
+% =================================================
+% THUẬT TOÁN CHẠY THẾ NÀO
+% =================================================
+\begin{frame}{Thuật toán chạy thế nào: cùng kịch bản, hai cách làm}
+\centering
+\includegraphics[height=0.78\textheight]{snapshots.png}
+
+\scriptsize Mô phỏng, 2 Mbps/user, seed 1. Hàng trên kmeans-equal: tới khe 59 chỉ \alert{1/3 user critical} đạt QoS (dấu $\times$).
+Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 3 user critical} đạt QoS, throughput tương đương (30 so với 29 Mbps).
 \end{frame}
 
 % =================================================
