@@ -27,7 +27,7 @@ so sánh mô hình vs NS-3, vẽ biểu đồ
 
 Tài liệu chi tiết về mô hình, công thức, thông số và thuật toán:
 [`docs/THIET_KE_MO_PHONG.md`](docs/THIET_KE_MO_PHONG.md). Đặc tả yêu cầu:
-`dac_ta_trien_khai_claude_multi_uav.docx`.
+`dac_ta_trien_khai_multi_uav.docx`.
 
 > Phiên bản trước của dự án (dashboard web + NS-3 Wi-Fi/UDP + Gazebo, phân bổ ngân sách lưu lượng Equal/Weighted)
 > đã được thay thế. Mã cũ không còn trong thư mục này.
