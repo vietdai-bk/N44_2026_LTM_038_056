@@ -170,11 +170,11 @@ table.kpi tr:last-child td { border-bottom: 0; }
 
   <section class="strip" aria-label="Chỉ số tức thời">
     <div><div class="k">Thuật toán</div><div class="v" id="sAlgo" style="font-size:13px">–</div><div class="sub" id="sSlot">khe –</div></div>
-    <div><div class="k">Tổng rate</div><div class="v"><span id="sLte">–</span><span class="unit">Mbps</span></div><div class="sub" id="sSum">Shannon –</div></div>
-    <div><div class="k">Min rate</div><div class="v"><span id="sMin">–</span><span class="unit">Mbps</span></div><div class="sub" id="sMinS">Shannon –</div></div>
-    <div><div class="k">Coverage</div><div class="v"><span id="sCov">–</span><span class="unit">%</span></div><div class="sub" id="sJain">Jain –</div></div>
-    <div><div class="k">Throughput</div><div class="v"><span id="sThr">–</span><span class="unit">Mbps</span></div><div class="sub" id="sLoss">mất –</div></div>
-    <div><div class="k">Độ trễ</div><div class="v"><span id="sDelay">–</span><span class="unit">ms</span></div><div class="sub" id="sPow">bay – W</div></div>
+    <div><div class="k">Critical đạt QoS</div><div class="v"><span id="sQos">–</span><span class="unit">%</span></div><div class="sub" id="sQosSub">important – · normal –</div></div>
+    <div><div class="k">Min throughput critical</div><div class="v"><span id="sMinC">–</span><span class="unit">Mbps</span></div><div class="sub" id="sMinN">normal –</div></div>
+    <div><div class="k">Throughput</div><div class="v"><span id="sThr">–</span><span class="unit">Mbps</span></div><div class="sub" id="sOffer">gửi –</div></div>
+    <div><div class="k">Độ trễ</div><div class="v"><span id="sDelay">–</span><span class="unit">ms</span></div><div class="sub">trung bình mỗi gói</div></div>
+    <div><div class="k">Mất gói</div><div class="v"><span id="sLoss">–</span><span class="unit">%</span></div><div class="sub">gói bị bỏ / gói gửi</div></div>
   </section>
 
   <main class="work">
@@ -248,8 +248,8 @@ table.kpi tr:last-child td { border-bottom: 0; }
         </div>
       </section>
       <section class="charts">
-        <div class="card chart"><div class="card-h"><h2>Tổng rate</h2><div class="clegend"><span><i style="background:var(--text-3)"></i>Shannon</span><span><i style="background:var(--primary)"></i>LTE</span></div></div><canvas id="c_sum"></canvas></div>
-        <div class="card chart"><div class="card-h"><h2>Min rate</h2><div class="clegend"><span><i style="background:var(--text-3)"></i>Shannon</span><span><i style="background:var(--primary)"></i>LTE</span></div></div><canvas id="c_min"></canvas></div>
+        <div class="card chart"><div class="card-h"><h2>Throughput</h2><span class="clegend">Mbps</span></div><canvas id="c_sum"></canvas></div>
+        <div class="card chart"><div class="card-h"><h2>Min throughput</h2><div class="clegend"><span><i style="background:var(--danger)"></i>critical</span><span><i style="background:var(--text-3)"></i>normal</span></div></div><canvas id="c_min"></canvas></div>
         <div class="card chart"><div class="card-h"><h2>Độ trễ</h2><span class="clegend">ms</span></div><canvas id="c_delay"></canvas></div>
       </section>
     </div>
@@ -301,7 +301,7 @@ const color = j => css(`--s${(j % 8) + 1}`);
 const fmt = (v, d = 1) => v === null || v === undefined || !isFinite(v) ? "–" : (+v).toFixed(d);
 
 let ws, info = null, sel = null, prev = null, cur = null, tCur = 0, colorMode = "assoc", showHeat = false;
-const hist = { t: [], sum: [], lsum: [], min: [], lmin: [], delay: [] }, HMAX = 400;
+const hist = { t: [], thr: [], minc: [], minn: [], delay: [] }, HMAX = 400;
 
 // ---------------- WebSocket
 function connect() {
@@ -359,8 +359,7 @@ function renderUavs() {
   $("uavList").innerHTML = Array.from({ length: n }, (_, j) => {
     const manual = info.manual.includes(j), tgt = s && s.targets && s.targets[j];
     const badge = tgt ? `<span class="badge goto">BAY TỚI</span>` : manual ? `<span class="badge manual">LÁI TAY</span>` : `<span class="badge auto">TỰ ĐỘNG</span>`;
-    const pos = s && s.uav[j] ? `${fmt(s.uav[j][0], 0)}, ${fmt(s.uav[j][1], 0)} m` : "–";
-    const meta = s ? `${pos} · ${fmt(s.uav_speed[j], 1)} m/s · ${s.uav_load[j]} user` : "–";
+    const meta = s ? `phục vụ ${s.uav_load[j]} user` : "–";
     return `<div class="uav ${sel === j ? "sel" : ""}" data-j="${j}" role="button" tabindex="0" aria-pressed="${sel === j}">
       <span class="bar" style="background:${color(j)}"></span><div><div class="name">UAV ${j}</div><div class="meta">${meta}</div></div>${badge}</div>`;
   }).join("");
@@ -424,14 +423,14 @@ function onState(m) {
   if (cur && (cur.uav.length !== m.uav.length || cur.users.length !== m.users.length || m.t < cur.t)) resetHist();
   prev = cur; cur = m; tCur = performance.now();
   const push = (k, v) => { hist[k].push(v); if (hist[k].length > HMAX) hist[k].shift(); };
-  push("t", m.time); push("sum", m.sum_rate); push("lsum", m.lte_sum); push("min", m.min_rate); push("lmin", m.lte_min); push("delay", m.delay_ms);
+  const cl = m.classes || {}, pct = v => v === undefined ? "–" : fmt(100 * v, 0);
+  push("t", m.time); push("thr", m.throughput); push("minc", cl.min_critical ?? null); push("minn", cl.min_normal ?? null); push("delay", m.delay_ms);
   $("pTime").textContent = `T+ ${fmt(m.time, 1)} s`; $("sSlot").textContent = `khe ${m.t} · ${m.dt} s`;
-  $("sSum").textContent = `Shannon ${fmt(m.sum_rate)}`; $("sLte").textContent = fmt(m.lte_sum);
-  $("sMin").textContent = fmt(m.lte_min, 2); $("sMinS").textContent = `Shannon ${fmt(m.min_rate, 2)}`;
-  $("sCov").textContent = fmt(100 * m.lte_coverage, 0); $("sJain").textContent = `Jain ${fmt(m.lte_jain, 2)}`;
+  $("sQos").textContent = pct(cl.sat_critical); $("sQosSub").textContent = `important ${pct(cl.sat_important)}% · normal ${pct(cl.sat_normal)}%`;
+  $("sMinC").textContent = fmt(cl.min_critical, 2); $("sMinN").textContent = `normal ${fmt(cl.min_normal, 2)} Mbps`;
   $("sThr").textContent = fmt(m.throughput);
-  $("sDelay").textContent = fmt(m.delay_ms, 0); $("sLoss").textContent = `mất ${m.loss === null ? "–" : fmt(100 * m.loss, 1) + "%"}`;
-  $("sPow").textContent = `bay ${fmt(m.energy_w, 0)} W`;
+  $("sOffer").textContent = info && info.config.demand_mbps ? `gửi ${fmt(info.config.demand_mbps * m.users.length, 1)} Mbps` : "";
+  $("sDelay").textContent = fmt(m.delay_ms, 0); $("sLoss").textContent = m.loss === null ? "–" : fmt(100 * m.loss, 1);
   if (info) { setPill("pRec", "danger", `Ghi ${m.recorded} khe`); if (info.measure && info.measure.status === "recording") $("mProg").style.width = `${Math.min(100, 100 * m.recorded / info.measure.slots)}%`; }
   if (m.t % 2 === 0) { renderUavs(); renderUsers(); drawCharts(); }
 }
@@ -591,7 +590,7 @@ map.addEventListener("mousemove", e => {
   cur.users.forEach((q, k) => { const d = Math.hypot(q[0] - p[0], q[1] - p[1]) * view.S; if (d < bd) { bd = d; best = k; } });
   const u = cur.uav.findIndex(q => Math.hypot(q[0] - p[0], q[1] - p[1]) * view.S < 14);
   let text = `(${fmt(p[0], 0)}, ${fmt(p[1], 0)}) m`;
-  if (u >= 0) text = `UAV ${u} · ${fmt(cur.uav_speed[u], 1)} m/s · ${cur.uav_load[u]} user`;
+  if (u >= 0) text = `UAV ${u} · phục vụ ${cur.uav_load[u]} user`;
   else if (bd < 10) text = `#${best} ${CLS_NAME[cur.user_class[best]]} · ${fmt(cur.sinr_db[best], 1)} dB · ${fmt(cur.lte_rate[best], 2)} Mbps`;
     tip.textContent = text; tip.style.display = "block";
   tip.style.left = Math.min(p[2] + 14, map.clientWidth - tip.offsetWidth - 6) + "px"; tip.style.top = Math.max(6, p[3] - 30) + "px";
@@ -623,9 +622,8 @@ function drawChart(id, series, unit) {
   }
 }
 function drawCharts() {
-  const grey = css("--text-3"), blue = css("--primary");
-  drawChart("c_sum", [{ data: hist.sum, color: grey }, { data: hist.lsum, color: blue }]);
-  drawChart("c_min", [{ data: hist.min, color: grey }, { data: hist.lmin, color: blue }]);
+  drawChart("c_sum", [{ data: hist.thr, color: css("--primary") }]);
+  drawChart("c_min", [{ data: hist.minc, color: css("--danger") }, { data: hist.minn, color: css("--text-3") }]);
   drawChart("c_delay", [{ data: hist.delay, color: css("--s2") }]);
 }
 addEventListener("resize", () => cur && drawCharts());

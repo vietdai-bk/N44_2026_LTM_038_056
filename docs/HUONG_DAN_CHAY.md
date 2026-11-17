@@ -187,8 +187,8 @@ suy 20 lần mỗi giây, nên chuyển động liền mạch.
 | Khu vực | Chức năng |
 |---|---|
 | Thanh trạng thái | Kết nối, đang chạy hay tạm dừng, Gazebo, đang ghi, thời gian mô phỏng |
-| Dải chỉ số | Tổng rate theo Shannon (như paper) và theo LTE dự đoán (ánh xạ đo từ NS-3), min rate, coverage, Jain, throughput, độ trễ, mất gói, công suất bay |
-| Đội UAV | Vị trí, tốc độ, số user của từng UAV; trạng thái tự động, lái tay, bay tới. Nhấp để chọn |
+| Dải chỉ số | Các chỉ số kết quả: tỷ lệ critical đạt QoS (kèm important, normal), min throughput nhóm critical (kèm normal), throughput (kèm lưu lượng gửi), độ trễ, mất gói |
+| Đội UAV | Số user mỗi UAV đang phục vụ; trạng thái tự động, lái tay, bay tới. Nhấp để chọn |
 | Lái tay | W A S D, phím mũi tên hoặc nút điều hướng; thanh tốc độ; nút trả về tự động. Nhấp lên bản đồ để UAV đang chọn bay tới điểm đó rồi dừng |
 | Bản đồ | UAV, user (màu theo UAV hoặc theo SINR, to theo rate, hình theo nhóm: tròn normal, vuông important, thoi critical, dấu × khi dưới `r_min`), liên kết, đường bay tới đích; tùy chọn nền bản đồ SINR; di chuột để xem SINR và rate của từng user |
 | Tham số kịch bản | Số UAV (1–8), số user (1–60), độ cao, công suất, lưu lượng, vận tốc tối đa, user đi bộ, seed, môi trường, phân bố user, bật tắt nhiễu, tỷ lệ user important và critical. Bấm "Áp dụng" để dựng lại kịch bản, Gazebo cập nhật ngay không cần khởi động lại |
