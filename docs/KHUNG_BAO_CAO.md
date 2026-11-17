@@ -5,6 +5,10 @@ và hình nào đặt ở đâu, chú thích hình, và câu kết luận mà ch
 trong `experiments/results/` (đối chiếu lần cuối ngày 17/11/2026). Nội dung chi tiết để chép và biên tập lại nằm ở
 [`BAO_CAO_DU_AN.md`](BAO_CAO_DU_AN.md); tài liệu này chỉ chỉ ra *cần lấy gì, đặt ở đâu*.
 
+**Trọng tâm của báo cáo:** thuật toán calib-ifair (cấp phát có ưu tiên người dùng) và bằng chứng ở mức gói tin rằng nó
+tốt hơn baseline. Mô hình, NS-3, kiểm chứng ba tầng, scheduler WPF và trạm điều khiển là công cụ phục vụ mục tiêu đó.
+Mọi chương nên kể theo mạch này.
+
 **Quy ước chung**
 
 - Báo cáo không quá 100 trang A4, không chứa code; dùng mã giả, lưu đồ, công thức và bảng. Dòng lệnh chỉ để ở phụ lục
@@ -45,8 +49,8 @@ báo cáo), không ghi chung chung.
 
 ## Chương 2. Tính cấp thiết và ý nghĩa
 
-**Phải chứng minh:** có một khoảng trống thật giữa các bài báo (chỉ tính bằng Shannon) và mạng thật (giao thức LTE),
-và nhóm lấp khoảng trống đó.
+**Phải chứng minh:** cần một thuật toán ưu tiên được user quan trọng (heuristic hiện có coi mọi user như nhau, quyết
+định theo SNR không nhiễu), và cải tiến thuật toán phải được chứng minh ở mức gói tin vì lý thuyết Shannon lạc quan.
 
 | Mục | Nội dung |
 |---|---|
@@ -300,17 +304,17 @@ hình hiệu chỉnh dự đoán NS-3 với sai số khoảng ±3%.
 
 ### 6.7. Chia băng ở tầng MAC (E6)
 
-**Bảng 6.10. maxmin với WPF so với equal (số đo, 3 seed).**
+**Bảng 6.10. maxmin với WPF so với equal (số đo, 3 seed; trong ngoặc: lý thuyết dự đoán).**
 
 | | Mbps/user | Min throughput equal → maxmin | Throughput tổng |
 |---|---|---|---|
-| hover | 1 | 0.58 → 0.70 (+21%, 3/3) | 18.5 → 19.0 |
-| hover | 2 | 0.30 → 0.36 (+20%, 3/3) | 22.6 → 22.4 |
-| hover | 4 | 0.26 → 0.30 (+15%, 3/3) | 27.8 → 26.5 |
-| kmeans | 1–4 | thay đổi < 2% | gần như không đổi |
+| hover | 1 | 0.57 → 0.67 (+18%, 3/3; dự đoán +18%) | 18.5 → 19.0 |
+| hover | 4 | 0.26 → 0.30 (+16%, 3/3; dự đoán +18%) | 27.8 → 26.5 |
+| kmeans | 1 | 0.84 → 0.85 (+1%, 3/3; dự đoán +2%) | 19.6 → 19.6 |
+| kmeans | 4 | 0.67 → 0.74 (+11%, 3/3; dự đoán +11%) | 49.9 → 49.7 |
 
-**Kết luận:** lý thuyết dự đoán +18%, WPF đo được +15–21%. Chia băng có tác dụng **chỉ khi áp ở tầng MAC**; ở tầng ứng
-dụng thì PF xóa mất (mục 6.3).
+**Kết luận:** maxmin thắng ở cả 18 cặp, mức tăng bám sát lý thuyết. Chia băng có tác dụng **chỉ khi áp ở tầng MAC**; ở
+tầng ứng dụng thì PF xóa mất (mục 6.3). Với kmeans, tác dụng chỉ rõ khi mạng đã nghẽn.
 
 ### 6.8. Kiểm chứng ba tầng (E7)
 
@@ -576,7 +580,7 @@ chiếu lại với bản gốc, và nên bổ sung vài bài báo gần đây (
 | 15 | Vì sao chênh lệch | Shannon → 3GPP → trần → AMC; NS-3 bằng 25–40% Shannon | Hình 11 |
 | 16 | Độ trễ, mất gói | Lý thuyết lạc quan 3–9 lần; ba nguyên nhân | Hình 12 |
 | 17 | Ba tầng | Lý thuyết khớp NS-3 lý tưởng dưới 1% | Hình 13 |
-| 18 | Chia băng ở tầng MAC | WPF tăng min throughput 15–21% | |
+| 18 | Chia băng ở tầng MAC | WPF tăng min throughput 16–18% (hover), khớp dự đoán | |
 | 18b | Thuật toán đề xuất | Tính nhiễu khi chia băng, áp ở MAC; min ×2 trên NS-3 LTE | Hình 15 |
 | 18c | Ba nhóm user | Critical đạt QoS 96–97% so với 59–69% (không biết nhóm) và 86–87% (max-min có trọng số); tổng giảm 4–12%; LTE hay Shannon như nhau | Hình 16 |
 | 19 | Demo | Dashboard và Gazebo, lái tay | Hình 6, 7 |

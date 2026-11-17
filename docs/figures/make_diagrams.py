@@ -177,7 +177,7 @@ d = D("phat_lai_ns3", 900, 860)
 d.text(0, 5, 900, 30, "Lưu đồ phát lại một kế hoạch trong NS-3 (uav-lte)", 17, bold=True)
 a0 = d.box(330, 50, 240, 45, "Bắt đầu", fill="#e5edf8", stroke=NAVY, style="rounded=1;arcSize=50;", bold=True)
 a1 = d.box(250, 120, 400, 50, "Đọc kế hoạch uavs.csv, users.csv")
-a2 = d.box(250, 195, 400, 70, "Dựng mạng: remote host, EPC/PGW, eNB (UAV), UE (user)<br>"
+a2 = d.box(250, 195, 400, 70, "Dựng mạng: remote host, EPC (PGW, SGW, MME), eNB (UAV), UE (user)<br>"
            "<font style='font-size:11px'>link=ideal: thay EPC/LTE bằng liên kết điểm-điểm</font>")
 a3 = d.box(250, 290, 400, 50, "Đặt điểm mốc vị trí eNB, UE; attach UE theo khe 0")
 a4 = d.box(250, 365, 400, 90, "<b>Đầu khe n</b><br>đặt tốc độ phát UDP từng user<br>handover X2 nếu kế hoạch đổi UAV<br>đặt trọng số WPF b<sub>k</sub> (10 ms, 150 ms)",
@@ -228,10 +228,12 @@ def stack(x, title, layers, fill, stroke):
         ids.append(d.box(x, 75 + i * 48, 220, 42, t, fill=fill, stroke=stroke))
     return ids
 rh = stack(20, "Remote host", ["Bộ phát UDP<br><font style='font-size:11px'>SeqTsHeader + 1200 B</font>", "UDP (cổng 9)", "IP 1.0.0.0/8", "Point-to-point 10 Gb/s, 1 ms"], "#e5edf8", NAVY)
-pg = stack(310, "PGW / SGW (EPC)", ["IP", "GTP-U / UDP / IP", "Point-to-point (S1-U)"], "#f6f7f9", "#aeb6c2")
+pg = stack(310, "EPC: PGW → SGW", ["IP", "GTP-U / UDP / IP", "Point-to-point (S1-U)"], "#f6f7f9", "#aeb6c2")
+mme = d.box(310, 330, 220, 42, "MME (EPC): báo hiệu,<br>không mang dữ liệu", fill="#ffffff", stroke="#aeb6c2", style="rounded=1;arcSize=6;dashed=1;")
+d.edge(mme, pg[2], "", dashed=True, arrow="none")
 en = stack(600, "eNB (UAV)", ["GTP-U / UDP / IP", "PDCP", "RLC UM, bộ đệm 1 MiB", "MAC: scheduler PF / RR / <b>WPF (b<sub>k</sub>)</b>", "PHY: AMC, HARQ"], "#fff1dc", AMBER)
 ue = stack(890, "UE (user)", ["UDP server: đo độ trễ, mất gói", "UDP / IP 7.0.0.0/8", "PDCP / RLC", "MAC", "PHY"], "#e2f3e8", "#157a3a")
-d.edge(rh[3], pg[2], "", width=2)
+d.edge(rh[3], pg[2], "", width=2, exit=(1, 0.5), entry=(0, 0.5))
 d.edge(pg[2], en[0], "GTP-U", width=2, exit=(1, 0.5), entry=(0, 0.5))
 d.edge(en[4], ue[4], "vô tuyến LTE<br>kênh Al-Hourani", width=2)
 x2 = d.box(600, 360, 220, 42, "eNB khác", fill="#fff1dc", stroke=AMBER)

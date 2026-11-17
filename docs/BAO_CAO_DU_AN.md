@@ -1,6 +1,8 @@
-# Cấp phát tài nguyên cho mạng nhiều UAV làm trạm gốc trên không: mô hình giải tích, kiểm chứng ba tầng bằng NS-3 và điều khiển thời gian thực
+# Cấp phát tài nguyên có ưu tiên người dùng cho mạng nhiều UAV làm trạm gốc: thuật toán calib-ifair và kiểm chứng ở mức gói tin bằng NS-3
 
-Báo cáo tóm tắt dự án cuối kỳ môn Lập trình mạng. Bố cục theo tám mục của tiêu chí đánh giá. Số liệu lấy từ các lần
+Báo cáo dự án cuối kỳ môn Lập trình mạng. Dự án đề xuất thuật toán **calib-ifair** cấp phát liên kết, băng thông và
+vị trí cho nhiều UAV làm trạm gốc, ưu tiên người dùng theo ba nhóm (normal, important, critical), và chứng minh hiệu quả
+bằng phép đo gói tin trên NS-3 LTE thay vì chỉ bằng công thức. Bố cục theo tám mục của tiêu chí đánh giá. Số liệu lấy từ các lần
 chạy lưu trong `experiments/results/`; chi tiết kỹ thuật đầy đủ hơn nằm trong `docs/THIET_KE_MO_PHONG.md`. Hướng dẫn
 viết bản nộp nằm ở `docs/KHUNG_BAO_CAO.md`.
 
@@ -74,28 +76,37 @@ không có mô hình kênh và mạng.
 | NS-3 với trạm cố định hoặc quỹ đạo định sẵn | Không gắn với thuật toán; không tách được lỗi mô hình và ảnh hưởng của giao thức |
 | Gazebo, PX4 | Không có mô hình kênh, mạng |
 
-Nhóm chưa thấy một khung làm việc nào cho phép vừa chạy thuật toán trên mô hình giải tích như bài báo, vừa đo lại đúng
-quyết định đó ở mức gói tin, giải thích được bằng số vì sao hai kết quả khác nhau, và quan sát, can thiệp trực quan.
+Về thuật toán, các heuristic cấp phát phổ biến (chia đều băng, max-min theo SNR) coi mọi người dùng như nhau và quyết
+định dựa trên SNR không tính nhiễu, nên không ưu tiên được đội cứu hộ hay y tế và đánh giá sai ai đang thật sự yếu. Về
+đánh giá, nhóm chưa thấy khung làm việc nào cho phép vừa chạy thuật toán trên mô hình giải tích như bài báo, vừa đo lại
+đúng quyết định đó ở mức gói tin và giải thích được bằng số vì sao hai kết quả khác nhau. Thiếu khung này thì không thể
+biết một cải tiến thuật toán có còn đúng trên mạng thật hay không.
 
 ### 2.3. Mục tiêu
 
-Dự án đặt ra sáu mục tiêu:
+**Mục tiêu chính:** đề xuất một thuật toán cấp phát tài nguyên cho nhiều UAV làm trạm gốc, ưu tiên người dùng theo ba
+nhóm (normal, important, critical), và chứng minh nó tốt hơn các baseline, kể cả một baseline cùng biết nhóm, **ở mức
+gói tin trên NS-3 LTE**, không chỉ trên công thức Shannon. Thuật toán đó là calib-ifair (mục 5.5).
 
-1. Xây khung mô phỏng số theo đúng cách các bài báo làm (kênh Al-Hourani, Shannon có nhiễu đồng kênh, năng lượng bay
-   Zeng 2019, hàng đợi theo khe), cắm được thuật toán bất kỳ và tái lập được kết quả.
-2. Phát lại quyết định của thuật toán trong NS-3 LTE với eNB bay, handover và lưu lượng UDP thật, đo throughput, độ
-   trễ và mất gói.
-3. Dựng phép kiểm chứng ba tầng để tách lỗi của mô hình khỏi ảnh hưởng của giao thức, và giải thích bằng số mọi khoảng
-   chênh.
-4. Áp quyết định chia băng thông ở tầng MAC bằng một scheduler có trọng số.
-5. Dùng chính những gì đo được từ NS-3 để cải tiến một heuristic cấp phát tài nguyên có ưu tiên theo ba nhóm user
-   (normal, important, critical), và chứng minh cải tiến bằng phép đo gói tin chứ không chỉ bằng công thức.
-6. Xây trạm điều khiển thời gian thực trên web: lái tay từng UAV, đổi tham số khi đang chạy, đo NS-3 theo lệnh, hiển thị
-   3D trong Gazebo.
+Để đạt mục tiêu chính, dự án cần bốn mục tiêu hỗ trợ:
+
+1. **Công cụ tính:** khung mô phỏng số theo đúng cách các bài báo làm (kênh Al-Hourani, SINR có nhiễu đồng kênh, năng
+   lượng bay, hàng đợi theo khe), cắm được thuật toán bất kỳ và tái lập được kết quả. Đây là nơi thuật toán ra quyết
+   định.
+2. **Công cụ đo đáng tin:** phát lại quyết định của thuật toán trong NS-3 LTE (eNB bay, handover, lưu lượng UDP thật),
+   và dựng phép kiểm chứng ba tầng để chứng minh công cụ đo đúng, tách lỗi mô hình khỏi ảnh hưởng của giao thức.
+3. **Áp quyết định xuống mạng:** viết scheduler có trọng số ở tầng MAC để phần băng thông thuật toán chọn thật sự được
+   thực thi trong LTE.
+4. **Quan sát và can thiệp:** trạm điều khiển thời gian thực trên web (WebSocket) và hiển thị 3D (Gazebo), lái tay từng
+   UAV, đổi tham số khi đang chạy, đo NS-3 theo lệnh.
 
 ### 2.4. Ý nghĩa
 
-Về nghiên cứu, dự án cho con số cụ thể về khoảng cách giữa kết quả tính của bài báo và kết quả đo trên giao thức thật:
+Về thuật toán, calib-ifair cho thấy có thể ưu tiên người dùng quan trọng mà không bỏ rơi người còn lại: trên NS-3 LTE,
+96–97% người dùng critical đạt QoS (so với 86–87% của max-min có trọng số cùng biết nhóm và 59–69% của các baseline
+không biết nhóm), đồng thời min throughput của nhóm normal gần gấp đôi max-min có trọng số.
+
+Về phương pháp đánh giá, dự án cho con số cụ thể về khoảng cách giữa kết quả tính của bài báo và kết quả đo trên giao thức thật:
 throughput NS-3 LTE chỉ bằng 25–40% giá trị Shannon. Khoảng cách này được phân rã thành từng nguyên nhân, nên biết
 được kết luận nào của lý thuyết đáng tin (thứ hạng giữa các thuật toán) và kết luận nào không (giá trị tuyệt đối, độ
 trễ, hiệu quả của việc chia băng thông khi không gắn với MAC).
@@ -346,7 +357,7 @@ tùy chọn nhiễu theo tải, nhiễu từ UAV j được nhân với tỷ l�
 | Chỉ số | Công thức | Ý nghĩa |
 |---|---|---|
 | Sum rate | Σ_k r_k | Hiệu quả tổng |
-| Min rate | min_k r_k | User kém nhất |
+| Min rate | min_k r_k | User kém nhất; với số đo NS-3 là trung bình theo khe của throughput nhỏ nhất trong khe |
 | Chỉ số Jain | (Σ r_k)² / (K·Σ r_k²) | Mức công bằng, bằng 1 khi mọi user có tốc độ như nhau |
 | Coverage | (1/K)·#{k : r_k ≥ r_min} | Tỷ lệ user đạt QoS |
 | Năng lượng | Σ_m P(‖v_m‖)·Δt | J mỗi khe |
@@ -634,7 +645,7 @@ Bảng dưới cho thấy từng thành phần của mô hình được dựng l
 | Chia băng thông | Scheduler PF, RR hoặc WPF (trọng số bằng b_k) |
 | Bộ đệm | RLC UM 1 MiB |
 
-Mạng IP đầy đủ gồm remote host, đường lõi 10 Gb/s trễ 1 ms, PGW, EPC, eNB và UE. Mỗi gói UDP mang 1200 byte dữ liệu
+Mạng IP đầy đủ gồm remote host, đường lõi 10 Gb/s trễ 1 ms, lõi EPC (ba node PGW, SGW và MME; dữ liệu đi qua PGW và SGW, MME chỉ xử lý báo hiệu), eNB và UE. Mỗi gói UDP mang 1200 byte dữ liệu
 kèm số thứ tự và thời điểm gửi để tính độ trễ từng gói. Cuối mỗi khe, kịch bản ghi lại số gói gửi, số gói nhận, số byte
 nhận, tổng độ trễ và cell mà UE đang thực sự gắn vào, rồi đặt lại bộ đếm. Có thể bật trace PHY/MAC để lấy SINR, MCS,
 tỷ lệ lỗi khối và số lần truyền lại.
@@ -810,6 +821,20 @@ nguyên theo tỷ lệ 4:1; và NS-3 lý tưởng khớp mô hình hàng đợi.
 ---
 
 ## 6. Phân tích và đánh giá hiệu năng
+
+Chương này trả lời câu hỏi chính của dự án: **calib-ifair có tốt hơn các baseline khi đo ở mức gói tin không?** Câu trả
+lời nằm ở mục 6.11 và 6.12. Các mục trước đó xây nền cho câu trả lời: muốn tin số đo của calib-ifair thì phải chứng minh
+công cụ đo đáng tin và hiểu vì sao lý thuyết khác thực tế.
+
+| Mục | Vai trò trong lập luận |
+|---|---|
+| 6.2–6.3 | Lý thuyết kiểu bài báo nói gì, và NS-3 có đồng ý không (đúng thứ hạng, sai giá trị tuyệt đối) |
+| 6.4–6.6 | Vì sao lệch: giải thích hết khoảng chênh, rút ra hai hằng số LTE mà calib-ifair dùng |
+| 6.7 | Chia băng chỉ có tác dụng ở tầng MAC: lý do calib-ifair áp quyết định qua scheduler WPF |
+| 6.8 | Ba tầng: mô hình đúng ở mức gói tin, nên khác biệt trên LTE là do thuật toán và giao thức |
+| 6.9–6.10 | Chi phí tính toán và chạy thời gian thực |
+| **6.11–6.12** | **Kết quả chính: calib-ifair so với baseline, ablation, ba nhóm user** |
+| 6.13 | Tổng hợp |
 
 Trong chương này, số liệu của mô hình là số *tính*, số liệu NS-3 là số *đo*. Vì mỗi seed sinh ra một bản đồ user khác
 nhau nên độ lệch chuẩn giữa các seed khá lớn; khi so sánh hai thuật toán, nhóm so theo cặp trên cùng seed và ghi kèm số
@@ -995,18 +1020,24 @@ vị), và độ trễ nền khi tải rất nhẹ (NS-3 6–14 ms so với lý 
 Thí nghiệm này chạy hover-maxmin và kmeans-maxmin với scheduler WPF, rồi so theo cặp với hai thuật toán equal tương ứng
 (chạy với PF; khi các trọng số bằng nhau thì WPF và PF như nhau).
 
-| | Mbps/user | Min throughput equal → maxmin | Throughput tổng | Mất gói | Độ trễ |
+| | Mbps/user | Min throughput equal → maxmin (lý thuyết dự đoán) | Throughput tổng | Mất gói | Độ trễ |
 |---|---|---|---|---|---|
-| hover | 1 | 0.58 → 0.70 (+21%, 3/3 seed) | 18.5 → 19.0 | 7.4% → 5.1% | 1267 → 883 ms |
-| hover | 2 | 0.30 → 0.36 (+20%, 3/3) | 22.6 → 22.4 | 43.4% → 43.9% | 4663 → 5142 ms |
-| hover | 4 | 0.26 → 0.30 (+15%, 3/3) | 27.8 → 26.5 | 65.2% → 66.9% | 5491 → 5851 ms |
-| kmeans | 1–4 | thay đổi dưới 2% | gần như không đổi | gần như không đổi | gần như không đổi |
+| hover | 1 | 0.57 → 0.67: +18%, 3/3 seed (+18%) | 18.5 → 19.0 | 7.4% → 5.1% | 1267 → 883 ms |
+| hover | 2 | 0.30 → 0.35: +16%, 3/3 (+18%) | 22.6 → 22.4 | 43.4% → 43.9% | 4663 → 5142 ms |
+| hover | 4 | 0.26 → 0.30: +16%, 3/3 (+18%) | 27.8 → 26.5 | 65.2% → 66.9% | 5491 → 5851 ms |
+| kmeans | 1 | 0.84 → 0.85: +1%, 3/3 (+2%) | 19.6 → 19.6 | 2.2% → 2.0% | 152 → 156 ms |
+| kmeans | 2 | 0.72 → 0.79: +10%, 3/3 (+3%) | 33.9 → 34.0 | 15.2% → 15.0% | 1397 → 1524 ms |
+| kmeans | 4 | 0.67 → 0.74: +11%, 3/3 (+11%) | 49.9 → 49.7 | 37.6% → 37.9% | 2173 → 2354 ms |
 
-Lý thuyết dự đoán maxmin tăng min throughput khoảng 18%; NS-3 với WPF cho 15–21% ở cả ba seed. Như vậy chia băng thông
-có tác dụng, nhưng phải áp ở tầng MAC; nếu chỉ áp ở tầng ứng dụng thì scheduler của LTE xóa mất tác dụng đó (mục 6.3).
-Hiệu quả cũng phụ thuộc mức chênh lệch kênh giữa các user: với hover, user trong một cell có SINR rất khác nhau nên
-maxmin có tác dụng rõ; với kmeans, UAV đã ở giữa cụm, SINR các user gần nhau và maxmin gần như không khác equal. Ở tải
-cao, cái giá phải trả lớn hơn lý thuyết nói: tổng throughput giảm tới 5% thay vì tăng nhẹ.
+(Min throughput là trung bình theo khe của throughput nhỏ nhất trong khe, cùng định nghĩa với mục 6.3, 6.11.)
+
+Với WPF, maxmin nâng min throughput ở **cả 18 cặp (thuật toán, lưu lượng, seed)**, và mức tăng đo được bám sát mức lý
+thuyết dự đoán: +16–18% với hover (dự đoán +18%), +1–11% với kmeans (dự đoán +2–11%). Như vậy chia băng thông có tác
+dụng, nhưng phải áp ở tầng MAC; nếu chỉ áp ở tầng ứng dụng thì scheduler của LTE xóa mất tác dụng đó (mục 6.3).
+Hiệu quả phụ thuộc mức chênh lệch kênh giữa các user: với hover, user trong một cell có SINR rất khác nhau nên maxmin
+có tác dụng ngay từ tải nhẹ; với kmeans, UAV đã ở giữa cụm, SINR các user gần nhau hơn, nên maxmin chỉ tạo khác biệt
+khi mạng đã nghẽn (từ 2 Mbps/user). Cái giá phải trả: tổng throughput giảm tới 5% (hover, 4 Mbps/user) thay vì tăng
+nhẹ như lý thuyết nói, và độ trễ trung bình ở tải cao tăng 9–10%.
 
 ### 6.8. Kiểm chứng ba tầng (E7)
 
@@ -1226,7 +1257,7 @@ và throughput tổng theo lưu lượng cho cả sáu thuật toán; số liệ
 | Nhiễu đồng kênh làm giảm lợi ích khi thêm UAV | Phù hợp |
 | Giá trị tuyệt đối của tốc độ | Lạc quan: NS-3 chỉ đạt 25–40% Shannon, đã giải thích bằng ba nguyên nhân |
 | Độ trễ và mất gói | Lạc quan, độ trễ thấp hơn 3–9 lần; thêm cách đổi SINR của LTE thì mất gói lệch khoảng 2.7 điểm % |
-| Maxmin tăng min rate | Chỉ đúng khi áp ở tầng MAC (WPF: +15–21%, dự đoán +18%) |
+| Maxmin tăng min rate | Chỉ đúng khi áp ở tầng MAC (WPF: +16–18% với hover, +1–11% với kmeans; khớp dự đoán) |
 | (đề xuất) calib-ifair tăng min rate mà giữ throughput tổng | Đứng vững: min ×1.92–2.03 ở tải ≥ 2 Mbps/user (3/3 seed), tổng trong ±4% |
 | (đề xuất) Trọng số nhóm ưu tiên được user critical | Đứng vững: critical đạt QoS 96–97% so với 59–69%, đổi lại tổng giảm 4–12% |
 | (đề xuất) calib-ifair hơn max-min có trọng số cùng biết nhóm | Đứng vững: critical đạt QoS 96–97% so với 86–87%, min normal gần gấp đôi, tổng như nhau |
@@ -1239,21 +1270,29 @@ và throughput tổng theo lưu lượng cho cả sáu thuật toán; số liệ
 
 ### 7.1. Kết quả đạt được
 
+**Mục tiêu chính đã đạt.** Trên NS-3 LTE (3 UAV, 20 user, 3 seed), calib-ifair:
+
+- nâng min throughput gần gấp đôi so với kmeans-equal (×1.92–2.03 ở tải từ 2 Mbps/user, cả 3 seed) mà throughput tổng
+  giữ trong ±4%;
+- đưa tỷ lệ user critical đạt QoS lên 96–97%, so với 86–87% của max-min có trọng số cùng biết nhóm và 59–69% của các
+  baseline không biết nhóm; min throughput nhóm normal gần gấp đôi max-min có trọng số;
+- đổi lại throughput tổng giảm 4–12% so với baseline không biết nhóm, và độ trễ trung bình ở tải cao tăng.
+
+Ablation cho thấy phần lớn cải thiện về công bằng đến từ khối chia băng ifair (tính SINR có nhiễu), khối di chuyển calib
+bù lại throughput tổng và mất gói; đường cong LTE hiệu chỉnh không tạo khác biệt cho thuật toán.
+
 | Mục tiêu | Mức độ | Căn cứ |
 |---|---|---|
-| Khung mô phỏng số, thêm được thuật toán, tái lập được | Hoàn thành | 6 baseline, môi trường DRL, 42 test |
-| Đo lại bằng NS-3 LTE | Hoàn thành | Khoảng 400 run, mọi handover thành công |
-| Kiểm chứng ba tầng, giải thích chênh lệch | Hoàn thành | Khớp dưới 1%; phân rã sai số ±3% |
-| Chia băng thông ở tầng MAC | Hoàn thành | WPF, min throughput tăng 15–21% |
-| Điều khiển thời gian thực, hiển thị 3D | Hoàn thành ở mức cơ bản | Dashboard, Gazebo, lệch 0.00 m |
-| Heuristic cải tiến dựa trên số đo NS-3 | Hoàn thành | calib-ifair: min throughput ×1.9–2.0 trên NS-3 LTE |
-| Ưu tiên theo ba nhóm user | Hoàn thành | Critical đạt QoS 96–97% (baseline không biết nhóm 59–69%, max-min có trọng số 86–87%), tổng giảm 4–12% |
-| Trạm điều khiển web: lái tay, đổi tham số, đo NS-3 | Hoàn thành | Lệnh bay tới, 13 tham số (có tỷ lệ nhóm user), đo NS-3 trả về web |
+| **Thuật toán cấp phát có ưu tiên người dùng** | **Hoàn thành** | **calib-ifair: min ×1.9–2.0; critical đạt QoS 96–97%** |
+| Công cụ tính: khung mô phỏng số | Hoàn thành | 6 baseline + baseline biết nhóm, 4 bản ablation, môi trường Gymnasium, 42 test |
+| Công cụ đo: NS-3 LTE và kiểm chứng ba tầng | Hoàn thành | Khoảng 400 run, mọi handover thành công; khớp dưới 1%; khoảng chênh Shannon → LTE giải thích hết, còn ±3% |
+| Áp quyết định ở tầng MAC | Hoàn thành | Scheduler WPF; maxmin +16–18% (hover), khớp dự đoán |
+| Trạm điều khiển thời gian thực | Hoàn thành ở mức cơ bản | WebSocket, dashboard, Gazebo đồng bộ 0.000 m, đo NS-3 từ web |
 | Huấn luyện agent học tăng cường | Chưa làm | Môi trường đã sẵn sàng |
 
-Dự án cho thấy mô hình giải tích kiểu bài báo đủ tốt để xếp hạng các chiến lược điều khiển UAV, nhưng không đủ để dự đoán
-giá trị tuyệt đối, độ trễ, hay hiệu quả của việc chia băng thông khi không gắn với scheduler. Khoảng cách giữa hai bên đã
-được giải thích bằng số và thu hẹp được về khoảng ±3% bằng hai hằng số đo từ NS-3.
+Bên cạnh thuật toán, dự án cho thấy mô hình giải tích kiểu bài báo đủ tốt để xếp hạng các chiến lược điều khiển UAV,
+nhưng không đủ để dự đoán giá trị tuyệt đối, độ trễ, hay hiệu quả của việc chia băng thông khi không gắn với scheduler.
+Vì vậy mọi kết luận về calib-ifair trong báo cáo đều dựa trên số đo NS-3.
 
 ### 7.2. Hạn chế
 

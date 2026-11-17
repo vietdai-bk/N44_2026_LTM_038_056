@@ -151,7 +151,7 @@ bằng Shannon) cho kết quả trùng trong 1–2%: lợi ích đến từ vi�
 |---|---|
 | Bay về tâm cụm user (kmeans) tốt hơn đứng yên (hover) | Đúng: min throughput khoảng 2.2 lần, Jain khoảng 1.5 lần, cả 5 seed |
 | Thêm UAV dùng chung băng có thể làm giảm tổng tốc độ vì nhiễu | Phù hợp (1 trên 5 seed) |
-| Maxmin nâng user kém nhất | Chỉ đúng khi áp ở tầng MAC: với PF, maxmin và equal cho số đo giống hệt; với WPF, min throughput tăng 15–21% ở cả 3 seed, khớp dự đoán +18% |
+| Maxmin nâng user kém nhất | Chỉ đúng khi áp ở tầng MAC: với PF, maxmin và equal cho số đo giống hệt; với WPF, min throughput tăng 16–18% ở cả 3 seed, khớp dự đoán +18% |
 | Giá trị tuyệt đối của tốc độ, độ trễ, mất gói | Lạc quan (mục 4.2) |
 
 Ở tầng lý tưởng, maxmin khác equal rõ rệt đúng như lý thuyết, nên việc hai thuật toán giống nhau trên LTE với PF là do

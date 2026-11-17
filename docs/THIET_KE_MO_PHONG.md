@@ -1503,12 +1503,15 @@ equal cho số đo NS-3 giống hệt nhau.
 So với `*-equal` trong `experiments/results/ns3-demand-lte` (scheduler PF, trùng với `wpf` vì trọng số bằng nhau trong mỗi
 cell), cùng seed và cùng lưu lượng. 42 run, khoảng 20 phút. Số liệu ghép cặp: `ns3-demand-wpf/paired_vs_equal.json`.
 
+Trong bảng này, "min thr" là throughput trung bình (cả lần chạy) của user kém nhất. Báo cáo dùng định nghĩa khác: trung
+bình theo khe của throughput nhỏ nhất trong khe (xem `BAO_CAO_DU_AN.md` mục 6.7).
+
 | | Mbps/user | Min thr equal → maxmin | Phân vị 10% | Thr tổng | Mất gói | Delay |
 |---|---|---|---|---|---|---|
 | hover | 1 | 0.58 → **0.70** (+21%, 3/3 seed) | 0.74 → 0.80 | 18.5 → 19.0 | 7.4% → 5.1% | 1267 → 883 ms |
 | hover | 2 | 0.30 → **0.36** (+20%, 3/3) | 0.48 → 0.54 | 22.6 → 22.4 | 43.4% → 43.9% | 4663 → 5142 ms |
 | hover | 4 | 0.26 → **0.30** (+15%, 3/3) | 0.33 → 0.41 | 27.8 → 26.5 | 65.2% → 66.9% | 5491 → 5851 ms |
-| kmeans | 1–4 | thay đổi < 2%, lẫn lộn theo seed | ≈ | ≈ | ≈ | ≈ |
+| kmeans | 1–4 | thay đổi < 2%, lẫn lộn theo seed (theo min mỗi khe: +1% / +10% / +11% ở 1 / 2 / 4 Mbps) | ≈ | ≈ | ≈ | ≈ |
 
 **So với dự đoán của lý thuyết paper** (cùng cặp maxmin / equal, Shannon, chia tĩnh):
 
@@ -1521,7 +1524,7 @@ cell), cùng seed và cùng lưu lượng. 42 run, khoảng 20 phút. Số liệ
 
 **Kết luận:**
 1. **Cấp phát băng thông không vô dụng: nó cần được áp ở đúng tầng.** Áp ở tầng MAC thì maxmin nâng user kém nhất
-   15–21% ở cả 3/3 seed, đúng như lý thuyết dự đoán (+18%). Áp ở tầng ứng dụng thì hoàn toàn không có tác dụng.
+   15–21% ở cả 3/3 seed (min tính trên throughput trung bình của từng user; nếu tính theo khe như báo cáo thì +16–18%), đúng như lý thuyết dự đoán (+18%). Áp ở tầng ứng dụng thì hoàn toàn không có tác dụng.
 2. **Hiệu quả phụ thuộc mức chênh lệch kênh giữa các user.** Với hover, user trong một cell có SINR rất khác nhau, nên
    maxmin có tác dụng rõ. Với kmeans, UAV đã bay về giữa cụm, SINR các user gần nhau nên b_k gần như bằng nhau, và
    maxmin gần như không khác equal. Lý thuyết cũng dự đoán đúng điều này.
@@ -1537,7 +1540,7 @@ cell), cùng seed và cùng lưu lượng. 42 run, khoảng 20 phút. Số liệ
 | Di chuyển UAV về tâm cụm cải thiện mạnh rate và công bằng | **Đúng.** Min throughput khoảng 2.2×, Jain khoảng 1.5× (5/5 seed) |
 | Nhiễu đồng kênh có thể làm giảm lợi ích khi thêm UAV | **Phù hợp.** 1/5 seed hover có tổng throughput cao hơn kmeans |
 | Giá trị rate tuyệt đối | **Lạc quan.** LTE chỉ đạt 75–78% công thức 36.942. Đã kiểm chứng (14.4): nguyên nhân là ánh xạ SINR → throughput của LTE (α 0.40, trần 3.51 so với 0.6, 4.4). Hiệu chỉnh hai hằng số này thì mô hình khớp NS-3 ±2% |
-| maxmin tăng min rate, đổi lại giảm nhẹ sum rate | **Phụ thuộc tầng áp dụng.** Chỉ áp ở tầng ứng dụng: gần như không còn đúng (min +6% ở tải thấp nhưng delay ×2.3; ở tải cao trùng equal). Áp ở tầng MAC bằng `wpf` (14.7): **đúng**, min +15–21% (3/3 seed) khớp dự đoán +18%; ở tải cao tổng giảm tới 5%, nhiều hơn lý thuyết nói |
+| maxmin tăng min rate, đổi lại giảm nhẹ sum rate | **Phụ thuộc tầng áp dụng.** Chỉ áp ở tầng ứng dụng: gần như không còn đúng (min +6% ở tải thấp nhưng delay ×2.3; ở tải cao trùng equal). Áp ở tầng MAC bằng `wpf` (14.7): **đúng**, min +15–21% (3/3 seed) (min tính trên throughput trung bình của từng user; nếu tính theo khe như báo cáo thì +16–18%) khớp dự đoán +18%; ở tải cao tổng giảm tới 5%, nhiều hơn lý thuyết nói |
 | (mô hình không có) delay, mất gói | NS-3 cho thấy cần hệ số an toàn khoảng 0.5–0.6 để delay giữ ở mức chục ms |
 | Delay, mất gói theo hàng đợi Lyapunov (14.6, lý thuyết paper) | **Quá lạc quan:** delay thấp hơn 3–8 lần, mất gói thấp hơn nhiều; xếp hạng kmeans > hover vẫn đúng. Thêm ánh xạ LTE thì sai số mất gói còn khoảng 4 điểm %, delay ×1.3 |
 | (đề xuất) chia băng theo SE LTE có nhiễu + tinh chỉnh vị trí (14.10) | **Đứng vững:** min throughput ×1.92–2.03 ở tải ≥ 2 Mbps/user (3/3 seed), throughput tổng giữ trong ±4% |

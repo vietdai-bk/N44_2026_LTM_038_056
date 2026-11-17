@@ -593,7 +593,7 @@ cell), cùng seed và cùng lưu lượng. 42 run, khoảng 20 phút. Số liệ
 | hover | 1 | 0.58 → **0.70** (+21%, 3/3 seed) | 0.74 → 0.80 | 18.5 → 19.0 | 7.4% → 5.1% | 1267 → 883 ms |
 | hover | 2 | 0.30 → **0.36** (+20%, 3/3) | 0.48 → 0.54 | 22.6 → 22.4 | 43.4% → 43.9% | 4663 → 5142 ms |
 | hover | 4 | 0.26 → **0.30** (+15%, 3/3) | 0.33 → 0.41 | 27.8 → 26.5 | 65.2% → 66.9% | 5491 → 5851 ms |
-| kmeans | 1–4 | thay đổi < 2%, lẫn lộn theo seed | ≈ | ≈ | ≈ | ≈ |
+| kmeans | 1–4 | thay đổi < 2%, lẫn lộn theo seed (theo min mỗi khe: +1% / +10% / +11% ở 1 / 2 / 4 Mbps) | ≈ | ≈ | ≈ | ≈ |
 
 **So với dự đoán của lý thuyết paper** (cùng cặp maxmin / equal, Shannon, chia tĩnh):
 
@@ -606,7 +606,7 @@ cell), cùng seed và cùng lưu lượng. 42 run, khoảng 20 phút. Số liệ
 
 **Kết luận:**
 1. **Cấp phát băng thông không vô dụng: nó cần được áp ở đúng tầng.** Áp ở tầng MAC thì maxmin nâng user kém nhất
-   15–21% ở cả 3/3 seed, đúng như lý thuyết dự đoán (+18%). Áp ở tầng ứng dụng thì hoàn toàn không có tác dụng.
+   15–21% ở cả 3/3 seed (min tính trên throughput trung bình của từng user; nếu tính theo khe như báo cáo thì +16–18%), đúng như lý thuyết dự đoán (+18%). Áp ở tầng ứng dụng thì hoàn toàn không có tác dụng.
 2. **Hiệu quả phụ thuộc mức chênh lệch kênh giữa các user.** Với hover, user trong một cell có SINR rất khác nhau, nên
    maxmin có tác dụng rõ. Với kmeans, UAV đã bay về giữa cụm, SINR các user gần nhau nên b_k gần như bằng nhau, và
    maxmin gần như không khác equal. Lý thuyết cũng dự đoán đúng điều này.
