@@ -138,7 +138,7 @@ s3 = d.box(270, 295, 360, 70, "<b>ifair:</b> b<sub>k</sub> ∝ w<sub>k</sub> / m
 s4 = d.box(295, 395, 310, 90, "UAV j còn cách tâm cụm k-means quá một bước?", style="rhombus;", fill="#ffffff")
 s5 = d.box(660, 410, 200, 60, "Bay thẳng về tâm cụm")
 s6 = d.box(270, 515, 360, 80, "<b>calib:</b> thử đứng yên + 8 hướng × 2 cỡ bước<br>tính U = Σ w<sub>k</sub> log(r̂<sub>k</sub> + r<sub>0</sub>)", fill="#fff1dc", stroke=AMBER)
-s7 = d.box(270, 620, 360, 60, "Chọn nước đi tăng U nhiều nhất,<br>không làm UAV nào mất hết user")
+s7 = d.box(270, 620, 360, 60, "Chọn nước đi tăng U nhiều nhất,<br>không làm giảm số UAV có user")
 s8 = d.box(295, 705, 310, 80, "Còn UAV chưa xét?", style="rhombus;")
 s9 = d.box(270, 815, 360, 55, "Gửi quyết định: b<sub>k</sub> → scheduler WPF (MAC), v<sub>m</sub> → UAV", fill="#e2f3e8", stroke="#157a3a", style=term)
 for a, b in [(s0, s1), (s1, s2), (s2, s3), (s3, s4), (s6, s7), (s7, s8)]:

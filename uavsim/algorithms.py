@@ -59,13 +59,17 @@ def calibrated_se(cfg, uav_xy, user_xy, model="lte"):
     return assoc, se
 
 
+SE_FLOOR = 0.05  # sàn SE khi chia băng: user mất sóng không hút hết băng của UAV
+
+
 def fair_utility(cfg, uav_xy, user_xy, w=None, model="lte") -> tuple[float, int]:
-    """(Σ w_k log(r_k + r_0), số UAV có user) khi mỗi UAV chia băng b_k ∝ w_k/SE_k: r_k = B·w_k / Σ_{k'∈m} w_k'/SE_k'.
-    w = None: mọi user trọng số 1 (rate các user trong một UAV bằng nhau)."""
+    """(Σ w_k log(r_k + r_0), số UAV có user) với đúng cách chia băng của ifair: b_k ∝ w_k/max(SE_k, SE_FLOOR),
+    r_k = b_k·B·SE_k. w = None: mọi user trọng số 1."""
     assoc, se = calibrated_se(cfg, uav_xy, user_xy, model)
     w = np.ones(cfg.num_users) if w is None else w
-    load = np.bincount(assoc, w / np.maximum(se, 1e-3), cfg.num_uavs)
-    r = np.where(se > 0, cfg.bandwidth * w / load[assoc], 0.0)
+    x = w / np.maximum(se, SE_FLOOR)
+    load = np.bincount(assoc, x, cfg.num_uavs)
+    r = x / load[assoc] * cfg.bandwidth * se
     return float((w * np.log(r + 1e3)).sum()), int(np.count_nonzero(load))
 
 
@@ -101,7 +105,7 @@ class Heuristic:
             w = np.ones(c.num_users)
         elif self.alloc == "ifair":
             se = calibrated_se(c, net.uav_xy, net.user_xy, self.rate)[1]
-            w = (net.weight if self.weighted else 1.0) / np.maximum(se, 0.05)  # sàn: user mất sóng không hút hết băng
+            w = (net.weight if self.weighted else 1.0) / np.maximum(se, SE_FLOOR)
         else:  # maxmin: b_k ∝ 1/SE_k cho rate bằng nhau trong mỗi UAV (bỏ qua nhiễu); wmaxmin: nhân trọng số nhóm
             snr = c.p_max / c.bandwidth * net.gain[assoc, np.arange(c.num_users)] / c.noise_psd
             w = (net.weight if self.alloc == "wmaxmin" else 1.0) / np.log2(1 + snr)

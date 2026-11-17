@@ -133,7 +133,7 @@
       \item Liên kết và SINR có nhiễu.
       \item Chia băng ifair, ví dụ số.
       \item Di chuyển calib.
-      \item Mã giả, độ phức tạp, áp ở tầng MAC.
+      \item Áp ở tầng MAC.
     \end{itemize}
   \end{block}
 \end{column}
@@ -493,7 +493,7 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 \vspace{-3mm}
 \[
 \max_{a,\,b,\,q[n+1]}\ U = \sum_{k=1}^{K} w_k \log\big(\hat r_k + r_0\big)
-\quad \text{s.t. (C1)--(C5)},\ \ \#\{\text{UAV có user}\}\ \text{không giảm}
+\quad \text{s.t. (C1)--(C5)}
 \]
 \vspace{-2mm}
 \[
@@ -513,7 +513,7 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 \begin{column}{0.48\textwidth}
   \begin{block}{Ràng buộc thêm}
     \small
-    Không nhận nước đi làm một UAV mất hết user: nếu thiếu, tìm kiếm cục bộ hay ``tắt'' một UAV để giảm nhiễu tức thời
+    Trong pha tìm kiếm cục bộ, không nhận nước đi làm giảm số UAV có user: nếu thiếu, tìm kiếm cục bộ hay ``tắt'' một UAV để giảm nhiễu tức thời
     và rơi vào nghiệm kém (seed 1: tổng 13 Mbps so với 43 Mbps).
   \end{block}
 \end{column}
@@ -537,7 +537,7 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
     \item Tính SINR \hl{có nhiễu} từ mọi UAV đang phục vụ, đổi ra $\SE_k$.
     \item \hl{ifair}: chia băng $b_k \propto w_k / \max(\SE_k, 0.05)$.
     \item Với từng UAV: còn xa tâm cụm k-means thì bay thẳng tới tâm.
-    \item Đã tới: thử 17 nước đi, giữ nước làm tiện ích $U$ tăng nhiều nhất, không tắt UAV nào.
+    \item Đã tới: thử 17 nước đi, giữ nước làm tiện ích $U$ tăng nhiều nhất, không làm giảm số UAV có user.
     \item Gửi $b_k$ xuống tầng MAC (scheduler WPF), $v_m$ cho UAV.
   \end{enumerate}
   \begin{block}{Thời gian}
@@ -614,8 +614,8 @@ b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}
   \begin{block}{Ý nghĩa}
     \small
     \begin{itemize}
-      \item Trong một UAV, $\hat r_k / w_k$ bằng nhau: \hl{max-min có trọng số}.
-      \item User critical luôn được tốc độ gấp 4 lần user normal cùng UAV, dù kênh xấu hơn.
+      \item Khi mọi $\SE_k \ge 0.05$: trong một UAV, $\hat r_k / w_k$ bằng nhau (\hl{max-min có trọng số}), critical được tốc độ gấp 4 lần normal dù kênh xấu hơn.
+      \item $\SE_k = 0$: vẫn được băng nhưng tốc độ 0.
       \item User kênh xấu (SE nhỏ) được bù nhiều băng hơn.
       \item Sàn 0.05: user gần mất sóng không hút hết băng.
     \end{itemize}
@@ -729,7 +729,7 @@ b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}
     \begin{itemize}
       \item Xét lần lượt từng UAV; UAV sau thấy vị trí mới của UAV trước.
       \item $U$ tính lại có nhiễu, có trần LTE, có trọng số nhóm.
-      \item Loại nước đi làm giảm số UAV có user.
+      \item Pha tinh chỉnh: loại nước đi làm giảm số UAV có user.
     \end{itemize}
   \end{block}
 \end{column}
@@ -762,53 +762,6 @@ b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}
 
 \scriptsize Mô phỏng, 2 Mbps/user, seed 1. Hàng trên kmeans-equal: tới khe 59 chỉ \alert{1/3 user critical} đạt QoS (dấu $\times$).
 Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 3 user critical} đạt QoS, throughput tương đương (30 so với 29 Mbps).
-\end{frame}
-
-% =================================================
-% SLIDE 14. MÃ GIẢ 1
-% =================================================
-\begin{frame}{Mã giả (1/2): hàm hỗ trợ}
-\begin{pseudo}
-\kw{Hàm} SE\_DỰ\_ĐOÁN($q$, vị trí user):\\
-\> \kw{với mỗi} UAV $m$, user $k$: $g[m,k] \leftarrow$ độ lợi kênh Al-Hourani$(q_m, u_k)$\\
-\> $a_k \leftarrow \arg\max_m g[m,k]$ \cm{liên kết}\\
-\> $\mathrm{psd}_m \leftarrow P_{\max}/B$ nếu UAV $m$ có user, ngược lại $0$ \cm{UAV trống không phát}\\
-\> \kw{với mỗi} user $k$:\\
-\>\> $S \leftarrow \mathrm{psd}_{a_k}\, g[a_k,k]$; \quad $I \leftarrow \sum_{j\ne a_k}\mathrm{psd}_j\, g[j,k]$ \cm{nhiễu đồng kênh}\\
-\>\> $\mathrm{SINR}_k \leftarrow S/(I+N_0)$\\
-\>\> $\SE_k \leftarrow 0$ nếu $\mathrm{SINR}_k < 0.1$, ngược lại $\min(0.401\log_2(1+\mathrm{SINR}_k),\ 3.514)$\\
-\> \kw{trả về} $(a, \SE)$\\[2mm]
-\kw{Hàm} TIỆN\_ÍCH($q$, vị trí user, $w$):\\
-\> $(a,\SE) \leftarrow$ SE\_DỰ\_ĐOÁN($q$, vị trí user)\\
-\> \kw{với mỗi} UAV $m$: \ tải$_m \leftarrow \sum_{k:\,a_k=m} w_k/\max(\SE_k, 10^{-3})$\\
-\> \kw{với mỗi} user $k$: \ $\hat r_k \leftarrow B\,w_k/\text{tải}_{a_k}$ nếu $\SE_k>0$, ngược lại $0$\\
-\> \kw{trả về} $\big(\sum_k w_k\ln(\hat r_k + r_0),\ \text{số UAV có user}\big)$
-\end{pseudo}
-\end{frame}
-
-% =================================================
-% SLIDE 15. MÃ GIẢ 2
-% =================================================
-\begin{frame}{Mã giả (2/2): một khe của calib-ifair}
-\begin{pseudo}
-\kw{Thủ tục} CALIB\_IFAIR($q$, vị trí user, nhóm):\\
-\> $w_k \leftarrow \{1, 2, 4\}[\text{nhóm}_k]$\\
-\> $(a,\SE) \leftarrow$ SE\_DỰ\_ĐOÁN($q$, vị trí user) \cm{khối 1}\\
-\> $x_k \leftarrow w_k/\max(\SE_k, 0.05)$; \quad $b_k \leftarrow x_k / \sum_{k':\,a_{k'}=a_k} x_{k'}$; \quad $p_k \leftarrow b_k P_{\max}$ \cm{khối 2: ifair}\\
-\> $c \leftarrow$ KMEANS(vị trí user, khởi tạo $= q$); \quad $q' \leftarrow q$ \cm{khối 3: calib}\\
-\> \kw{với mỗi} UAV $j = 1..M$:\\
-\>\> \kw{nếu} $\|c_j - q'_j\| > V_{\max}\Delta t$: \ $q'_j \leftarrow q'_j + V_{\max}\Delta t\cdot\frac{c_j-q'_j}{\|c_j-q'_j\|}$; \ \kw{tiếp tục} \cm{pha tiếp cận}\\
-\>\> $(U^\ast, N^\ast) \leftarrow$ TIỆN\_ÍCH($q'$, vị trí user, $w$); \quad $d^\ast \leftarrow 0$\\
-\>\> \kw{với mỗi} $d \in \mathcal{D}\setminus\{0\}$: \cm{16 nước đi}\\
-\>\>\> $\tilde q \leftarrow q'$; \ $\tilde q_j \leftarrow \mathrm{clip}(q'_j + d, 0, L)$\\
-\>\>\> $(U, N) \leftarrow$ TIỆN\_ÍCH($\tilde q$, vị trí user, $w$)\\
-\>\>\> \kw{nếu} $N \ge N^\ast$ \kw{và} $U > U^\ast$: \ $U^\ast \leftarrow U$; \ $d^\ast \leftarrow d$ \cm{không tắt UAV}\\
-\>\> $q'_j \leftarrow \mathrm{clip}(q'_j + d^\ast, 0, L)$\\
-\> $v \leftarrow (q' - q)/\Delta t$\\
-\> \kw{trả về} $(a, b, p, v)$ \cm{$b$ $\rightarrow$ trọng số WPF ở tầng MAC}
-\end{pseudo}
-\vspace{1mm}
-\scriptsize \textbf{Độ phức tạp mỗi khe:} k-means $O(IMK)$, chia băng $O(MK)$, di chuyển $O(17\,M\cdot MK)$.
 \end{frame}
 
 % =================================================

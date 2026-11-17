@@ -33,7 +33,8 @@ Mỗi khe thời gian, heuristic làm ba bước rồi áp quyết định xuố
 
 1. **Liên kết và SINR có nhiễu:** người dùng nối UAV có kênh mạnh nhất; SINR tính cả nhiễu từ các UAV khác.
 2. **Chia băng (ifair):** b<sub>k</sub> ∝ w<sub>k</sub> / ŜE<sub>k</sub>, với trọng số w = 1 / 2 / 4 theo nhóm. Trong
-   mỗi UAV, người dùng critical được tốc độ gấp 4 lần người dùng normal.
+   mỗi UAV, người dùng critical được tốc độ gấp 4 lần người dùng normal
+   (khi hiệu suất phổ không thấp hơn sàn 0.05 bit/s/Hz).
 3. **Di chuyển (calib):** UAV bay về tâm cụm người dùng, rồi thử 17 nước đi và giữ nước làm tăng Σ w·log(tốc độ).
 4. **Áp ở tầng MAC:** b<sub>k</sub> làm trọng số cho scheduler Weighted PF viết thêm trong NS-3.
 

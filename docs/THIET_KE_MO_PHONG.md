@@ -507,7 +507,7 @@ $$U(q) = \sum_k w_k\log\big(\hat r_k(q) + 10^3\big),\qquad \hat r_k = \frac{B\,w
    (rate mỗi user khi UAV chia băng theo `ifair`, có nhiễu, có trần LTE). Các UAV được xét lần lượt, mỗi UAV thấy vị
    trí mới của UAV trước.
 
-Không nhận nước đi làm một UAV mất hết user. Khi thử bản không có ràng buộc này, tìm kiếm cục bộ thường "tắt" một UAV
+Trong pha tìm kiếm cục bộ, không nhận nước đi làm giảm số UAV có user (pha bay về tâm cụm không kiểm tra điều này). Khi thử bản không có ràng buộc này, tìm kiếm cục bộ thường "tắt" một UAV
 để giảm nhiễu tức thời, dẫn tới nghiệm kém hơn nhiều (ví dụ seed 1: 2 user / 0 / 18 user, sum rate 13 Mbps so với 43
 Mbps của kmeans-ifair).
 

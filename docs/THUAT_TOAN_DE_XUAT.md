@@ -79,7 +79,7 @@ từ NS-3 (có nhiễu, có trần):
 
 $$
 \textbf{(P}_n\textbf{)}\quad \max_{a,\,b,\,q[n+1]}\ U = \sum_{k=1}^{K} w_k \log\big(\hat r_k + r_0\big)
-\quad \text{s.t. (C1)–(C5)},\ \text{số UAV có user không giảm}
+\quad \text{s.t. (C1)–(C5)}
 $$
 
 $$
@@ -107,8 +107,10 @@ b_k = \frac{w_k / \max(\widehat{SE}_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_
 \hat r_k = \frac{B\,w_k}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}/\widehat{SE}_{k'}}
 $$
 
-- Trong mỗi UAV, $\hat r_k / w_k$ bằng nhau, tức max-min có trọng số: user critical luôn có tốc độ dự đoán gấp 4 lần
-  user normal cùng UAV, dù kênh của nó xấu hơn.
+- Công thức rút gọn bên phải chỉ đúng khi mọi user trong UAV có $\widehat{SE} \ge 0.05$. Khi đó, trong mỗi UAV
+  $\hat r_k / w_k$ bằng nhau, tức max-min có trọng số: user critical có tốc độ dự đoán gấp 4 lần user normal cùng UAV,
+  dù kênh của nó xấu hơn. User có $\widehat{SE} < 0.05$ nhận ít tốc độ hơn tỷ lệ này; user có $\widehat{SE} = 0$
+  vẫn được cấp băng nhưng tốc độ bằng 0.
 - $\widehat{SE}$ tính từ SINR **có nhiễu** (baseline `maxmin` dùng SNR không nhiễu, nên đánh giá sai user nào yếu).
 - Sàn 0.05 bit/s/Hz để một user gần mất sóng không hút hết băng của UAV.
 - Lưu ý: nghiệm đúng của bài toán con max Σ w·log(b·B·ŜE) với Σb ≤ 1 là $b_k = w_k/\sum w$ (băng tỷ lệ với trọng
@@ -129,7 +131,10 @@ $$
 - 17 ứng viên mỗi UAV: đứng yên, 8 hướng × 2 cỡ bước.
 - UAV còn cách tâm cụm k-means hơn một bước bay thì bay thẳng về tâm cụm (pha tiếp cận), chưa tìm cục bộ.
 - Các UAV được xét lần lượt; UAV sau thấy vị trí mới của UAV trước (tối ưu theo từng tọa độ).
-- Loại nước đi làm một UAV mất hết user: thiếu ràng buộc này, tìm kiếm cục bộ hay "tắt" một UAV để giảm nhiễu tức
+- Hàm U tính $\hat r_k = b_k B \widehat{SE}_k$ với $b_k$ chia đúng như 3.2 (cùng sàn 0.05), nên vị trí được chấm
+  bằng chính tốc độ sẽ được cấp.
+- Chỉ trong pha tìm kiếm cục bộ: loại nước đi làm giảm **số** UAV có user (pha tiếp cận không kiểm tra điều này, và
+  một UAV vẫn có thể mất hết user nếu UAV khác cùng lúc có thêm user). Thiếu điều kiện này, tìm kiếm cục bộ hay "tắt" một UAV để giảm nhiễu tức
   thời và rơi vào nghiệm kém (ví dụ seed 1: sum rate 13 Mbps so với 43 Mbps).
 
 ### 3.4. Áp quyết định ở tầng MAC
@@ -159,8 +164,9 @@ Hàm SE_DỰ_ĐOÁN(q, U_xy):                                   // q: vị trí 
 
 Hàm TIỆN_ÍCH(q, U_xy, w):
     (a, SE) ← SE_DỰ_ĐOÁN(q, U_xy)
-    với mỗi UAV m: tải_m ← Σ_{k: a_k = m} w_k / max(SE_k, 1e-3)
-    với mỗi user k: r̂_k ← (SE_k > 0) ? B · w_k / tải_{a_k} : 0
+    với mỗi user k: x_k ← w_k / max(SE_k, SE_floor)        // đúng cách chia băng ifair
+    với mỗi UAV m: tải_m ← Σ_{k: a_k = m} x_k
+    với mỗi user k: r̂_k ← (x_k / tải_{a_k}) · B · SE_k
     U ← Σ_k w_k · ln(r̂_k + r0)
     N_hoạt_động ← số UAV có ít nhất một user
     trả về (U, N_hoạt_động)
@@ -187,7 +193,7 @@ Thủ tục CALIB_IFAIR_MỘT_KHE(q, U_xy, nhóm):
         với mỗi d trong D \ {(0,0)}:
             q_thử ← q';  q_thử_j ← clip(q'_j + d, 0, L)
             (U_thử, N_thử) ← TIỆN_ÍCH(q_thử, U_xy, w)
-            nếu N_thử ≥ N0_act và U_thử > U_tốt:              // không tắt UAV nào
+            nếu N_thử ≥ N0_act và U_thử > U_tốt:              // không làm giảm số UAV có user
                 U_tốt ← U_thử;  d_tốt ← d
         q'_j ← clip(q'_j + d_tốt, 0, L)
     v ← (q' − q) / Δt                                       // vận tốc, ‖v_j‖ ≤ V_max
@@ -220,7 +226,7 @@ flowchart TD
     F --> G{UAV j cách c_j quá V_max·Δt?}
     G -- có --> H[Bay thẳng về c_j]
     G -- không --> I["calib: thử đứng yên + 8 hướng × 2 cỡ bước<br/>tính U = Σ w_k log(r̂_k + r0)"]
-    I --> J[Chọn nước đi tăng U nhiều nhất,<br/>không làm UAV nào mất hết user]
+    I --> J[Chọn nước đi tăng U nhiều nhất,<br/>không làm giảm số UAV có user]
     H --> K{Còn UAV chưa xét?}
     J --> K
     K -- có, UAV kế --> G

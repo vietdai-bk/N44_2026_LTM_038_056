@@ -487,8 +487,8 @@ Bài toán được tách làm hai khối và giải xấp xỉ:
 - **Chia băng (ifair), với vị trí cố định.** Với mỗi UAV m, bài toán con max Σ_{k∈m} w_k log(b_k B ŜE_k) với
   Σ b_k ≤ 1 có nghiệm b_k = w_k / Σ_{k'∈m} w_{k'} (băng thông tỷ lệ với trọng số, không phụ thuộc kênh). Nhóm chọn
   b_k ∝ w_k / max(ŜE_k, 0.05) thay vì nghiệm đó, để *tốc độ* dự đoán tỷ lệ với trọng số,
-  r̂_k = B·w_k / Σ_{k'∈m} w_{k'}/ŜE_{k'}. Nghĩa là trong một UAV, user critical luôn có tốc độ gấp 4 lần user normal
-  dù kênh của nó xấu hơn. Đây là max-min có trọng số trong từng UAV, ưu tiên user kém nhất của mỗi nhóm hơn nghiệm tổng
+  r̂_k = B·w_k / Σ_{k'∈m} w_{k'}/ŜE_{k'}. Công thức rút gọn này chỉ đúng khi mọi user trong UAV có ŜE ≥ 0.05; khi đó
+  trong một UAV, user critical có tốc độ gấp 4 lần user normal dù kênh của nó xấu hơn (user có ŜE = 0 vẫn có tốc độ 0). Đây là max-min có trọng số trong từng UAV, ưu tiên user kém nhất của mỗi nhóm hơn nghiệm tổng
   log thuần; hàm Σ w log r được dùng ở khối di chuyển bên dưới để đánh giá vị trí.
 - **Di chuyển (calib), với cách chia băng ở trên.** UAV còn cách tâm cụm k-means quá một bước thì bay thẳng về tâm
   cụm. Khi đã tới, ở mỗi khe lần lượt từng UAV (UAV sau thấy vị trí mới của UAV trước, tức tối ưu theo từng tọa độ)
@@ -589,12 +589,12 @@ thật sự yếu, và việc chia băng thông chỉ có tác dụng khi áp �
 Phần chia băng `ifair` tính SINR thật của từng user (có nhiễu từ mọi UAV đang phục vụ), đổi ra hiệu suất phổ dự đoán
 theo đường cong LTE, rồi chia b_k ∝ w_k / ŜE_k, với w_k là trọng số nhóm của user (1, 2, 4 cho normal, important,
 critical) và sàn 0.05 bit/s/Hz để user gần như mất sóng không hút hết băng. Khi mọi user cùng nhóm, cách chia này làm
-tốc độ các user trong một UAV bằng nhau; khi có nhóm, user critical nhận tốc độ gấp 4 lần user normal cùng UAV. So với maxmin của baseline (dùng SNR không nhiễu và Shannon không trần), `ifair` biết user nào đang chịu
+tốc độ các user trong một UAV bằng nhau; khi có nhóm, user critical nhận tốc độ gấp 4 lần user normal cùng UAV (khi ŜE của các user không thấp hơn sàn). So với maxmin của baseline (dùng SNR không nhiễu và Shannon không trần), `ifair` biết user nào đang chịu
 nhiễu và không phí băng cho user đã chạm trần LTE. Trọng số b_k được áp ở tầng MAC qua scheduler WPF.
 
 Phần di chuyển `calib` có hai pha. Khi UAV còn cách tâm cụm k-means hơn một bước bay, nó bay thẳng về tâm như kmeans.
 Khi đã tới nơi, mỗi khe nó thử đứng yên và 8 hướng với hai cỡ bước, giữ nước đi làm tăng tiện ích U ở mục 4.11 nhiều
-nhất; các UAV được xét lần lượt. Nước đi làm một UAV mất hết user bị loại: khi chưa có ràng buộc này, tìm kiếm cục bộ
+nhất; các UAV được xét lần lượt. Trong pha tìm kiếm này (không áp cho pha bay về tâm cụm), nước đi làm giảm số UAV có user bị loại: khi chưa có ràng buộc này, tìm kiếm cục bộ
 hay "tắt" một UAV để giảm nhiễu tức thời và rơi vào nghiệm kém.
 
 ```
