@@ -171,4 +171,73 @@ d.box(30, 300, 1090, 120, "<b>Luồng một khe:</b> (1) nhận lệnh lái tay 
       "trong luồng riêng và trả bảng mô hình so với NS-3 về web.",
       fill="#f6f7f9", stroke="#d3d8e0", style="rounded=1;arcSize=6;align=left;spacingLeft=12;")
 d.save()
+
+# 6. Lưu đồ phát lại kế hoạch trong NS-3 ------------------------------------------------------------------------------------
+d = D("phat_lai_ns3", 900, 860)
+d.text(0, 5, 900, 30, "Lưu đồ phát lại một kế hoạch trong NS-3 (uav-lte)", 17, bold=True)
+a0 = d.box(330, 50, 240, 45, "Bắt đầu", fill="#e5edf8", stroke=NAVY, style="rounded=1;arcSize=50;", bold=True)
+a1 = d.box(250, 120, 400, 50, "Đọc kế hoạch uavs.csv, users.csv")
+a2 = d.box(250, 195, 400, 70, "Dựng mạng: remote host, EPC/PGW, eNB (UAV), UE (user)<br>"
+           "<font style='font-size:11px'>link=ideal: thay EPC/LTE bằng liên kết điểm-điểm</font>")
+a3 = d.box(250, 290, 400, 50, "Đặt điểm mốc vị trí eNB, UE; attach UE theo khe 0")
+a4 = d.box(250, 365, 400, 90, "<b>Đầu khe n</b><br>đặt tốc độ phát UDP từng user<br>handover X2 nếu kế hoạch đổi UAV<br>đặt trọng số WPF b<sub>k</sub> (10 ms, 150 ms)",
+           fill="#fff1dc", stroke=AMBER)
+a5 = d.box(250, 480, 400, 70, "<b>Trong khe</b>: gói UDP 1200 B mang số thứ tự và thời điểm gửi;<br>UE ghi gói nhận và độ trễ")
+a6 = d.box(250, 575, 400, 70, "<b>Cuối khe n</b>: ghi gói gửi/nhận, byte, tổng độ trễ, cell đang gắn;<br>đặt lại bộ đếm",
+           fill="#fff1dc", stroke=AMBER)
+a7 = d.box(295, 670, 310, 80, "Còn khe?", style="rhombus;")
+a8 = d.box(250, 780, 400, 55, "Ghi ns3_slots.csv, flowmon.xml", fill="#e2f3e8", stroke="#157a3a", style="rounded=1;arcSize=50;", bold=True)
+for x, y in [(a0, a1), (a1, a2), (a2, a3), (a3, a4), (a4, a5), (a5, a6), (a6, a7)]:
+    d.edge(x, y)
+d.edge(a7, a8, "không")
+d.edge(a7, a4, "có (khe n+1)", exit=(1, 0.5), entry=(1, 0.5), points=[(760, 710), (760, 410)])
+d.save()
+
+# 7. Trình tự WebSocket -----------------------------------------------------------------------------------------------------
+d = D("giao_thuc_ws", 1000, 720)
+d.text(0, 5, 1000, 30, "Trình tự trao đổi giữa trình duyệt và server", 17, bold=True)
+c = d.box(120, 50, 220, 45, "<b>Trình duyệt</b>", fill="#e5edf8", stroke=NAVY)
+s_ = d.box(660, 50, 220, 45, "<b>Server (live.py)</b>", fill="#fff1dc", stroke=AMBER)
+d.box(229, 95, 2, 600, "", fill="#7d8795", stroke="none", style="")
+d.box(769, 95, 2, 600, "", fill="#7d8795", stroke="none", style="")
+msgs = [(">", "HTTP GET /, /config.js (cổng 8000)", "#4d5766", False),
+        ("<", "index.html, WS_PORT", "#4d5766", True),
+        (">", "WebSocket handshake (cổng 8001)", "#4d5766", False),
+        ("<", "info: cấu hình, giới hạn, thuật toán, trạng thái", BLUE, True),
+        ("<", "state: vị trí, liên kết, SINR, tốc độ, chỉ số (mỗi khe 0.25 s)", BLUE, True),
+        (">", '{"cmd":"vel","uav":0,"vx":15,"vy":0}', ORANGE, False),
+        ("<", "info (phát cho mọi trình duyệt); lệnh sai → note lỗi", BLUE, True),
+        (">", '{"cmd":"measure","seconds":15,"link":"ideal",...}', ORANGE, False),
+        ("<", "info: recording → running (NS-3 ở luồng riêng) → done + kết quả", BLUE, True),
+        (">", "đóng kết nối → còn 0 trình duyệt: dừng mọi UAV lái tay", RED, False)]
+for i, (dirn, text, color, dashed) in enumerate(msgs):
+    y = 125 + i * 57
+    l = d.box(225, y, 10, 10, "", fill="none", stroke="none", style="")
+    r = d.box(765, y, 10, 10, "", fill="none", stroke="none", style="")
+    a, b = (l, r) if dirn == ">" else (r, l)
+    d.edge(a, b, text, color=color, dashed=dashed, straight=True)
+d.save()
+
+# 8. Chồng giao thức đường LTE ----------------------------------------------------------------------------------------------
+d = D("chong_giao_thuc", 1150, 520)
+d.text(0, 5, 1150, 30, "Đường đi của một gói dữ liệu đường xuống trong NS-3 LTE", 17, bold=True)
+def stack(x, title, layers, fill, stroke):
+    d.text(x, 45, 220, 25, title, 14, NAVY, True)
+    ids = []
+    for i, t in enumerate(layers):
+        ids.append(d.box(x, 75 + i * 48, 220, 42, t, fill=fill, stroke=stroke))
+    return ids
+rh = stack(20, "Remote host", ["Bộ phát UDP<br><font style='font-size:11px'>SeqTsHeader + 1200 B</font>", "UDP (cổng 9)", "IP 1.0.0.0/8", "Point-to-point 10 Gb/s, 1 ms"], "#e5edf8", NAVY)
+pg = stack(310, "PGW / SGW (EPC)", ["IP", "GTP-U / UDP / IP", "Point-to-point (S1-U)"], "#f6f7f9", "#aeb6c2")
+en = stack(600, "eNB (UAV)", ["GTP-U / UDP / IP", "PDCP", "RLC UM, bộ đệm 1 MiB", "MAC: scheduler PF / RR / <b>WPF (b<sub>k</sub>)</b>", "PHY: AMC, HARQ"], "#fff1dc", AMBER)
+ue = stack(890, "UE (user)", ["UDP server: đo độ trễ, mất gói", "UDP / IP 7.0.0.0/8", "PDCP / RLC", "MAC", "PHY"], "#e2f3e8", "#157a3a")
+d.edge(rh[3], pg[2], "", width=2)
+d.edge(pg[2], en[0], "GTP-U", width=2, exit=(1, 0.5), entry=(0, 0.5))
+d.edge(en[4], ue[4], "vô tuyến LTE<br>kênh Al-Hourani", width=2)
+x2 = d.box(600, 360, 220, 42, "eNB khác", fill="#fff1dc", stroke=AMBER)
+d.edge(en[4], x2, "X2: handover khi kế hoạch đổi UAV", dashed=True, exit=(0.5, 1), entry=(0.5, 0))
+d.box(20, 430, 1100, 70, "<b>Chế độ liên kết lý tưởng:</b> bỏ EPC và LTE; remote host nối mỗi UE bằng một liên kết điểm-điểm riêng, tốc độ = tốc độ phục vụ lý thuyết "
+      "của khe (bù header 30 B), hàng đợi DropTail 1 MiB. Dùng để kiểm chứng mô hình hàng đợi (tầng 2 của kiểm chứng ba tầng).",
+      fill="#f6f7f9", stroke="#d3d8e0", style="rounded=1;arcSize=6;align=left;spacingLeft=12;")
+d.save()
 print("ok", sorted(p.name for p in OUT.glob("*.drawio")))

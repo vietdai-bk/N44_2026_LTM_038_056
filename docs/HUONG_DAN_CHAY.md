@@ -704,6 +704,37 @@ throughput nhóm normal 0.49 → 0.95 Mbps (4 Mbps/user), throughput tổng như
 Bản Shannon trùng bản LTE trong 1–2%. Hình `experiments/results/classes.png`, số liệu `classes.csv`, tạo bằng
 `experiments/compare_classes.py`. Chi tiết ở mục 14.11 tài liệu thiết kế.
 
+## Tái lập từng thí nghiệm của báo cáo
+
+Các lệnh chạy từ thư mục dự án với Python trong `.venv`; NS-3 cần được build trước bằng `ns3/install.sh`. 
+
+| Kết quả | Lệnh | Thời gian |
+|---|---|---|
+| E1 | `python -m uavsim.run` | dưới 5 s |
+| E2 | `python -m uavsim.ns3 --algos hover-equal kmeans-equal kmeans-maxmin --load 0.5 0.6 0.7 0.8 0.9 1.0 --seeds 5 --set slots=60` | khoảng 36 phút |
+| E3, E4 | `python -m uavsim.validate --runs …` (xem tài liệu thiết kế, mục 14.3–14.5) | |
+| E5 | `python -m uavsim.ns3 --link lte --set demand_mbps=1 --load 0.5 1 1.5 2 2.5 3 4 --seeds 3 --set slots=60` | khoảng 30 phút |
+| E6 | Như E5, thêm `--scheduler wpf --algos hover-maxmin kmeans-maxmin` | khoảng 20 phút |
+| E7 | Như E5, E6 với `--link ideal`, rồi `python experiments/plot_three_tier.py <thư mục ideal> <thư mục lte> <hình>` | vài phút |
+| E9 | `python -m uavsim.live --gazebo`, mở `http://localhost:8000` | |
+| E10 | `python -m uavsim.ns3 --link lte --algos calib-ifair kmeans-ifair calib-equal --scheduler wpf --set demand_mbps=1 --load 0.5 1 1.5 2 2.5 3 4 --seeds 3 --set slots=60`, rồi `python experiments/compare_proposed.py experiments/results/proposed` | khoảng 40 phút |
+| E11 | `python -m uavsim.ns3 --algos calib-ifair calib-ifair-shannon --scheduler wpf --set demand_mbps=1 --set important_frac=0.25 --set critical_frac=0.15 --load 0.5 1 1.5 2 2.5 3 4 --seeds 3 --set slots=60 --out experiments/results/ns3-classes-lte`; lệnh tương tự với `--algos kmeans-wmaxmin --out experiments/results/ns3-wmaxmin-lte`; rồi `python experiments/compare_classes.py experiments/results/classes` | khoảng 25 phút |
+| Kiểm thử | `python -m pytest -q tests` | khoảng 1 phút |
+
+Kết quả đã chạy có sẵn trong `experiments/results/`, mỗi thư mục kèm `config.json` để chạy lại đúng cấu hình.
+
+
+### Ảnh động, sơ đồ, slide
+
+Ảnh động (dùng khi thuyết trình, trong báo cáo dùng một khung hình): `experiments/results/anim.gif` (hover, kmeans,
+random), `experiments/results/anim_classes.gif` (kmeans-equal, calib-ifair-noclass, calib-ifair với ba nhóm user; tạo
+bằng `python -m uavsim.animate --algos kmeans-equal calib-ifair-noclass calib-ifair --set slots=60 --set demand_mbps=2
+--set rate_model=lte --set lte_alpha=0.401 --set lte_se_max=3.514 --set important_frac=0.25 --set critical_frac=0.15
+--set seed=1 --every 1 --out experiments/results/anim_classes.gif`). Sơ đồ draw.io sinh lại bằng
+`python docs/figures/make_diagrams.py docs/figures` rồi `drawio -x -f png -s 2 -o <tên>.png <tên>.drawio`. Bộ slide
+LaTeX ở `slides/main.tex` (biên dịch `cd slides && latexmk -pdf main.tex`).
+
+
 ## Hạn chế
 
 - Độ cao cố định.

@@ -1,8 +1,8 @@
 # Cấp phát tài nguyên cho mạng nhiều UAV làm trạm gốc trên không: mô hình giải tích, kiểm chứng ba tầng bằng NS-3 và điều khiển thời gian thực
 
 Báo cáo tóm tắt dự án cuối kỳ môn Lập trình mạng. Bố cục theo tám mục của tiêu chí đánh giá. Số liệu lấy từ các lần
-chạy lưu trong `experiments/results/`; chi tiết kỹ thuật đầy đủ hơn nằm trong `docs/THIET_KE_MO_PHONG.md`. Phần gợi
-ý cho việc viết báo cáo dài và làm slide được để riêng ở Phụ lục D.
+chạy lưu trong `experiments/results/`; chi tiết kỹ thuật đầy đủ hơn nằm trong `docs/THIET_KE_MO_PHONG.md`. Hướng dẫn
+viết bản nộp nằm ở `docs/KHUNG_BAO_CAO.md`.
 
 ## Mục lục
 
@@ -16,8 +16,7 @@ chạy lưu trong `experiments/results/`; chi tiết kỹ thuật đầy đủ h
 8. [Tài liệu tham khảo](#8-tài-liệu-tham-khảo)
 - [Phụ lục A. Bảng ký hiệu](#phụ-lục-a-bảng-ký-hiệu)
 - [Phụ lục B. Danh mục hình](#phụ-lục-b-danh-mục-hình)
-- [Phụ lục C. Tái lập kết quả](#phụ-lục-c-tái-lập-kết-quả)
-- [Phụ lục D. Ghi chú cho người viết báo cáo và làm slide](#phụ-lục-d-ghi-chú-cho-người-viết-báo-cáo-và-làm-slide)
+- [Phụ lục C. Dữ liệu kết quả](#phụ-lục-c-dữ-liệu-kết-quả)
 
 ---
 
@@ -113,34 +112,9 @@ scheduler ở tầng MAC, giao tiếp WebSocket giữa trình duyệt và server
 
 ### 3.1. Sơ đồ tổng thể
 
-```
-┌──────────────────────────── uavsim (Python) ────────────────────────────┐
-│ SimConfig ──► Network: kênh A2G, SINR, rate, hàng đợi, năng lượng       │
-│                  ▲            │                                         │
-│      Action      │            │ trạng thái (vị trí, độ lợi kênh)        │
-│                  │            ▼                                         │
-│        Thuật toán: hover/kmeans/random × equal/maxmin, DRL (Gymnasium)  │
-│                                                                         │
-│  ┌─────────── run.py ──────────┐   ┌──────────── ns3.py ──────────────┐ │
-│  │ so sánh thuật toán, CSV,    │   │ ghi kế hoạch plan/uavs.csv,      │ │
-│  │ biểu đồ, animation          │   │ users.csv; gọi NS-3; đọc số đo   │ │
-│  └─────────────────────────────┘   └──────────────┬───────────────────┘ │
-│  ┌─────────── live.py ─────────────────────┐      │                     │
-│  │ vòng lặp thời gian thực, lái tay, ghi    │      │                     │
-│  └───┬───────────────────────┬──────────────┘      │                     │
-└──────┼───────────────────────┼─────────────────────┼─────────────────────┘
-       │ WebSocket (JSON)      │ gz-transport        │ subprocess + CSV
-       ▼                       ▼ (protobuf)          ▼
- Dashboard web           Gazebo Harmonic        NS-3 3.47 (C++): uav-lte
- (bản đồ 2D, chỉ số,     (hiển thị 3D trên      link=lte:   eNB bay, UE, EPC,
-  biểu đồ, lái tay)       bãi thảm họa)                     handover X2, UDP
-                                                link=ideal: liên kết điểm-điểm,
-                                                            tốc độ = rate lý thuyết
-                                                      │
-                                                      ▼
-                                       ns3_slots.csv: gói gửi/nhận, byte,
-                                       delay từng khe từng user; trace PHY/MAC
-```
+![Hình 2. Kiến trúc tổng thể](figures/kien_truc.png)
+
+*Hình 2. Kiến trúc tổng thể.*
 
 ### 3.2. Các thành phần
 
@@ -175,13 +149,9 @@ trong NS-3. Chi tiết giao thức ở mục 5.10.
 
 ### 3.4. Thiết kế kiểm chứng ba tầng
 
-```
-Tầng 1: Lý thuyết            Tầng 2: NS-3 liên kết lý tưởng      Tầng 3: NS-3 LTE
-công thức Shannon,     ──►   gói UDP thật, tốc độ liên kết  ──►  eNB/UE/EPC, PHY, AMC,
-hàng đợi theo khe            = rate lý thuyết từng khe,          scheduler, HARQ, RLC,
-                             hàng đợi DropTail 1 MiB             handover
-        └──── khớp < 1% ────┘         └─────── chênh lệch ──────┘
-```
+![Hình 3. Kiểm chứng ba tầng](figures/ba_tang.png)
+
+*Hình 3. Kiểm chứng ba tầng.*
 
 Nếu chỉ so lý thuyết với NS-3 LTE thì khi hai bên khác nhau, ta không biết là do mô hình tính sai hay do LTE. Tầng
 giữa giải quyết chuyện này: nó giữ nguyên mọi thứ của lý thuyết (tốc độ phục vụ, bộ đệm, lưu lượng) và chỉ thay công
@@ -426,14 +396,13 @@ giải xấp xỉ. Khi so sánh cần tách hai câu hỏi:
 | `*-equal` | Gần với max Σ r_k (chia đều băng) | Không cần | Baseline hiệu quả |
 | `*-maxmin` | max min r_k trong từng UAV | Shannon, bỏ qua nhiễu | Baseline công bằng |
 | `kmeans-wmaxmin` | max min r_k/w_k trong từng UAV (max-min có trọng số) | Shannon, bỏ qua nhiễu | Baseline biết nhóm |
-| DRL (PPO) | max Σ r_k, phạt r_k < r_min | Shannon | Baseline học máy |
 | `kmeans-ifair` | Σ w log r (chỉ khối chia băng) | LTE hiệu chỉnh, có nhiễu | Bản tách thành phần |
 | `calib-equal` | Σ w log r (chỉ khối di chuyển) | LTE hiệu chỉnh, có nhiễu | Bản tách thành phần |
 | `calib-ifair-noclass` | Σ log r (mọi w = 1) | LTE hiệu chỉnh, có nhiễu | Cùng mục tiêu, bỏ qua nhóm |
 | `calib-ifair-shannon` | Σ w log r | Shannon, có nhiễu, không trần | Cùng mục tiêu, mô hình như bài báo |
 | **`calib-ifair`** | **Σ w log r (cả hai khối)** | **LTE hiệu chỉnh, có nhiễu** | **Đề xuất** |
 
-Các baseline `equal`, `maxmin`, DRL không biết nhóm user: chúng coi mọi user như nhau. Baseline `kmeans-wmaxmin` biết
+Các baseline `equal`, `maxmin` không biết nhóm user: chúng coi mọi user như nhau. Baseline `kmeans-wmaxmin` biết
 nhóm, để so sánh công bằng với thuật toán đề xuất trên cùng thông tin.
 
 Các baseline có mục tiêu khác với thuật toán đề xuất. Đây là cách so sánh thường gặp: chúng đại diện cho các lựa chọn
@@ -442,6 +411,9 @@ pháp* chứ không chỉ vì *mục tiêu khác*, nhóm thêm bốn bản cùng
 khối. `calib-ifair-noclass` giữ nguyên thuật toán nhưng cho mọi w = 1, để thấy trọng số nhóm đổi được gì và mất gì.
 `calib-ifair-shannon` giữ nguyên mục tiêu và cách tìm kiếm nhưng tính tốc độ bằng Shannon, đúng cách các bài báo làm,
 để tách phần lợi ích do đường cong LTE hiệu chỉnh.
+
+Dự án có sẵn môi trường Gymnasium để huấn luyện agent học tăng cường (mục 3.2), nhưng chưa huấn luyện agent nào, nên
+không có baseline học máy trong các thí nghiệm; đây là một hướng phát triển (mục 7.3).
 
 ### 4.11. Những điều chỉnh so với mô hình chuẩn
 
@@ -672,13 +644,9 @@ có trễ truyền. Đầu mỗi khe, tốc độ liên kết được đặt b�
 (1200 + 30)/1200 để bù phần header UDP/IP/PPP. Hàng đợi DropTail chứa đúng 1 MiB dữ liệu, và hàng đợi mặc định của
 lớp traffic-control được gỡ bỏ để chỉ còn một hàng đợi như trong mô hình.
 
-```
-Lưu đồ phát lại một kế hoạch:
-đọc uavs.csv, users.csv → dựng EPC, eNB, UE, remote host → đặt điểm mốc → attach
-→ với mỗi khe: đầu khe đặt tốc độ UDP, handover nếu đổi UAV, đặt trọng số WPF;
-               cuối khe ghi số đo và đặt lại bộ đếm
-→ ghi ns3_slots.csv, flowmon.xml
-```
+![Hình 4. Lưu đồ phát lại một kế hoạch trong NS-3](figures/phat_lai_ns3.png)
+
+*Hình 4. Lưu đồ phát lại một kế hoạch trong NS-3.*
 
 ### 5.8. Scheduler Weighted Proportional Fair
 
@@ -699,16 +667,9 @@ Phần này cho phép quan sát và can thiệp vào kịch bản trong lúc nó
 nhóm): nền sáng, viền mảnh, số liệu font đơn cách để không nhảy chữ khi cập nhật, trạng thái thể hiện bằng pill và badge
 có cả chữ lẫn màu.
 
-```
-Trình duyệt (dashboard)  ◄── WebSocket (JSON) ──►  Server (asyncio)
-  vẽ 60 Hz, nội suy             lái tay, bay tới,          │ mỗi khe 0.25 s
-  bản đồ, chỉ số, biểu đồ       đổi thuật toán, tốc độ,    ▼
-  tham số, đo NS-3              tham số, đo NS-3      thuật toán → quyết định → mô hình
-                                                       (Shannon và LTE dự đoán)
-                                                            │ gz-transport, 20 Hz    │ đủ khe
-                                                            ▼                        ▼
-                                                     Gazebo (hiển thị)        NS-3 (luồng riêng)
-```
+![Hình 5. Kiến trúc điều khiển thời gian thực](figures/thoi_gian_thuc.png)
+
+*Hình 5. Kiến trúc điều khiển thời gian thực.*
 
 Mô hình chạy đúng thời gian thực với khe 0.25 s và có thể tăng tốc 0.5× đến 4×. Phiên bản đầu dùng khe 1 s chạy nhanh
 gấp đôi, nên UAV nhảy từng bước 20 m; nay trình duyệt vẽ lại 60 lần mỗi giây và nội suy vị trí giữa hai khe, còn server
@@ -788,20 +749,9 @@ Trình duyệt gửi lên các lệnh, trường `cmd` xác định loại lện
 | `measure` | `seconds`, `link`, `scheduler` | Ghi một đoạn rồi đo bằng NS-3 |
 | `measure_cancel` | – | Hủy phép đo đang ghi |
 
-```
-Trình duyệt                                   Server
-    │── HTTP GET /, /config.js ─────────────────►│ (cổng 8000)
-    │◄──────────────── index.html, WS_PORT ───────│
-    │── WebSocket handshake ────────────────────►│ (cổng 8001)
-    │◄──────────────────────────── info ──────────│
-    │◄──────────────────────────── state ─────────│ mỗi khe
-    │◄──────────────────────────── state ─────────│
-    │── {"cmd":"vel","uav":0,"vx":15,"vy":0} ────►│ kiểm tra, áp vào khe kế
-    │◄──────────────────────────── info ──────────│ (phát cho mọi trình duyệt)
-    │── {"cmd":"measure",...} ──────────────────►│ ghi N khe ─► NS-3 (luồng riêng)
-    │◄──────────── info: recording ─► running ─► done + kết quả
-    │── đóng kết nối ───────────────────────────►│ còn 0 trình duyệt: dừng mọi UAV lái tay
-```
+![Hình 17. Trình tự trao đổi giữa trình duyệt và server](figures/giao_thuc_ws.png)
+
+*Hình 17. Trình tự trao đổi giữa trình duyệt và server.*
 
 Xử lý lỗi và an toàn: lệnh sai cú pháp, sai kiểu hoặc ngoài giới hạn chỉ bị từ chối (server ghi lý do vào `note` và
 gửi lại `info`), không làm sập server. Khi trình duyệt cuối cùng ngắt kết nối, mọi UAV lái tay dừng lại thay vì bay
@@ -833,19 +783,9 @@ phát lại kế hoạch có sẵn, không cần tương tác trong lúc chạy,
 
 **e) Mạng mô phỏng trong NS-3.** Ở chế độ LTE, mỗi gói dữ liệu đi qua các tầng sau:
 
-```
-Remote host                PGW/SGW (EPC)               eNB (UAV)                    UE (user)
- bộ phát UDP              ┌──────────────┐          ┌──────────────┐           ┌──────────────┐
- SeqTsHeader + 1200 B     │ IP           │  GTP-U   │ PDCP         │   LTE     │ PDCP         │
- UDP (cổng 9)             │ GTP-U/UDP/IP │ ───────► │ RLC UM 1 MiB │  vô tuyến │ RLC          │
- IP 1.0.0.0/8 ──p2p──────►│              │  (S1-U)  │ MAC: PF/RR/  │ ────────► │ MAC          │
- 10 Gb/s, trễ 1 ms        └──────────────┘          │  WPF (b_k)   │ kênh      │ PHY          │
-                                                    │ PHY, AMC,    │ Al-Hourani│ UDP server   │
-                                                    │ HARQ         │           │ IP 7.0.0.0/8 │
-                                                    └──────┬───────┘           └──────────────┘
-                                                           │ X2: handover khi kế hoạch đổi UAV
-                                                         eNB khác
-```
+![Hình 18. Đường đi của một gói dữ liệu đường xuống trong NS-3 LTE](figures/chong_giao_thuc.png)
+
+*Hình 18. Đường đi của một gói dữ liệu đường xuống trong NS-3 LTE.*
 
 Remote host có một socket UDP cho mỗi UE, gửi đường xuống tới địa chỉ của UE ở cổng 9. Mỗi gói mang `SeqTsHeader`
 (số thứ tự và thời điểm gửi), nên phía UE tính được độ trễ và số gói mất của từng gói. Tốc độ gửi đổi đúng đầu mỗi khe
@@ -887,7 +827,7 @@ seed mà thuật toán thứ nhất tốt hơn.
 | E6 | Scheduler WPF | 2 × 7 × 3 = 42 run | Chia băng thông ở tầng MAC có tác dụng không? |
 | E7 | Ba tầng | 63 + 42 = 105 run | Mô hình có đúng ở mức gói tin không? |
 | E8 | Thời gian chạy | | Chi phí tính toán |
-| E9 | Điều khiển thời gian thực | 14 khe, 23 model | Dashboard và Gazebo có đồng bộ không? |
+| E9 | Điều khiển thời gian thực | 40 khe; 20 khe với Gazebo | Lái tay, đồng bộ Gazebo, phát lại NS-3 có đúng không? |
 | E10 | Thuật toán đề xuất | 3 thuật toán × 7 × 3 = 63 run LTE + 63 run lý tưởng | Thiết kế dựa trên số đo NS-3 có tốt hơn không? |
 | E11 | Ba nhóm user | 3 thuật toán × 7 × 3 = 63 run LTE (baseline không biết nhóm dùng lại E5, E6, E10) | Ưu tiên được user critical không, hơn max-min có trọng số không, giá phải trả là gì, LTE hay Shannon? |
 
@@ -1113,6 +1053,9 @@ Thời gian chạy một khe của mô hình (đo trên máy ở mục 5.11):
 | kmeans-equal, có lưu lượng | 3.02 ms |
 | kmeans, 5 UAV, 50 user | 1.33 ms |
 | kmeans, 10 UAV, 100 user | 2.67 ms |
+| calib-ifair, 3 UAV, 20 user, khe 0.25 s, có lưu lượng | 1.8 ms quyết định, 4.3 ms cả khe (tối đa 8.6 ms) |
+| calib-ifair, 8 UAV, 60 user, như trên | 5.7 ms quyết định, 9.7 ms cả khe (tối đa 13.4 ms) |
+| calib-ifair, 10 UAV, 100 user, chỉ quyết định | 14.5 ms (trung vị) |
 
 Thời gian tăng gần tuyến tính theo tích M·K, phù hợp với độ phức tạp của kmeans và phép tính nhiễu. Phần độ trễ FIFO
 thêm khoảng 2 ms mỗi khe nhưng mô hình vẫn chạy nhanh hơn thời gian thực khoảng 300 lần. Một run NS-3 60 khe mất 110–343
@@ -1126,17 +1069,33 @@ giây (trung vị 254 giây) ở chế độ LTE và 1–14 giây (trung vị 6 
 | SINR và tốc độ có nhiễu | O(MK) | O(MK) |
 | kmeans, I vòng lặp | O(I·M·K) | O(M + K) |
 | Hàng đợi và độ trễ FIFO | O(n_s·K + Σ h_k) | O(Σ h_k) |
+| calib-ifair: SINR có nhiễu và chia băng ifair | O(MK) | O(MK) |
+| calib-ifair: di chuyển, 17 ứng viên cho mỗi UAV, mỗi ứng viên tính lại tiện ích toàn mạng | O(17·M·MK) = O(M²K) | O(MK) |
+| calib-ifair, cả khe | O(I·M·K + 17·M²·K) | O(MK) |
 
 Ở đây n_s = 200 là số bước nhỏ trong một khe và h_k là độ dài phần lịch sử hàng đợi còn lại của user k.
 
+calib-ifair là thuật toán đắt nhất vì khối di chuyển tăng theo bình phương số UAV: mỗi UAV thử 17 nước đi và mỗi nước
+đi tính lại SINR của toàn mạng. Số đo phù hợp với điều này: từ 3 UAV, 20 user lên 10 UAV, 100 user (M²K tăng khoảng 55
+lần), thời gian quyết định tăng khoảng 8 lần, vì pha bay về tâm cụm không tốn tìm kiếm và NumPy xử lý véc-tơ hiệu quả
+hơn khi K lớn. Ngay ở cấu hình lớn nhất của dashboard (8 UAV, 60 user), một khe chỉ cần dưới 14 ms trong khi khe dài
+250 ms, nên thuật toán chạy được thời gian thực.
+
 ### 6.10. Điều khiển thời gian thực (E9)
 
-Khi ra lệnh 30 m/s cho một UAV lái tay, UAV đi đúng 20 m mỗi khe (giới hạn tốc độ) trong khi các UAV khác vẫn theo thuật
-toán. Để kiểm tra đồng bộ, nhóm đọc cùng lúc vị trí server gửi cho dashboard và vị trí các model trong Gazebo trong 14
-khe, với 3 UAV và 20 user, trong lúc một UAV đang được lái chéo; sai lệch lớn nhất là 0.00 m. Một phiên được ghi rồi
-phát lại trong NS-3 lý tưởng cho throughput 19.99 Mbps so với 20 Mbps của mô hình, mất gói 0.012%. Chu kỳ cập nhật là
-0.5 s mỗi khe, trong khi mô hình chỉ cần khoảng 3 ms để tính một khe. Server không dừng khi nhận lệnh sai, UAV lái tay tự
-dừng khi mất kết nối, và Gazebo tự đóng khi tắt server.
+Đo trên phiên bản hiện tại: khe 0.25 s chạy đúng thời gian thực, calib-ifair, 3 UAV, 20 user (15% critical, 25%
+important), lưu lượng 1 Mbps/user.
+
+| Yêu cầu | Cách kiểm tra | Kết quả |
+|---|---|---|
+| Lái tay đúng vận tốc, có giới hạn | Lệnh 30 m/s cho UAV 0 trong 40 khe | UAV 0 đi đúng 200 m (= 20 m/s × 0.25 s × 40), bị cắt về V_max; hai UAV còn lại vẫn theo thuật toán |
+| Đủ nhanh cho thời gian thực | Thời gian tính một khe | Trung bình 3.4 ms, tối đa 3.9 ms, so với khe 250 ms |
+| Gazebo đồng bộ với mô hình | 20 khe, UAV 0 lái chéo; so vị trí UAV trong Gazebo (đọc topic `pose/info`) với mô hình sau mỗi khe | Lệch lớn nhất 0.000 m; 16/20 lời gọi service trả lời trong 100 ms, các lần trễ vẫn được Gazebo áp trước lần đọc |
+| Phiên ghi phát lại được trong NS-3 | Ghi 40 khe (10 s) rồi phát lại, WPF | Liên kết lý tưởng: 19.99 so với 20.0 Mbps, độ trễ 3.89 so với 3.87 ms, mất 0.04%, chạy 0.3 s. LTE: 19.72 Mbps, độ trễ 134 ms, mất 1.4%, chạy 13.7 s; UE gắn đúng cell 100% |
+| An toàn | Gửi lệnh sai; ngắt mọi trình duyệt; tắt server | Server chỉ từ chối lệnh, không dừng; UAV lái tay dừng; Gazebo đóng theo server |
+
+Kết quả phát lại lặp lại đúng mẫu của mục 6.6–6.8: ở tầng lý tưởng mô hình khớp NS-3, còn trên LTE độ trễ cao hơn nhiều
+do giao thức, dù throughput gần như đủ.
 
 ### 6.11. Thuật toán đề xuất đo bằng NS-3 LTE (E10)
 
@@ -1171,6 +1130,21 @@ tăng, vì băng thông dồn cho user kênh yếu khiến hàng đợi của us
 Khác với maxmin ở mục 6.3, cải thiện này đứng vững trên NS-3 vì thuật toán tính SINR có nhiễu khi chia băng và áp quyết
 định ở tầng MAC. Mục 6.12 cho thấy việc dùng đường cong LTE thay cho Shannon gần như không đổi kết quả, nên lợi ích đến từ
 hai điểm này và từ cách đặt mục tiêu, không đến từ hằng số hiệu chỉnh.
+
+**Độ biến thiên theo seed.** Mỗi seed là một bản đồ user khác nhau nên giá trị tuyệt đối dao động lớn; vì thế bảng
+trên so theo cặp trên cùng seed. Bảng dưới ghi trung bình ± độ lệch chuẩn (min–max) trên 3 seed:
+
+| Mbps/user | Chỉ số | kmeans-equal | kmeans-maxmin | calib-ifair |
+|---|---|---|---|---|
+| 1 | Min throughput (Mbps) | 0.84 ± 0.17 (0.65–0.94) | 0.85 ± 0.16 (0.66–0.95) | 0.95 ± 0.04 (0.90–0.98) |
+| 2 | Min throughput (Mbps) | 0.72 ± 0.18 (0.52–0.83) | 0.79 ± 0.17 (0.60–0.92) | 1.37 ± 0.35 (1.07–1.76) |
+| 4 | Min throughput (Mbps) | 0.67 ± 0.15 (0.51–0.81) | 0.74 ± 0.14 (0.59–0.85) | 1.37 ± 0.39 (1.05–1.80) |
+| 2 | Throughput tổng (Mbps) | 33.9 ± 4.0 (29.7–37.6) | 34.0 ± 4.1 (29.7–37.8) | 34.8 ± 4.9 (29.9–39.7) |
+| 4 | Throughput tổng (Mbps) | 49.9 ± 12.7 (39.0–63.9) | 49.7 ± 13.4 (38.3–64.4) | 48.2 ± 11.8 (38.1–61.2) |
+
+Từ 2 Mbps/user, seed *kém nhất* của calib-ifair (1.05–1.07 Mbps) vẫn cao hơn seed *tốt nhất* của hai baseline
+(0.81–0.92 Mbps), nên khác biệt về min throughput không phải do nhiễu thống kê. Ngược lại, throughput tổng của ba thuật
+toán chồng lên nhau hoàn toàn, khớp với nhận định "giữ trong ±4%".
 
 Hình 15 (`experiments/results/proposed.png`) vẽ bốn chỉ số theo lưu lượng cho cả năm thuật toán; số liệu đầy đủ ở
 `experiments/results/proposed.csv`.
@@ -1224,6 +1198,21 @@ Bốn điều rút ra:
    bit/s/Hz hiếm khi chạm vì SINR thực tế có nhiễu không cao. Như vậy, bộ hằng số LTE có giá trị để *dự đoán* số đo NS-3
    (mục 6.6), nhưng không phải là thứ làm thuật toán tốt hơn. Phần làm thuật toán tốt hơn là tính nhiễu khi chia băng,
    tinh chỉnh vị trí, áp quyết định ở tầng MAC (WPF), và đặt mục tiêu có trọng số theo nhóm.
+
+**Độ biến thiên theo seed** (trung bình ± độ lệch chuẩn, min–max trên 3 seed):
+
+| Mbps/user | Chỉ số | kmeans-equal | kmeans-wmaxmin | calib-ifair |
+|---|---|---|---|---|
+| 2 | Critical đạt QoS (%) | 69 ± 29 (42–99) | 87 ± 11 (78–100) | 97 ± 4 (93–100) |
+| 4 | Critical đạt QoS (%) | 69 ± 29 (41–99) | 86 ± 13 (73–100) | 96 ± 7 (87–100) |
+| 2 | Min throughput critical (Mbps) | 1.27 ± 0.62 (0.83–1.98) | 1.80 ± 0.20 (1.59–1.99) | 1.97 ± 0.05 (1.91–1.99) |
+| 4 | Min throughput critical (Mbps) | 1.64 ± 1.28 (0.79–3.11) | 2.79 ± 1.05 (1.88–3.95) | 3.25 ± 0.68 (2.56–3.93) |
+| 4 | Min throughput normal (Mbps) | 0.68 ± 0.15 (0.52–0.81) | 0.49 ± 0.08 (0.41–0.56) | 0.95 ± 0.36 (0.67–1.36) |
+
+calib-ifair không chỉ có trung bình cao hơn mà còn ổn định hơn nhiều giữa các seed: độ lệch chuẩn của tỷ lệ critical đạt
+QoS là 4–7 điểm phần trăm, so với 11–13 của kmeans-wmaxmin và 29 của kmeans-equal. Với chỉ 3 seed, khoảng min–max của
+calib-ifair và kmeans-wmaxmin còn chồng nhau ở một số chỉ số, nên kết luận "hơn max-min có trọng số" dựa trên so theo
+cặp (mục trên) và cần thêm seed để khẳng định chắc chắn (mục 7.2).
 
 Hình 16 (`experiments/results/classes.png`) vẽ tỷ lệ critical đạt QoS, min throughput của nhóm critical và nhóm normal,
 và throughput tổng theo lưu lượng cho cả sáu thuật toán; số liệu đầy đủ ở `experiments/results/classes.csv`, tạo bằng
@@ -1346,7 +1335,7 @@ và nên dùng hệ số an toàn khoảng 0.5–0.6 khi lập kế hoạch lưu
 | 1 | Kịch bản nhiều UAV, ba nhóm user, tín hiệu và nhiễu | `docs/figures/kich_ban.png` (sửa: `kich_ban.drawio`) |
 | 2 | Kiến trúc tổng thể | `docs/figures/kien_truc.png` (`.drawio`) |
 | 3 | Ba tầng kiểm chứng | `docs/figures/ba_tang.png` (`.drawio`) |
-| 4 | Lưu đồ phát lại kế hoạch trong NS-3 | Mục 5.7, cần vẽ |
+| 4 | Lưu đồ phát lại kế hoạch trong NS-3 | `docs/figures/phat_lai_ns3.png` (`.drawio`) |
 | 4b | Lưu đồ thuật toán đề xuất calib-ifair | `docs/figures/calib_ifair.png` (`.drawio`) |
 | 5 | Kiến trúc điều khiển thời gian thực | `docs/figures/thoi_gian_thuc.png` (`.drawio`) |
 | 6 | Dashboard (thuật toán calib-ifair, ba nhóm user) | `docs/figures/dashboard.png` |
@@ -1360,101 +1349,23 @@ và nên dùng hệ số an toàn khoảng 0.5–0.6 khi lập kế hoạch lưu
 | 14 | Ba tầng, scheduler WPF | `experiments/results/three_tier_wpf.png` |
 | 15 | Thuật toán đề xuất so với baseline, NS-3 LTE | `experiments/results/proposed.png` |
 | 16 | Ba nhóm user: critical đạt QoS, min throughput theo nhóm, throughput tổng, NS-3 LTE | `experiments/results/classes.png` |
+| 17 | Trình tự trao đổi WebSocket | `docs/figures/giao_thuc_ws.png` (`.drawio`) |
+| 18 | Chồng giao thức đường LTE | `docs/figures/chong_giao_thuc.png` (`.drawio`) |
 
-Ảnh động (dùng khi thuyết trình, trong báo cáo dùng một khung hình): `experiments/results/anim.gif` (hover, kmeans,
-random), `experiments/results/anim_classes.gif` (kmeans-equal, calib-ifair-noclass, calib-ifair với ba nhóm user; tạo
-bằng `python -m uavsim.animate --algos kmeans-equal calib-ifair-noclass calib-ifair --set slots=60 --set demand_mbps=2
---set rate_model=lte --set lte_alpha=0.401 --set lte_se_max=3.514 --set important_frac=0.25 --set critical_frac=0.15
---set seed=1 --every 1 --out experiments/results/anim_classes.gif`). Sơ đồ draw.io sinh lại bằng
-`python docs/figures/make_diagrams.py docs/figures` rồi `drawio -x -f png -s 2 -o <tên>.png <tên>.drawio`. Bộ slide
-LaTeX ở `slides/main.tex` (biên dịch `cd slides && latexmk -xelatex main.tex`).
+Ảnh động dùng khi thuyết trình (`experiments/results/anim.gif`, `anim_classes.gif`); trong báo cáo chỉ dùng một khung hình.
 
-## Phụ lục C. Tái lập kết quả
+## Phụ lục C. Dữ liệu kết quả
 
-Các lệnh chạy từ thư mục dự án với Python trong `.venv`; NS-3 cần được build trước bằng `ns3/install.sh`. Phần này dùng
-để kiểm tra lại số liệu, không đưa vào báo cáo nộp.
+Mọi số liệu trong chương 6 lấy từ các thư mục dưới đây. Mỗi thư mục có `config.json` ghi đúng cấu hình đã chạy, nên
+kết quả tái lập được từng bit. Cách chạy lại được hướng dẫn trong tài liệu kèm mã nguồn (`docs/HUONG_DAN_CHAY.md`).
 
-| Kết quả | Lệnh | Thời gian |
+| Thí nghiệm | Thư mục trong `experiments/results/` | Thời gian chạy |
 |---|---|---|
-| E1 | `python -m uavsim.run` | dưới 5 s |
-| E2 | `python -m uavsim.ns3 --algos hover-equal kmeans-equal kmeans-maxmin --load 0.5 0.6 0.7 0.8 0.9 1.0 --seeds 5 --set slots=60` | khoảng 36 phút |
-| E3, E4 | `python -m uavsim.validate --runs …` (xem tài liệu thiết kế, mục 14.3–14.5) | |
-| E5 | `python -m uavsim.ns3 --link lte --set demand_mbps=1 --load 0.5 1 1.5 2 2.5 3 4 --seeds 3 --set slots=60` | khoảng 30 phút |
-| E6 | Như E5, thêm `--scheduler wpf --algos hover-maxmin kmeans-maxmin` | khoảng 20 phút |
-| E7 | Như E5, E6 với `--link ideal`, rồi `python experiments/plot_three_tier.py <thư mục ideal> <thư mục lte> <hình>` | vài phút |
-| E9 | `python -m uavsim.live --gazebo`, mở `http://localhost:8000` | |
-| E10 | `python -m uavsim.ns3 --link lte --algos calib-ifair kmeans-ifair calib-equal --scheduler wpf --set demand_mbps=1 --load 0.5 1 1.5 2 2.5 3 4 --seeds 3 --set slots=60`, rồi `python experiments/compare_proposed.py experiments/results/proposed` | khoảng 40 phút |
-| E11 | `python -m uavsim.ns3 --algos calib-ifair calib-ifair-shannon --scheduler wpf --set demand_mbps=1 --set important_frac=0.25 --set critical_frac=0.15 --load 0.5 1 1.5 2 2.5 3 4 --seeds 3 --set slots=60 --out experiments/results/ns3-classes-lte`; lệnh tương tự với `--algos kmeans-wmaxmin --out experiments/results/ns3-wmaxmin-lte`; rồi `python experiments/compare_classes.py experiments/results/classes` | khoảng 25 phút |
-| Kiểm thử | `python -m pytest -q tests` | khoảng 1 phút |
-
-Kết quả đã chạy có sẵn trong `experiments/results/`, mỗi thư mục kèm `config.json` để chạy lại đúng cấu hình.
-
-## Phụ lục D. Ghi chú cho người viết báo cáo và làm slide
-
-### D.1. Yêu cầu của tiêu chí cần nhớ
-
-Báo cáo không quá 100 trang A4 và không chứa code; dùng mã giả, lưu đồ, công thức và bảng. Các dòng lệnh ở Phụ lục C
-và tên hàm, tên file trong tài liệu này là để người viết tra cứu, không chép vào báo cáo; trong báo cáo chỉ cần nói
-"kết quả tái lập được, mỗi thí nghiệm lưu kèm cấu hình". Kết luận cải tiến phải có số
-liệu hoặc lập luận có căn cứ, và nên có ít nhất một phương pháp tham chiếu để so sánh (ở đây là hover-equal và lý thuyết
-theo kiểu bài báo). Khi dùng giải pháp có sẵn (kmeans, scheduler PF, mô hình Al-Hourani) cần nêu lý do chọn và ưu,
-nhược điểm.
-
-### D.2. Phân bổ số trang gợi ý
-
-| Chương | Điểm | Số trang | Hình, bảng nên có |
-|---|---|---|---|
-| 1. Đóng góp | 5 | 1 | Bảng phân công |
-| 2. Cấp thiết | 10 | 5–7 | Hình 1, bảng so sánh cách làm hiện có |
-| 3. Kiến trúc | 15 | 10–12 | Hình 2, 3, 5; bảng so sánh hệ thống |
-| 4. Mô hình toán | 15 | 12–15 | Bảng tham số, bảng hằng số, ví dụ số |
-| 5. Triển khai | 20 | 15–18 | Mã giả 5.3–5.6, lưu đồ 5.7, hình 4, 6, 7 |
-| 6. Hiệu năng | 25 | 25–30 | Hình 8–16 và các bảng chương 6 |
-| 7. Kết luận | 5 | 2–3 | Bảng mức độ hoàn thành |
-| Tài liệu tham khảo, phụ lục | 5 | 3–5 | |
-
-### D.3. Những điểm nên nhấn mạnh
-
-Năm ý chính xuyên suốt: (0) thuật toán đề xuất calib-ifair với ba nhóm user: nâng min throughput gần gấp đôi trên NS-3
-LTE mà giữ throughput tổng, và khi có nhóm thì đưa tỷ lệ user critical đạt QoS từ 59–69% lên 96–97% với giá throughput
-tổng giảm 4–12%, và hơn cả max-min có trọng số cùng biết nhóm. Đây là phần cải tiến chính; nên gọi là "heuristic cải
-tiến", không gọi là "thuật toán mới" hay "thuật toán tối ưu", vì các thành phần đều dựa trên kỹ thuật đã có. Cần nói
-trung thực rằng lợi ích đến từ việc tính nhiễu, tinh chỉnh vị trí, áp ở MAC và trọng số nhóm; bản dùng Shannon thay đường cong LTE cho kết quả như nhau (mục 6.12); (1) kết quả đo bằng giao thức thật chỉ bằng 25–40% con số Shannon mà các bài báo dùng; (2) nhờ
-tầng liên kết lý tưởng, nhóm chứng minh được mô hình đúng (sai số dưới 1%), nên khoảng chênh là do LTE và đã được giải
-thích bằng ba nguyên nhân; (3) thứ hạng giữa các thuật toán vẫn đúng, còn việc chia băng thông chỉ có tác dụng khi áp ở
-tầng MAC; (4) hệ thống điều khiển thời gian thực đồng bộ hoàn toàn với mô hình và ghi phiên lại để đo được.
-
-Khi viết chương 6, nên nói rõ số liệu là tính hay đo, ghi đơn vị và số seed, và so sánh thuật toán theo cặp trên cùng
-seed. Các sơ đồ ASCII trong tài liệu này nên được vẽ lại bằng draw.io. Thông tin xuất bản của tài liệu tham khảo cần đối
-chiếu lại với bản gốc, và nên bổ sung vài bài báo gần đây (2021–2025) về UAV làm trạm gốc dùng học tăng cường hoặc tối
-ưu cho chương 2.
-
-### D.4. Dàn ý slide (khoảng 20 slide, 15–20 phút)
-
-| # | Slide | Nội dung | Hình |
-|---|---|---|---|
-| 1 | Tiêu đề | Tên đề tài, nhóm, giảng viên | |
-| 2 | Bối cảnh | Thiên tai, sự kiện đông người, UAV mang trạm gốc | Ảnh minh họa |
-| 3 | Vấn đề | Bài báo chỉ tính bằng Shannon; con số thật là bao nhiêu? | |
-| 4 | Mục tiêu | Sáu mục tiêu ở mục 2.3 | |
-| 5 | Kịch bản | M UAV, K user, nhiễu, khe thời gian | Hình 1 |
-| 6 | Mô hình kênh | Al-Hourani; từ 100 m lên 300 m mất 20 dB | |
-| 7 | Tốc độ, năng lượng, hàng đợi | Ba công thức chính, độ trễ FIFO | |
-| 8 | Bài toán tối ưu | Ba nhóm user, max Σ w log r, ràng buộc mỗi UAV, tính không lồi; mục tiêu và cách chấm điểm tách riêng | |
-| 9 | Kiến trúc | | Hình 2 |
-| 10 | Ba tầng kiểm chứng | Vai trò của tầng giữa | Hình 3 |
-| 11 | Thuật toán | Sáu baseline, kmeans, maxmin | |
-| 12 | NS-3 và WPF | Ánh xạ mô hình sang NS-3, scheduler có trọng số | Hình 4 |
-| 13 | Kết quả mô hình | kmeans tăng sum rate 1.7 lần, min rate 2.6 lần | Hình 8 |
-| 14 | NS-3 chịu tải | Đạt khoảng 70% công thức 3GPP; nên gửi 50–60% | Hình 9 |
-| 15 | Vì sao chênh lệch | Shannon → 3GPP → trần → AMC; NS-3 bằng 25–40% Shannon | Hình 11 |
-| 16 | Độ trễ, mất gói | Lý thuyết lạc quan 3–9 lần; ba nguyên nhân | Hình 12 |
-| 17 | Ba tầng | Lý thuyết khớp NS-3 lý tưởng dưới 1% | Hình 13 |
-| 18 | Chia băng ở tầng MAC | WPF tăng min throughput 15–21% | |
-| 18b | Thuật toán đề xuất | Tính nhiễu khi chia băng, áp ở MAC; min ×2 trên NS-3 LTE | Hình 15 |
-| 18c | Ba nhóm user | Critical đạt QoS 96–97% so với 59–69% (không biết nhóm) và 86–87% (max-min có trọng số); tổng giảm 4–12%; LTE hay Shannon như nhau | Hình 16 |
-| 19 | Demo | Dashboard và Gazebo, lái tay | Hình 6, 7 |
-| 20 | Kết luận, hạn chế, hướng phát triển | Bảng 6.13, mục 7.2 | |
-
-Nếu demo trực tiếp: chạy `python -m uavsim.live --gazebo`, bật lái tay cho UAV 1 và lái ra khỏi cụm; các user của nó
-chuyển màu hoặc hiện dấu ×, min rate trên biểu đồ tụt xuống; tắt lái tay thì kmeans kéo UAV về và tốc độ hồi lại.
+| E1 | `demo` | dưới 5 s |
+| E2 | `ns3-matrix` | khoảng 36 phút |
+| E3, E4 | `validation` | vài phút |
+| E5 | `ns3-demand-lte` | khoảng 30 phút |
+| E6 | `ns3-demand-wpf-lte` | khoảng 20 phút |
+| E7 | `ns3-demand-ideal`, `ns3-demand-wpf-ideal`, `ns3-proposed-ideal` | vài phút |
+| E10 | `ns3-proposed-lte`, tổng hợp ở `proposed.csv` | khoảng 40 phút |
+| E11 | `ns3-classes-lte`, `ns3-wmaxmin-lte`, tổng hợp ở `classes.csv` | khoảng 25 phút |
