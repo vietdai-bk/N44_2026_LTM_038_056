@@ -1,0 +1,22 @@
+{
+  "NXP-HGD-CF.dae": {
+    "original_triangles": 179000,
+    "lod_triangles": 21472
+  },
+  "5010Base.dae": {
+    "original_triangles": 3776,
+    "lod_triangles": 755
+  },
+  "5010Bell.dae": {
+    "original_triangles": 3918,
+    "lod_triangles": 782
+  },
+  "1345_prop_cw.stl": {
+    "original_triangles": 10436,
+    "lod_triangles": 2087
+  },
+  "1345_prop_ccw.stl": {
+    "original_triangles": 10454,
+    "lod_triangles": 2089
+  }
+}

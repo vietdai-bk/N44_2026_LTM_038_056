@@ -326,6 +326,7 @@ class Server:
     async def gazebo_loop(self):
         """Đặt vị trí trong Gazebo GZ_HZ lần mỗi giây, nội suy giữa hai khe để chuyển động liền mạch."""
         while True:
+            started = time.monotonic()
             if self.cur is not None:
                 (u1, w1), (u0, w0) = self.cur, self.prev or self.cur
                 if u0.shape != u1.shape or w0.shape != w1.shape:
@@ -333,7 +334,7 @@ class Server:
                 f = min(1.0, (time.monotonic() - self.t_cur) / self.period) if self.running else 1.0
                 await asyncio.to_thread(self.gz.update, u0 + f * (u1 - u0), w0 + f * (w1 - w0), self.s.cfg.altitude,
                                         self.assoc, self.s.net.user_class)
-            await asyncio.sleep(1 / GZ_HZ)
+            await asyncio.sleep(max(0.0, 1 / GZ_HZ - (time.monotonic() - started)))
 
 
 def serve_static(port: int, ws_port: int):
@@ -375,10 +376,12 @@ async def amain(args):
         gz_dir = out / "gazebo"
         gazebo.prepare_site(gz_dir)
         world = gz_dir / "uavsim_world.sdf"
-        world.write_text(gazebo.world_sdf(session.net.uav_xy, cfg.altitude, cfg.area))
+        world.write_text(gazebo.world_sdf(
+            session.net.uav_xy, cfg.altitude, cfg.area,
+            num_users=cfg.num_users, num_uavs=cfg.num_uavs, user_xy=session.net.user_xy))
         proc = gazebo.launch(world, gz_dir / "models")
         print(f"Gazebo: {world.resolve()}  (tỷ lệ 1 m Gazebo = {1 / gazebo.SCALE:g} m mô hình)")
-        gz = gazebo.GazeboView(cfg.area)
+        gz = gazebo.GazeboView(cfg.area, num_users=cfg.num_users, num_uavs=cfg.num_uavs)
     server = Server(session, out, gz)
     serve_static(args.port, args.port + 1)
     try:

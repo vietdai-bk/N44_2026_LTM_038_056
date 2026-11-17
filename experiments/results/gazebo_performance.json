@@ -1,0 +1,73 @@
+{
+  "scenario": "3 UAV, 20 users, seed 1, Ogre2 headless camera 1280x960 at 30 Hz, 10 s sample; not GUI FPS",
+  "before": {
+    "mode": "before",
+    "models": 670,
+    "visuals": 6881,
+    "startup_s": 23.76,
+    "camera_fps": 19.78,
+    "real_time_factor": 0.648
+  },
+  "after": {
+    "mode": "after",
+    "models": 130,
+    "visuals": 1281,
+    "startup_s": 4.79,
+    "camera_fps": 30.67,
+    "real_time_factor": 1.001
+  },
+  "notes": [
+    "Model count includes one benchmark camera.",
+    "Actual create_multiple growth to 21 users / 4 UAVs succeeded and new names were confirmed through scene/info."
+  ],
+  "live_check": {
+    "native_gui_steady_real_time_factor": 0.9832,
+    "websocket_mean_interval_s": 0.2508,
+    "websocket_max_interval_s": 0.2575,
+    "resize": "21 users / 4 UAVs acknowledged in state; added Gazebo models separately confirmed through scene/info"
+  },
+  "x3_close_camera": {
+    "mode": "x3",
+    "models": 130,
+    "visuals": 1041,
+    "startup_s": 4.32,
+    "camera_fps": 30.57,
+    "real_time_factor": 1.0,
+    "camera_pose": "0 -52 44 0 0.66 1.5708",
+    "note": "New X3 meshes, compact pool, close camera; same 1280x960 headless 30 Hz / 10 s sampling method. Not native GUI FPS."
+  },
+  "x500_fpv_camera": {
+    "mode": "x500",
+    "models": 130,
+    "visuals": 1137,
+    "startup_s": 3.54,
+    "camera_fps": 30.67,
+    "real_time_factor": 1.001,
+    "note": "Compact pool, X500 plus FPV visual, default close-wide camera 0 -60 50 0 0.66 1.5708; 1280x960 offscreen camera at 30 Hz, 10 s sample, not native GUI FPS."
+  },
+  "x500_lod_native_gui": {
+    "renderer": "NVIDIA RTX 3050 (verified in ogre2.log)",
+    "sample_s": 24.85050788300032,
+    "native_rtf": 0.9917520349847575,
+    "state_mean_interval_s": 0.2510152311414174,
+    "state_max_interval_s": 0.27190471200083266,
+    "rotating_uavs": 3,
+    "expected_uavs": 3,
+    "triangles_before": 251556,
+    "triangles_after": 35972,
+    "rotor_resize_verified": [
+      {
+        "active_uavs": 2,
+        "rotating_uavs": 2
+      },
+      {
+        "active_uavs": 1,
+        "rotating_uavs": 1
+      },
+      {
+        "active_uavs": 3,
+        "rotating_uavs": 3
+      }
+    ]
+  }
+}

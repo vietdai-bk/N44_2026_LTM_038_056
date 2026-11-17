@@ -1,6 +1,6 @@
 # Kịch bản thuyết trình
 
-Kịch bản đi theo bộ slide `slides/main.pdf` (34 trang). Tổng thời gian khoảng **25 phút**, cộng phần hỏi đáp. Mỗi slide
+Kịch bản đi theo bộ slide `slides/main.pdf` (37 trang). Tổng thời gian khoảng **27 phút**, cộng phần hỏi đáp. Mỗi slide
 có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thuộc từng chữ) và ghi chú cho người trình bày. Phần thuật toán
 (slide 9–19) là trọng tâm, nên chiếm gần nửa thời gian.
 
@@ -8,8 +8,8 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 |---|---|---|
 | Mở đầu, bài toán | 1–8 | 6 phút |
 | Heuristic calib-ifair | 9–19 | 9 phút |
-| Thí nghiệm, kết quả | 20–26 | 5 phút |
-| Hệ thống, lập trình mạng, tổng kết | 27–34 | 5 phút |
+| Kiểm chứng, thí nghiệm, kết quả | 20–28 | 7 phút |
+| Hệ thống, lập trình mạng, tổng kết | 29–37 | 5 phút |
 
 ---
 
@@ -203,7 +203,16 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > Để tin được số đo, nhóm kiểm chứng ba tầng: lý thuyết, NS-3 với liên kết lý tưởng, và NS-3 LTE đầy đủ. Lý thuyết khớp
 > tầng giữa dưới 1% trên 105 lần chạy, nghĩa là mô hình đúng; chênh lệch còn lại là do giao thức LTE.
 
-## Slide 20. Các thuật toán tham chiếu (45 giây)
+## Slide 20. Vì sao lý thuyết lạc quan: phân rã Shannon → NS-3 (50 giây)
+
+> Trước khi xem kết quả, nhóm cần chắc rằng công cụ đo đáng tin và hiểu vì sao lý thuyết khác thực tế. Với cùng một
+> quyết định, công thức Shannon của bài báo cho 133 Mbps, còn NS-3 LTE chỉ đo được 53 Mbps. Khoảng cách này được giải
+> thích hết bằng ba nguyên nhân: Shannon là giới hạn lý thuyết không có trần; LTE 10 MHz chạm trần ở MCS cao nhất,
+> 3.51 bit/s/Hz; và LTE chỉ có các mức điều chế rời rạc, làm tròn xuống nên độ dốc chỉ còn 0.40. Thêm hai hằng số này,
+> mô hình dự đoán đúng NS-3 trong khoảng 3%. Nhóm cũng đã loại trừ các nguyên nhân khác: kênh cài khác nhau, tính
+> nhiễu sai, hay truyền lại HARQ.
+
+## Slide 21. Các thuật toán tham chiếu (45 giây)
 
 > Nhóm so sánh với các baseline sau. Equal đứng yên hoặc bay về tâm cụm rồi chia đều băng, đại diện cho tối đa hiệu quả.
 > Maxmin chia băng để mọi người có tốc độ bằng nhau, đại diện cho tối đa công bằng.
@@ -213,34 +222,41 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 >
 > Ngoài ra có hai bản để tách nguồn gốc lợi ích: bỏ trọng số nhóm, và thay LTE bằng Shannon.
 
-## Slide 21. Cài đặt hệ thống (40 giây)
+## Slide 22. Cài đặt hệ thống (40 giây)
 
 > Mô hình và thuật toán viết bằng Python. Mô phỏng mạng dùng NS-3 phiên bản 3.47 với module LTE. Quy trình đo gồm bốn
 > bước: thuật toán ra quyết định, ghi thành kế hoạch, NS-3 phát lại kế hoạch với eNB bay thật, handover và lưu lượng UDP,
 > rồi đo từng người dùng từng khe. Mỗi thí nghiệm lưu kèm cấu hình, chạy lại cho kết quả trùng.
 
-## Slide 22. Thông số thí nghiệm (30 giây)
+## Slide 23. Thông số thí nghiệm (30 giây)
 
 > Thông số chính: 3 UAV, 20 người dùng gồm 3 critical, 5 important, 12 normal; băng 10 MHz, công suất 1 W; mỗi lần chạy
 > 60 khe; lưu lượng mỗi người từ 0.5 đến 4 Mbps; 3 seed, mọi thuật toán dùng cùng seed.
 
-## Slide 23. Thiết lập thí nghiệm (20 giây)
+## Slide 24. Thiết lập thí nghiệm (20 giây)
 
 > Slide này tóm tắt lại môi trường đo và bảng sáu thuật toán. Các chỉ số gồm throughput, tỷ lệ đạt chất lượng dịch vụ
 > theo nhóm, độ trễ và tỉ lệ mất gói.
 
-*Ghi chú: nếu thiếu thời gian, bỏ qua slide này vì đã nói ở slide 20–22.*
+*Ghi chú: nếu thiếu thời gian, bỏ qua slide này vì đã nói ở slide 21–23.*
 
-## Slide 24. Kết quả trên NS-3 LTE (50 giây)
+## Slide 25. Kết quả 1: calib-ifair so với baseline (50 giây)
 
-> Đây là kết quả đo bằng NS-3 LTE. Biểu đồ đầu tiên là tỷ lệ người dùng critical đạt chất lượng dịch vụ. calib-ifair,
-> đường đỏ đậm, giữ được 95 đến 100% ở mọi mức tải. Các baseline không biết nhóm tụt xuống 59 đến 69%. Max-min có trọng
-> số, đường tím, dừng ở 86–87%.
+> Kết quả đầu tiên, khi mọi người dùng cùng một nhóm. Ở biểu đồ bên trái, đường đỏ là calib-ifair: từ 2 Mbps mỗi người
+> trở lên, min throughput gần gấp đôi kmeans-equal, và thắng ở cả ba seed. Max-min của baseline chỉ tăng khoảng 10%.
+> Biểu đồ bên phải cho thấy throughput tổng gần như không đổi, trong khoảng 4%. Hai bản tách thành phần cho thấy khối
+> chia băng ifair đóng góp phần lớn, còn khối di chuyển calib bù lại throughput tổng.
+
+## Slide 26. Kết quả 2: ưu tiên ba nhóm người dùng (50 giây)
+
+> Giờ chia người dùng thành ba nhóm. Biểu đồ góc trên trái là tỷ lệ người dùng critical đạt chất lượng dịch vụ.
+> calib-ifair, đường đỏ, giữ 95 đến 100% ở mọi mức tải. Baseline cùng biết nhóm, đường tím, dừng ở 86–87%; các baseline
+> không biết nhóm tụt xuống 59–69%.
 >
-> Biểu đồ cuối là throughput tổng: ở tải cao, calib-ifair thấp hơn các baseline không biết nhóm. Đây là cái giá nhóm sẽ
-> nói ở phần sau.
+> Điều quan trọng là không bỏ rơi người bình thường: góc dưới trái, min throughput nhóm normal của calib-ifair gần gấp
+> đôi baseline biết nhóm. Cái giá là throughput tổng ở tải cao thấp hơn khoảng 11%, góc dưới phải.
 
-## Slide 25. So sánh chi tiết (60 giây)
+## Slide 27. So sánh chi tiết (60 giây)
 
 > Xem số cụ thể ở tải 2 và 4 Mbps mỗi người. So với max-min có trọng số, calib-ifair cho tỷ lệ critical đạt QoS 97% so
 > với 87%; min throughput của critical cao hơn; và đặc biệt nhóm normal được đối xử tốt hơn hẳn, 0.95 so với 0.49 Mbps.
@@ -251,7 +267,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > Nhóm cũng xin nói thẳng chỗ calib-ifair không thắng: ở tải 4 Mbps, độ trễ critical của max-min có trọng số thấp hơn
 > một chút, 652 so với 720 mili giây; và throughput tổng thấp hơn baseline không biết nhóm khoảng 11%.
 
-## Slide 26. Lợi ích đến từ đâu (50 giây)
+## Slide 28. Lợi ích đến từ đâu (50 giây)
 
 > Để biết lợi ích đến từ đâu, nhóm bỏ từng yếu tố. Bỏ trọng số nhóm thì tỷ lệ critical đạt QoS rơi xuống 59%. Bỏ việc
 > tính nhiễu và tinh chỉnh vị trí, tức là max-min có trọng số, còn 86%. Bỏ khối chia băng hay khối di chuyển đều làm kết
@@ -261,7 +277,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 > cong LTE giúp **dự đoán** số đo NS-3 rất tốt, nhưng **không** làm thuật toán tốt hơn. Lợi ích thật đến từ trọng số
 > nhóm, tính nhiễu, tinh chỉnh vị trí và áp ở tầng MAC.
 
-## Slide 27. Trạm điều khiển thời gian thực (40 giây)
+## Slide 29. Trạm điều khiển thời gian thực (40 giây)
 
 > Ngoài thí nghiệm, nhóm xây một trạm điều khiển thời gian thực. Dashboard web hiển thị bản đồ, các chỉ số và bảng nhóm
 > người dùng; có thể lái tay UAV, nhấp lên bản đồ để UAV bay tới, đổi 13 tham số khi đang chạy, và bấm "Ghi và đo" để
@@ -270,7 +286,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 *Ghi chú: nếu có demo trực tiếp, chạy `python -m uavsim.live --gazebo`, chọn UAV 0, nhấp một góc bản đồ cho UAV bay đi,
 chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và bảng nhóm user thay đổi.*
 
-## Slide 28. Giao tiếp trình duyệt – server qua WebSocket (70 giây)
+## Slide 30. Giao tiếp trình duyệt – server qua WebSocket (70 giây)
 
 > Đây là phần lập trình mạng của trạm điều khiển. Server mở hai cổng, chỉ nghe trên máy cục bộ: cổng 8000 là HTTP để tải
 > trang web, cổng 8001 là WebSocket. Nhóm chọn WebSocket thay cho HTTP polling vì server phải chủ động đẩy trạng thái
@@ -284,7 +300,7 @@ chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và
 > Nhóm đo hiệu năng server với tới 50 trình duyệt cùng lúc: mỗi bản tin khoảng 1.7 kB, mỗi trình duyệt tốn 9.4 kB/s,
 > lệnh đi và về dưới 3.5 ms, nhịp khe vẫn giữ 250 ms và server chỉ dùng 3.5% CPU.
 
-## Slide 29. Các node và kết nối trong NS-3 (45 giây)
+## Slide 31. Các node và kết nối trong NS-3 (45 giây)
 
 > Trong NS-3, mạng gồm bốn loại node. Một remote host làm nguồn dữ liệu, mở một socket UDP cho mỗi người dùng. Remote
 > host nối với PGW của lõi EPC (gồm PGW, SGW, MME) bằng liên kết điểm-điểm 10 Gb/s, trễ 1 ms. Mỗi UAV là một eNB: phát 30 dBm,
@@ -293,7 +309,7 @@ chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và
 > handover khi kế hoạch đổi UAV phục vụ. Kênh vô tuyến dùng mô hình Al-Hourani do nhóm viết lại trong C++, cùng công thức
 > với phía Python.
 
-## Slide 30. Đường đi của gói tin trong NS-3 LTE (50 giây)
+## Slide 32. Đường đi của gói tin trong NS-3 LTE (50 giây)
 
 > Còn đây là đường đi của một gói dữ liệu trong NS-3. Remote host gửi UDP cổng 9, mỗi gói mang số thứ tự và thời điểm
 > gửi để đo độ trễ từng gói. Gói đi qua EPC bằng đường hầm GTP-U tới eNB trên UAV, qua PDCP, RLC, rồi scheduler ở tầng
@@ -306,7 +322,13 @@ chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và
 *Ghi chú: nếu hội đồng hỏi vì sao gửi vị trí sang Gazebo bằng một lời gọi service: gom mọi vị trí vào một bản tin
 protobuf giữ tải cố định 20 lời gọi mỗi giây, không phụ thuộc số UAV và user.*
 
-## Slide 31. Đánh đổi và hạn chế (40 giây)
+## Slide 33. Tổng kết các phần nhóm đã thực hiện (40 giây)
+
+> Tóm lại, nhóm đã làm bảy phần: thuật toán calib-ifair cùng các baseline và bản so sánh; mô hình Python; kịch bản NS-3
+> LTE viết bằng C++; scheduler WPF ở tầng MAC; phép kiểm chứng ba tầng; trạm điều khiển với server WebSocket và Gazebo;
+> và 12 thí nghiệm cùng 42 test tự động. Cột bên phải là kết quả kiểm chứng của từng phần.
+
+## Slide 34. Đánh đổi và hạn chế (40 giây)
 
 > Về đánh đổi: ở tải cao, throughput tổng thấp hơn baseline không biết nhóm khoảng 11%, và nhóm normal chịu độ trễ cao
 > hơn, nhưng tốc độ tối thiểu của họ vẫn cao hơn mọi baseline. Mức đánh đổi chỉnh được bằng trọng số.
@@ -314,7 +336,7 @@ protobuf giữ tải cố định 20 lời gọi mỗi giây, không phụ thu�
 > Về hạn chế: đây là heuristic nên không đảm bảo tối ưu toàn cục; ngưỡng tốc độ tối thiểu chưa là ràng buộc cứng; công
 > suất và độ cao chưa được tối ưu; nhóm mới đánh giá một cấu hình với 3 seed, và chưa có baseline tối ưu lồi.
 
-## Slide 32. Kết luận (40 giây)
+## Slide 35. Kết luận (40 giây)
 
 > Tóm lại, nhóm rút ra sáu kết luận đo trên NS-3. Mô hình hàng đợi đúng ở mức gói tin. Giá trị tốc độ theo Shannon lạc
 > quan, NS-3 chỉ đạt 25–40%. Chia băng chỉ có tác dụng khi áp ở tầng MAC. calib-ifair ưu tiên được người dùng critical,
@@ -323,11 +345,11 @@ protobuf giữ tải cố định 20 lời gọi mỗi giây, không phụ thu�
 >
 > Hướng phát triển gồm ràng buộc cứng cho nhóm critical, baseline tối ưu lồi, mở rộng thí nghiệm và học tăng cường.
 
-## Slide 33. Tài liệu tham khảo (10 giây)
+## Slide 36. Tài liệu tham khảo (10 giây)
 
 > Đây là các tài liệu nhóm tham khảo chính.
 
-## Slide 34. Cảm ơn (10 giây)
+## Slide 37. Cảm ơn (10 giây)
 
 > Nhóm em xin cảm ơn thầy cô và các bạn đã lắng nghe. Nhóm rất mong nhận được câu hỏi và góp ý.
 
