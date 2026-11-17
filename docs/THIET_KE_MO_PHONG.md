@@ -1398,7 +1398,7 @@ header PDCP/RLC/MAC.
 
 > Số lý thuyết trong mục này dùng delay FIFO chính xác và định nghĩa mất gói chung với NS-3 (mục 3.6). Thí nghiệm đã
 > chạy lại vào `experiments/results/ns3-demand-lte` và `ns3-demand-wpf-lte`; số đo NS-3 LTE trùng từng chữ số với lần
-> chạy trước (`ns3-demand`, `ns3-demand-wpf`) trên cả 105 run, vì các thay đổi chỉ nằm ở phía lý thuyết.
+> chạy trước trên cả 105 run, vì các thay đổi chỉ nằm ở phía lý thuyết.
 
 **Mục đích:** chạy lý thuyết đúng như paper (Shannon, chia tĩnh, nhiễu tối đa, hàng đợi mục 3.6) để có throughput,
 delay, mất gói; phát lại trong NS-3 với cùng lưu lượng; rồi giải thích khoảng chênh.
@@ -1496,41 +1496,33 @@ equal cho số đo NS-3 giống hệt nhau.
 **Thí nghiệm:**
 
 ```bash
-.venv/bin/python -m uavsim.ns3 --algos hover-maxmin kmeans-maxmin --scheduler wpf --set demand_mbps=1 \
-    --load 0.5 1 1.5 2 2.5 3 4 --seeds 3 --set slots=60 --parallel 10 --out experiments/results/ns3-demand-wpf
+.venv/bin/python -m uavsim.ns3 --algos hover-maxmin kmeans-maxmin --scheduler wpf --link lte --set demand_mbps=1 \
+    --load 0.5 1 1.5 2 2.5 3 4 --seeds 3 --set slots=60 --parallel 10 --out experiments/results/ns3-demand-wpf-lte
 ```
 
-So với `*-equal` trong `experiments/results/ns3-demand-lte` (scheduler PF, trùng với `wpf` vì trọng số bằng nhau trong mỗi
-cell), cùng seed và cùng lưu lượng. 42 run, khoảng 20 phút. Số liệu ghép cặp: `ns3-demand-wpf/paired_vs_equal.json`.
+So với `*-equal` trong `experiments/results/ns3-demand-lte` (scheduler PF, trùng với `wpf` vì trọng số bằng nhau trong
+mỗi cell), cùng seed và cùng lưu lượng. 42 run, khoảng 20 phút. Min throughput là trung bình theo khe của throughput
+nhỏ nhất trong khe, giống các thí nghiệm khác.
 
-Trong bảng này, "min thr" là throughput trung bình (cả lần chạy) của user kém nhất. Báo cáo dùng định nghĩa khác: trung
-bình theo khe của throughput nhỏ nhất trong khe (xem báo cáo, mục 6.7).
-
-| | Mbps/user | Min thr equal → maxmin | Phân vị 10% | Thr tổng | Mất gói | Delay |
-|---|---|---|---|---|---|---|
-| hover | 1 | 0.58 → **0.70** (+21%, 3/3 seed) | 0.74 → 0.80 | 18.5 → 19.0 | 7.4% → 5.1% | 1267 → 883 ms |
-| hover | 2 | 0.30 → **0.36** (+20%, 3/3) | 0.48 → 0.54 | 22.6 → 22.4 | 43.4% → 43.9% | 4663 → 5142 ms |
-| hover | 4 | 0.26 → **0.30** (+15%, 3/3) | 0.33 → 0.41 | 27.8 → 26.5 | 65.2% → 66.9% | 5491 → 5851 ms |
-| kmeans | 1–4 | thay đổi < 2%, lẫn lộn theo seed (theo min mỗi khe: +1% / +10% / +11% ở 1 / 2 / 4 Mbps) | ≈ | ≈ | ≈ | ≈ |
-
-**So với dự đoán của lý thuyết paper** (cùng cặp maxmin / equal, Shannon, chia tĩnh):
-
-| | Lý thuyết: min thr | NS-3 `wpf`: min thr | Lý thuyết: thr tổng | NS-3 `wpf`: thr tổng |
-|---|---|---|---|---|
-| hover 1 Mbps | +18% | +21% | +2% | +2% |
-| hover 2 Mbps | +18% | +20% | +2% | −1% |
-| hover 4 Mbps | +18% | +15% | +2% | −5% |
-| kmeans | ≈ 0% | ≈ 0% | ≈ 0% | ≈ 0% |
+| | Mbps/user | Min thr equal → maxmin (lý thuyết dự đoán) | Thr tổng | Mất gói | Delay |
+|---|---|---|---|---|---|
+| hover | 1 | 0.57 → **0.67**: +18%, 3/3 seed (+18%) | 18.5 → 19.0 | 7.4% → 5.1% | 1267 → 883 ms |
+| hover | 2 | 0.30 → **0.35**: +16%, 3/3 (+18%) | 22.6 → 22.4 | 43.4% → 43.9% | 4663 → 5142 ms |
+| hover | 4 | 0.26 → **0.30**: +16%, 3/3 (+18%) | 27.8 → 26.5 | 65.2% → 66.9% | 5491 → 5851 ms |
+| kmeans | 1 | 0.84 → 0.85: +1%, 3/3 (+2%) | 19.6 → 19.6 | 2.2% → 2.0% | 152 → 156 ms |
+| kmeans | 2 | 0.72 → **0.79**: +10%, 3/3 (+3%) | 33.9 → 34.0 | 15.2% → 15.0% | 1397 → 1524 ms |
+| kmeans | 4 | 0.67 → **0.74**: +11%, 3/3 (+11%) | 49.9 → 49.7 | 37.6% → 37.9% | 2173 → 2354 ms |
 
 **Kết luận:**
-1. **Cấp phát băng thông không vô dụng: nó cần được áp ở đúng tầng.** Áp ở tầng MAC thì maxmin nâng user kém nhất
-   15–21% ở cả 3/3 seed (min tính trên throughput trung bình của từng user; nếu tính theo khe như báo cáo thì +16–18%), đúng như lý thuyết dự đoán (+18%). Áp ở tầng ứng dụng thì hoàn toàn không có tác dụng.
+1. **Cấp phát băng thông không vô dụng: nó cần được áp ở đúng tầng.** Áp ở tầng MAC thì maxmin nâng user kém nhất ở
+   cả 18 cặp (thuật toán, lưu lượng, seed): +16–18% với hover, đúng như lý thuyết dự đoán (+18%). Áp ở tầng ứng dụng
+   thì hoàn toàn không có tác dụng.
 2. **Hiệu quả phụ thuộc mức chênh lệch kênh giữa các user.** Với hover, user trong một cell có SINR rất khác nhau, nên
-   maxmin có tác dụng rõ. Với kmeans, UAV đã bay về giữa cụm, SINR các user gần nhau nên b_k gần như bằng nhau, và
-   maxmin gần như không khác equal. Lý thuyết cũng dự đoán đúng điều này.
+   maxmin có tác dụng ngay từ tải nhẹ. Với kmeans, UAV đã ở giữa cụm, SINR các user gần nhau hơn, nên maxmin chỉ tạo
+   khác biệt khi mạng đã nghẽn (+10–11% từ 2 Mbps/user). Lý thuyết cũng dự đoán xu hướng này.
 3. **Đánh đổi ở tải cao mạnh hơn lý thuyết nói.** Lý thuyết cho rằng tổng throughput còn tăng nhẹ (+2%), nhưng NS-3
-   giảm tới 5% và delay tăng, vì tài nguyên dồn cho user có hiệu suất phổ thấp. Ở tải vừa (1 Mbps/user) maxmin tốt hơn
-   mọi mặt: min +21%, mất gói 7.4% → 5.1%, delay giảm 30%.
+   giảm tới 5% và delay tăng, vì tài nguyên dồn cho user có hiệu suất phổ thấp. Ở tải vừa (1 Mbps/user) maxmin với
+   hover tốt hơn mọi mặt: min +18%, mất gói 7.4% → 5.1%, delay giảm 30%.
 4. **Hướng của lý thuyết đúng, con số tuyệt đối vẫn lạc quan** như các mục trước.
 
 ### 14.8. Mô hình và NS-3: kết luận nào đứng vững
