@@ -19,6 +19,7 @@
 \usepackage{tabularx}
 \usepackage{amsmath,amssymb}
 \usepackage{url}
+\usepackage{appendixnumberbeamer}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.17}
 \graphicspath{{../docs/figures/}{../experiments/results/}}
@@ -187,7 +188,7 @@
   \centering
   \includegraphics[width=\linewidth]{gazebo.png}
 
-  {\scriptsize Kịch bản trên bãi thảm họa (Gazebo): người mặc áo màu UAV phục vụ, vòng đỏ là user critical.}
+  {\scriptsize Kịch bản trên bãi thảm họa (Gazebo): người mặc áo cùng màu UAV phục vụ, vòng đỏ là user critical.}
 \end{column}
 \end{columns}
 \end{frame}
@@ -273,35 +274,42 @@
 % SLIDE 5. MÔ HÌNH KÊNH
 % =================================================
 \begin{frame}{Mô hình kênh, SINR và tốc độ}
-\begin{block}{Kênh không -- đất Al-Hourani (đô thị)}
-\vspace{-3mm}
-\[
-P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
-\overline{PL}_{mk} = 20\log_{10}\frac{4\pi f_c d_{mk}}{c} + P_{\text{LoS}}\,\eta_{\text{LoS}} + (1-P_{\text{LoS}})\,\eta_{\text{NLoS}}
-\]
-\end{block}
-\begin{block}{SINR có nhiễu đồng kênh}
-\vspace{-3mm}
-\[
-\mathrm{SINR}_k = \frac{\dfrac{p_k}{b_k B}\, g_{a_k k}(q_{a_k})}{\displaystyle\sum_{j \ne a_k} \frac{P_j}{B}\, g_{jk}(q_j) + N_0},
-\qquad g_{mk} = 10^{-\overline{PL}_{mk}/10}
-\]
-\end{block}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
-  \begin{block}{Tốc độ theo bài báo (Shannon)}
-    \vspace{-2mm}
-    \[ r_k = b_k\, B \log_2(1 + \mathrm{SINR}_k) \]
+  \begin{block}{Suy hao kênh không -- đất (Al-Hourani, đô thị)}
+    \small
+    \begin{itemize}
+      \item User càng \textbf{xa} UAV, suy hao càng lớn.
+      \item Góc nhìn lên UAV càng \textbf{thấp}, càng dễ bị nhà che (NLoS), suy hao thêm khoảng 20 dB.
+      \item UAV bay cao 100 m nên user gần UAV phần lớn nhìn thẳng (LoS).
+    \end{itemize}
+  \end{block}
+  \begin{block}{Hiệu suất phổ $\SE$ (bit/s/Hz): tăng theo SINR}
+    \small
+    \begin{itemize}
+      \item Bài báo dùng Shannon: $\log_2(1+\mathrm{SINR})$.
+      \item LTE đo trên NS-3 chỉ đạt \alert{25--40\%} Shannon và có trần $\approx 3.5$, nên nhóm dùng $\SE$ \hl{hiệu chỉnh từ NS-3}.
+    \end{itemize}
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
-  \begin{block}{Tốc độ LTE hiệu chỉnh từ NS-3}
+  \begin{block}{SINR: chất lượng tín hiệu user nhận được}
     \vspace{-2mm}
-    \[ \SE_k = \min\big(0.401\log_2(1+\mathrm{SINR}_k),\ 3.514\big) \]
+    \[
+      \mathrm{SINR} = \frac{\text{tín hiệu từ UAV phục vụ}}{\text{nhiễu từ các UAV khác} + \text{nhiễu nền}}
+    \]
+    \small
+    Mọi UAV dùng \alert{chung tần số}, nên UAV bên cạnh chính là nguồn nhiễu.
+  \end{block}
+  \begin{block}{Hệ quả}
+    \small
+    Vị trí UAV nằm trong cả tín hiệu lẫn nhiễu: dịch một UAV làm thay đổi SINR của user ở \textbf{UAV khác}.
+    Hai UAV đứng sát nhau làm SINR tụt mạnh dù user ở gần.
   \end{block}
 \end{column}
 \end{columns}
-\scriptsize Vị trí UAV nằm trong cả tín hiệu lẫn nhiễu: dịch một UAV làm thay đổi SINR của user ở UAV khác.
+\vspace{1mm}
+\scriptsize Công thức đầy đủ: phụ lục A.
 \end{frame}
 
 % =================================================
@@ -369,35 +377,37 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 \begin{block}{Hàm mục tiêu: công bằng tỷ lệ có trọng số}
 \vspace{-3mm}
 \[
-\max_{\{a_k[n]\},\,\{b_k[n]\},\,\{q_m[n]\}}\ \sum_{n=1}^{N}\sum_{k=1}^{K} w_{c(k)}\,\log\big(r_k[n] + r_0\big),\qquad r_0 = 1\ \text{kbit/s}
+\max\ \sum_{\text{khe } n}\ \sum_{\text{user } k} w_k \log r_k[n]
+\qquad w = 1,\ 2,\ 4 \text{ cho normal, important, critical}
 \]
+\small Đọc là: \hl{tăng tốc độ chung}, nhưng \alert{phạt rất nặng ai bị gần 0}; user critical có trọng số gấp 4.
 \end{block}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.55\textwidth}
-  \begin{block}{Ràng buộc (mọi UAV $m$, mọi khe $n$)}
+  \begin{block}{Biến quyết định và ràng buộc (mỗi khe)}
     \small
-    \begin{tabular}{@{}ll@{}}
-      (C1) & $a_k[n] \in \{1,\dots,M\}$\\
-      (C2) & $\sum_{k:a_k=m} b_k[n] \le 1,\ b_k \ge 0$\\
-      (C3) & $\sum_{k:a_k=m} p_k[n] \le P_{\max}$\\
-      (C4) & $\|q_m[n+1] - q_m[n]\| \le V_{\max}\Delta t$\\
-      (C5) & $q_m[n] \in [0, L]^2$
-    \end{tabular}
+    Chọn: user nối UAV nào, phần băng mỗi user, vị trí mới của UAV.
+    \begin{itemize}
+      \item Mỗi user nối đúng 1 UAV.
+      \item Mỗi UAV chia không quá 100\% băng, phát không quá 1 W.
+      \item UAV bay không quá 20 m/s và ở trong vùng.
+    \end{itemize}
   \end{block}
 \end{column}
 \begin{column}{0.41\textwidth}
   \begin{block}{Vì sao tổng log có trọng số}
     \scriptsize
     \begin{itemize}
-      \item $\max\sum r$: dồn băng cho user kênh tốt, bỏ rơi user ở rìa.
-      \item $\max\min r$: hy sinh nhiều tổng tốc độ.
-      \item $\sum w\log r$: phạt rất nặng user gần 0, vẫn thưởng tăng tổng; $w$ đẩy critical lên trước.
+      \item Tối đa tổng tốc độ: dồn băng cho user kênh tốt, bỏ rơi user ở rìa.
+      \item Tối đa tốc độ nhỏ nhất: hy sinh nhiều tổng tốc độ.
+      \item Tổng log có trọng số: cân bằng hai cách trên; $w$ đẩy critical lên trước.
     \end{itemize}
   \end{block}
 \end{column}
 \end{columns}
 \vspace{1mm}
-\scriptsize $r_{\min,c}$ \textbf{không} là ràng buộc cứng (quá tải thì vô nghiệm); chỉ dùng để chấm QoS từng nhóm.
+\scriptsize Ngưỡng QoS từng nhóm \textbf{không} là ràng buộc cứng (quá tải thì vô nghiệm), chỉ dùng để chấm điểm.
+Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. Ký hiệu đầy đủ: phụ lục B, C.
 \end{frame}
 
 % =================================================
@@ -488,41 +498,6 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 \end{frame}
 
 % =================================================
-% SLIDE 8. BÀI TOÁN MỖI KHE
-% =================================================
-\begin{frame}{Bài toán mỗi khe mà heuristic giải (P$_n$)}
-\begin{block}{Thay tốc độ thật bằng tốc độ dự đoán, giải tham lam từng khe}
-\vspace{-3mm}
-\[
-\max_{a,\,b,\,q[n+1]}\ U = \sum_{k=1}^{K} w_k \log\big(\hat r_k + r_0\big)
-\quad \text{s.t. (C1)--(C5)}
-\]
-\vspace{-2mm}
-\[
-\hat r_k = b_k\, B\, \SE_k,\qquad
-\SE_k = \begin{cases}\min\big(0.401\log_2(1+\mathrm{SINR}_k),\ 3.514\big), & \mathrm{SINR}_k \ge 0.1\ (-10\ \text{dB})\\ 0, & \text{ngược lại}\end{cases}
-\]
-\end{block}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.48\textwidth}
-  \begin{block}{Hai hằng số đo từ NS-3}
-    \small
-    $\alpha = 0.401$: độ dốc LTE thật so với Shannon.\\
-    $SE_{\max} = 3.514$ bit/s/Hz: trần của MCS cao nhất.\\
-    Giúp mô hình dự đoán NS-3 trong $\pm$2\%.
-  \end{block}
-\end{column}
-\begin{column}{0.48\textwidth}
-  \begin{block}{Ràng buộc thêm}
-    \small
-    Trong pha tìm kiếm cục bộ, không nhận nước đi làm giảm số UAV có user: nếu thiếu, tìm kiếm cục bộ hay ``tắt'' một UAV để giảm nhiễu tức thời
-    và rơi vào nghiệm kém (seed 1: tổng 13 Mbps so với 43 Mbps).
-  \end{block}
-\end{column}
-\end{columns}
-\end{frame}
-
-% =================================================
 % SLIDE 9. LƯU ĐỒ
 % =================================================
 \begin{frame}{Lưu đồ calib-ifair (mỗi khe)}
@@ -557,18 +532,16 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.52\textwidth}
   \begin{block}{Liên kết}
-    \vspace{-2mm}
-    \[ a_k = \arg\max_m\ g_{mk}(q_m) \]
-    \small User nối UAV có độ lợi kênh lớn nhất.
+    \small Mỗi user nối với UAV có \hl{kênh mạnh nhất}.
   \end{block}
   \begin{block}{SINR có nhiễu}
-    \vspace{-2mm}
-    \[
-      \mathrm{SINR}_k = \frac{\mathrm{psd}_{a_k}\, g_{a_k k}}{\sum_{j\ne a_k}\mathrm{psd}_j\, g_{jk} + N_0}
-    \]
-    \[
-      \mathrm{psd}_m = \begin{cases}P_{\max}/B, & \text{UAV } m \text{ có user}\\0, & \text{ngược lại}\end{cases}
-    \]
+    \small
+    \begin{itemize}
+      \item Tính SINR như slide mô hình kênh: tín hiệu chia cho \textbf{nhiễu từ mọi UAV đang phát} cộng nhiễu nền.
+      \item UAV không có user thì không phát, nên không gây nhiễu.
+      \item User ở giữa hai UAV: gần UAV nhưng SINR \alert{thấp}, vì nhiễu gần bằng tín hiệu.
+      \item SINR đổi ra hiệu suất phổ $\SE$ để dùng cho khối 2.
+    \end{itemize}
   \end{block}
 \end{column}
 \begin{column}{0.44\textwidth}
@@ -593,8 +566,6 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
     \bottomrule
   \end{tabular}
 
-  \vspace{1mm}
-  UAV không có user thì không phát, nên không gây nhiễu.
 \end{column}
 \end{columns}
 \end{frame}
@@ -603,12 +574,11 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 % SLIDE 11. KHỐI 2 - CÔNG THỨC
 % =================================================
 \begin{frame}{Khối 2: chia băng ifair}
-\begin{block}{Công thức}
+\begin{block}{Quy tắc chia băng trong mỗi UAV}
 \vspace{-3mm}
 \[
-b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'} / \max(\SE_{k'},\ 0.05)}
-\quad\Longrightarrow\quad
-\hat r_k = \frac{B\,w_k}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}/\SE_{k'}}
+  b_k \ \propto\ \frac{w_k}{\SE_k}
+  \qquad\text{(phần băng} \propto \frac{\text{trọng số nhóm}}{\text{chất lượng kênh}}\text{)}
 \]
 \end{block}
 \begin{columns}[T,onlytextwidth]
@@ -616,22 +586,24 @@ b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}
   \begin{block}{Ý nghĩa}
     \small
     \begin{itemize}
-      \item Khi mọi $\SE_k \ge 0.05$: trong một UAV, $\hat r_k / w_k$ bằng nhau (\hl{max-min có trọng số}), critical được tốc độ gấp 4 lần normal dù kênh xấu hơn.
-      \item $\SE_k = 0$: vẫn được băng nhưng tốc độ 0.
-      \item User kênh xấu (SE nhỏ) được bù nhiều băng hơn.
-      \item Sàn 0.05: user gần mất sóng không hút hết băng.
+      \item Nhóm ưu tiên cao hơn: nhiều băng hơn.
+      \item Kênh xấu hơn: được \hl{bù} nhiều băng hơn.
+      \item Kết quả: trong một UAV, tốc độ đúng tỷ lệ \hl{1 : 2 : 4}; critical nhanh gấp 4 normal dù kênh xấu hơn.
+      \item Sàn $\SE \ge 0.05$: user gần mất sóng không hút hết băng.
     \end{itemize}
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
-  \begin{block}{Vì sao không dùng nghiệm tổng log}
+  \begin{block}{Vì sao không chia thẳng theo tổng log}
     \small
-    Bài toán con $\max\sum w_k\log(b_k B\,\SE_k)$, $\sum b_k\le1$ có nghiệm $b_k = w_k/\sum w$: băng tỷ lệ với $w$,
-    \textbf{không phụ thuộc kênh}, nên user critical ở rìa vẫn chậm.
-    ifair cố ý chia để \hl{tốc độ} tỷ lệ với $w$; hàm $U$ chỉ dùng để chọn vị trí UAV ở khối 3.
+    Tối đa tổng log cho riêng phần chia băng thì nghiệm là chia băng \textbf{chỉ theo} $w$, không nhìn kênh,
+    nên user critical ở rìa vẫn chậm.
+    ifair cố ý chia để \hl{tốc độ} tỷ lệ với $w$; tổng log chỉ dùng để chọn vị trí UAV ở khối 3.
   \end{block}
 \end{column}
 \end{columns}
+\vspace{1mm}
+\scriptsize Công thức đầy đủ: phụ lục D. Ví dụ số ở trang sau.
 \end{frame}
 
 % =================================================
@@ -717,14 +689,9 @@ b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}
 \begin{column}{0.52\textwidth}
   \begin{block}{Hai pha cho mỗi UAV}
     \small
-    \textbf{Tiếp cận:} còn cách tâm cụm k-means $c_j$ hơn $V_{\max}\Delta t$ thì bay thẳng về $c_j$.\\[1mm]
-    \textbf{Tinh chỉnh:} thử 17 nước đi, chọn
-    \[
-      d^\star_j = \arg\max_{d\in\mathcal{D}} U\big(q_1,\dots,q_j+d,\dots,q_M\big)
-    \]
-    \[
-      \mathcal{D} = \{0\}\cup\{s(\cos\tfrac{i\pi}{4},\sin\tfrac{i\pi}{4})\},\ i=0..7,\ s\in\{V_{\max}\Delta t,\tfrac14V_{\max}\Delta t\}
-    \]
+    \textbf{1. Tiếp cận:} còn xa tâm cụm user (k-means) hơn một bước bay thì bay thẳng về tâm cụm.\\[2mm]
+    \textbf{2. Tinh chỉnh:} thử \hl{17 nước đi}: đứng yên, hoặc 8 hướng $\times$ 2 cỡ bước (cả bước và $\tfrac14$ bước).
+    Giữ nước làm \hl{$\sum w\log r$ toàn mạng} tăng nhiều nhất.
   \end{block}
   \begin{block}{Quy tắc}
     \scriptsize
@@ -825,7 +792,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
     \end{enumerate}
   \end{block}
   \begin{block}{Kết quả}
-    \footnotesize NS-3 chỉ đạt \alert{25--40\%} Shannon. Thêm hai hằng số đo từ NS-3, mô hình dự đoán đúng \good{$\pm$3\%} (NS-3/mô hình = 1.02, 0.99, 1.00 trên 3 cấu hình).\\[1mm]
+    \footnotesize NS-3 chỉ đạt \alert{25--40\%} Shannon. Thêm hai hằng số đo từ NS-3, mô hình dự đoán đúng \good{$\pm$2\%} (NS-3/mô hình = 1.02, 0.99, 1.00 trên 3 cấu hình).\\[1mm]
     Đã loại trừ: kênh cài khác nhau (lệch $\le$0.1 dB), tính nhiễu sai, HARQ (lỗi khối $<$0.1\%).
   \end{block}
 \end{column}
@@ -1109,7 +1076,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
     \small
     Lợi ích đến từ: \hl{trọng số nhóm}, \hl{tính nhiễu khi chia băng}, \hl{tinh chỉnh vị trí} và \hl{áp ở tầng MAC}.
   \end{block}
-  \begin{block}{Phát hiện trung thực}
+  \begin{block}{Phát hiện ngoài dự kiến}
     \small
     Đường cong LTE hiệu chỉnh giúp \textbf{dự đoán} số đo NS-3 ($\pm$2\%) nhưng \textbf{không} làm thuật toán tốt hơn:
     thứ tự ưu tiên giữa các user gần như giống nhau dù dùng Shannon hay LTE.
@@ -1137,7 +1104,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
     \item Lái tay UAV, nhấp bản đồ để bay tới.
     \item Đổi 13 tham số khi đang chạy, kể cả tỷ lệ nhóm.
     \item \textbf{Ghi \& đo}: chạy NS-3 ngay từ web.
-    \item Gazebo: áo màu UAV phục vụ, vòng vàng important, vòng đỏ critical.
+    \item Gazebo: áo cùng màu UAV phục vụ, vòng vàng important, vòng đỏ critical.
     \item Giao thức và đo hiệu năng: 3 slide tiếp theo.
   \end{itemize}
 \end{column}
@@ -1347,7 +1314,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
     \begin{itemize}
       \item Ràng buộc $r_{\min}$ cứng cho critical.
       \item Baseline tối ưu lồi có trọng số.
-      \item Mở rộng số UAV, môi trường, từ 20 seed.
+      \item Mở rộng số UAV, môi trường, 20 seed trở lên.
       \item Học tăng cường; PX4 SITL.
     \end{itemize}
   \end{block}
@@ -1385,6 +1352,154 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \vspace{4mm}
 {\large\color{black!60} Hỏi đáp\par}
 \vfill
+\end{frame}
+
+
+\appendix
+% =================================================
+% PHỤ LỤC: công thức đầy đủ, mở khi bị hỏi
+% =================================================
+\begin{frame}{Phụ lục A: mô hình kênh, SINR, tốc độ}
+\begin{block}{Kênh không -- đất Al-Hourani (đô thị)}
+\vspace{-3mm}
+\[
+P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
+\overline{PL}_{mk} = 20\log_{10}\frac{4\pi f_c d_{mk}}{c} + P_{\text{LoS}}\,\eta_{\text{LoS}} + (1-P_{\text{LoS}})\,\eta_{\text{NLoS}}
+\]
+\end{block}
+\begin{block}{SINR có nhiễu đồng kênh}
+\vspace{-3mm}
+\[
+\mathrm{SINR}_k = \frac{\dfrac{p_k}{b_k B}\, g_{a_k k}(q_{a_k})}{\displaystyle\sum_{j \ne a_k} \frac{P_j}{B}\, g_{jk}(q_j) + N_0},
+\qquad g_{mk} = 10^{-\overline{PL}_{mk}/10}
+\]
+\end{block}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+  \begin{block}{Tốc độ theo bài báo (Shannon)}
+    \vspace{-2mm}
+    \[ r_k = b_k\, B \log_2(1 + \mathrm{SINR}_k) \]
+  \end{block}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{block}{Tốc độ LTE hiệu chỉnh từ NS-3}
+    \vspace{-2mm}
+    \[ \SE_k = \min\big(0.401\log_2(1+\mathrm{SINR}_k),\ 3.514\big) \]
+  \end{block}
+\end{column}
+\end{columns}
+\scriptsize Vị trí UAV nằm trong cả tín hiệu lẫn nhiễu: dịch một UAV làm thay đổi SINR của user ở UAV khác.
+\end{frame}
+
+\begin{frame}{Phụ lục B: bài toán tối ưu (P)}
+\begin{block}{Hàm mục tiêu: công bằng tỷ lệ có trọng số}
+\vspace{-3mm}
+\[
+\max_{\{a_k[n]\},\,\{b_k[n]\},\,\{q_m[n]\}}\ \sum_{n=1}^{N}\sum_{k=1}^{K} w_{c(k)}\,\log\big(r_k[n] + r_0\big),\qquad r_0 = 1\ \text{kbit/s}
+\]
+\end{block}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.55\textwidth}
+  \begin{block}{Ràng buộc (mọi UAV $m$, mọi khe $n$)}
+    \small
+    \begin{tabular}{@{}ll@{}}
+      (C1) & $a_k[n] \in \{1,\dots,M\}$\\
+      (C2) & $\sum_{k:a_k=m} b_k[n] \le 1,\ b_k \ge 0$\\
+      (C3) & $\sum_{k:a_k=m} p_k[n] \le P_{\max}$\\
+      (C4) & $\|q_m[n+1] - q_m[n]\| \le V_{\max}\Delta t$\\
+      (C5) & $q_m[n] \in [0, L]^2$
+    \end{tabular}
+  \end{block}
+\end{column}
+\begin{column}{0.41\textwidth}
+  \begin{block}{Vì sao tổng log có trọng số}
+    \scriptsize
+    \begin{itemize}
+      \item $\max\sum r$: dồn băng cho user kênh tốt, bỏ rơi user ở rìa.
+      \item $\max\min r$: hy sinh nhiều tổng tốc độ.
+      \item $\sum w\log r$: phạt rất nặng user gần 0, vẫn thưởng tăng tổng; $w$ đẩy critical lên trước.
+    \end{itemize}
+  \end{block}
+\end{column}
+\end{columns}
+\vspace{1mm}
+\scriptsize $r_{\min,c}$ \textbf{không} là ràng buộc cứng (quá tải thì vô nghiệm); chỉ dùng để chấm QoS từng nhóm.
+\end{frame}
+
+\begin{frame}{Phụ lục C: bài toán mỗi khe (P$_n$)}
+\begin{block}{Thay tốc độ thật bằng tốc độ dự đoán, giải tham lam từng khe}
+\vspace{-3mm}
+\[
+\max_{a,\,b,\,q[n+1]}\ U = \sum_{k=1}^{K} w_k \log\big(\hat r_k + r_0\big)
+\quad \text{s.t. (C1)--(C5)}
+\]
+\vspace{-2mm}
+\[
+\hat r_k = b_k\, B\, \SE_k,\qquad
+\SE_k = \begin{cases}\min\big(0.401\log_2(1+\mathrm{SINR}_k),\ 3.514\big), & \mathrm{SINR}_k \ge 0.1\ (-10\ \text{dB})\\ 0, & \text{ngược lại}\end{cases}
+\]
+\end{block}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+  \begin{block}{Hai hằng số đo từ NS-3}
+    \small
+    $\alpha = 0.401$: độ dốc LTE thật so với Shannon.\\
+    $SE_{\max} = 3.514$ bit/s/Hz: trần của MCS cao nhất.\\
+    Giúp mô hình dự đoán NS-3 trong $\pm$2\%.
+  \end{block}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{block}{Ràng buộc thêm}
+    \small
+    Trong pha tìm kiếm cục bộ, không nhận nước đi làm giảm số UAV có user: nếu thiếu, tìm kiếm cục bộ hay ``tắt'' một UAV để giảm nhiễu tức thời
+    và rơi vào nghiệm kém (seed 1: tổng 13 Mbps so với 43 Mbps).
+  \end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Phụ lục D: công thức ifair}
+\begin{block}{Công thức}
+\vspace{-3mm}
+\[
+b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'} / \max(\SE_{k'},\ 0.05)}
+\quad\Longrightarrow\quad
+\hat r_k = \frac{B\,w_k}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}/\SE_{k'}}
+\]
+\end{block}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+  \begin{block}{Ý nghĩa}
+    \small
+    \begin{itemize}
+      \item Khi mọi $\SE_k \ge 0.05$: trong một UAV, $\hat r_k / w_k$ bằng nhau (\hl{max-min có trọng số}), critical được tốc độ gấp 4 lần normal dù kênh xấu hơn.
+      \item $\SE_k = 0$: vẫn được băng nhưng tốc độ 0.
+      \item User kênh xấu (SE nhỏ) được bù nhiều băng hơn.
+      \item Sàn 0.05: user gần mất sóng không hút hết băng.
+    \end{itemize}
+  \end{block}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{block}{Vì sao không dùng nghiệm tổng log}
+    \small
+    Bài toán con $\max\sum w_k\log(b_k B\,\SE_k)$, $\sum b_k\le1$ có nghiệm $b_k = w_k/\sum w$: băng tỷ lệ với $w$,
+    \textbf{không phụ thuộc kênh}, nên user critical ở rìa vẫn chậm.
+    ifair cố ý chia để \hl{tốc độ} tỷ lệ với $w$; hàm $U$ chỉ dùng để chọn vị trí UAV ở khối 3.
+  \end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Phụ lục E: tìm kiếm cục bộ calib}
+\begin{block}{Chọn nước đi cho UAV $j$}
+    \[
+      d^\star_j = \arg\max_{d\in\mathcal{D}} U\big(q_1,\dots,q_j+d,\dots,q_M\big)
+    \]
+    \[
+      \mathcal{D} = \{0\}\cup\{s(\cos\tfrac{i\pi}{4},\sin\tfrac{i\pi}{4})\},\ i=0..7,\ s\in\{V_{\max}\Delta t,\tfrac14V_{\max}\Delta t\}
+    \]
+\end{block}
+\small $U = \sum_k w_k\log(\hat r_k + r_0)$ tính lại trên toàn mạng, có nhiễu và trần LTE.
 \end{frame}
 
 \end{document}
