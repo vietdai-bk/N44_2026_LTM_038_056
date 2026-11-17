@@ -194,26 +194,26 @@ d.edge(a7, a4, "có (khe n+1)", exit=(1, 0.5), entry=(1, 0.5), points=[(760, 710
 d.save()
 
 # 7. Trình tự WebSocket -----------------------------------------------------------------------------------------------------
-d = D("giao_thuc_ws", 1000, 720)
-d.text(0, 5, 1000, 30, "Trình tự trao đổi giữa trình duyệt và server", 17, bold=True)
-c = d.box(120, 50, 220, 45, "<b>Trình duyệt</b>", fill="#e5edf8", stroke=NAVY)
-s_ = d.box(660, 50, 220, 45, "<b>Server (live.py)</b>", fill="#fff1dc", stroke=AMBER)
-d.box(229, 95, 2, 600, "", fill="#7d8795", stroke="none", style="")
-d.box(769, 95, 2, 600, "", fill="#7d8795", stroke="none", style="")
+d = D("giao_thuc_ws", 720, 720)
+d.text(0, 5, 720, 30, "Trình tự trao đổi giữa trình duyệt và server", 17, bold=True)
+c = d.box(20, 50, 180, 45, "<b>Trình duyệt</b>", fill="#e5edf8", stroke=NAVY)
+s_ = d.box(520, 50, 180, 45, "<b>Server (live.py)</b>", fill="#fff1dc", stroke=AMBER)
+d.box(109, 95, 2, 600, "", fill="#7d8795", stroke="none", style="")
+d.box(609, 95, 2, 600, "", fill="#7d8795", stroke="none", style="")
 msgs = [(">", "HTTP GET /, /config.js (cổng 8000)", "#4d5766", False),
         ("<", "index.html, WS_PORT", "#4d5766", True),
         (">", "WebSocket handshake (cổng 8001)", "#4d5766", False),
-        ("<", "info: cấu hình, giới hạn, thuật toán, trạng thái", BLUE, True),
-        ("<", "state: vị trí, liên kết, SINR, tốc độ, chỉ số (mỗi khe 0.25 s)", BLUE, True),
+        ("<", "info: cấu hình, trạng thái", BLUE, True),
+        ("<", "state mỗi khe 0.25 s: vị trí, SINR, tốc độ", BLUE, True),
         (">", '{"cmd":"vel","uav":0,"vx":15,"vy":0}', ORANGE, False),
-        ("<", "info (phát cho mọi trình duyệt); lệnh sai → note lỗi", BLUE, True),
-        (">", '{"cmd":"measure","seconds":15,"link":"ideal",...}', ORANGE, False),
-        ("<", "info: recording → running (NS-3 ở luồng riêng) → done + kết quả", BLUE, True),
-        (">", "đóng kết nối → còn 0 trình duyệt: dừng mọi UAV lái tay", RED, False)]
+        ("<", "info cho mọi trình duyệt (lệnh sai → lỗi)", BLUE, True),
+        (">", '{"cmd":"measure","seconds":15,...}', ORANGE, False),
+        ("<", "info: đang ghi → NS-3 chạy → kết quả", BLUE, True),
+        (">", "đóng kết nối → dừng UAV lái tay", RED, False)]
 for i, (dirn, text, color, dashed) in enumerate(msgs):
     y = 125 + i * 57
-    l = d.box(225, y, 10, 10, "", fill="none", stroke="none", style="")
-    r = d.box(765, y, 10, 10, "", fill="none", stroke="none", style="")
+    l = d.box(105, y, 10, 10, "", fill="none", stroke="none", style="")
+    r = d.box(605, y, 10, 10, "", fill="none", stroke="none", style="")
     a, b = (l, r) if dirn == ">" else (r, l)
     d.edge(a, b, text, color=color, dashed=dashed, straight=True)
 d.save()

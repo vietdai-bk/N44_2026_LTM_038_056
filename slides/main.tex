@@ -48,6 +48,7 @@
 \setlength{\parskip}{3pt}
 
 \tikzset{
+  st/.style={draw=#1!70,fill=#1!8,rounded corners=3pt,align=center,text width=2.3cm,minimum height=8mm,inner sep=2pt},
   box/.style={draw=MainBlue!70,fill=MainBlue!7,rounded corners=3pt,align=center,text width=2.5cm,minimum height=8mm,font=\small},
   arr/.style={-{Stealth[length=2mm]},thick,draw=Accent},
 }
@@ -148,7 +149,7 @@
   \end{block}
   \begin{block}{4. Hệ thống và tổng kết}
     \begin{itemize}
-      \item Dashboard web, Gazebo.
+      \item Dashboard web, Gazebo; giao thức WebSocket, đường đi gói tin.
       \item Đánh đổi, hạn chế.
       \item Kết luận.
     \end{itemize}
@@ -1054,6 +1055,125 @@ max-min có trọng số (tím) dừng ở 86--87\%. Đổi lại throughput t�
   \includegraphics[width=\linewidth]{thoi_gian_thuc.png}
 \end{column}
 \end{columns}
+\end{frame}
+
+% =================================================
+% =================================================
+% SLIDE 21b. LẬP TRÌNH MẠNG: WEBSOCKET
+% =================================================
+\begin{frame}{Giao tiếp trình duyệt -- server qua WebSocket}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.56\textwidth}
+\centering
+\begin{tikzpicture}[x=1cm,y=-0.62cm,font=\scriptsize]
+  \node[box,text width=2.1cm] (b) at (0,0) {\textbf{Trình duyệt}};
+  \node[box,text width=2.1cm,fill=orange!12,draw=orange!70] (s) at (5.2,0) {\textbf{Server}};
+  \draw[gray,thick] (0,0.6) -- (0,8.6);  \draw[gray,thick] (5.2,0.6) -- (5.2,8.6);
+  \draw[-{Stealth},thick,black!70] (0.05,1.3) -- (5.15,1.3);   \node[above] at (2.6,1.3) {HTTP GET trang (cổng 8000)};
+  \draw[-{Stealth},thick,dashed,black!70] (5.15,2.3) -- (0.05,2.3);   \node[above] at (2.6,2.3) {index.html};
+  \draw[-{Stealth},thick,black!70] (0.05,3.3) -- (5.15,3.3);   \node[above] at (2.6,3.3) {bắt tay WebSocket (cổng 8001)};
+  \draw[-{Stealth},thick,dashed,U0] (5.15,4.3) -- (0.05,4.3);         \node[above] at (2.6,4.3) {\texttt{info}: cấu hình, trạng thái};
+  \draw[-{Stealth},thick,dashed,U0] (5.15,5.3) -- (0.05,5.3);         \node[above] at (2.6,5.3) {\texttt{state}: mỗi khe 0.25 s};
+  \draw[-{Stealth},thick,orange] (0.05,6.5) -- (5.15,6.5);     \node[above] at (2.6,6.5) {lệnh JSON, vd \texttt{\{"cmd":"vel",...\}}};
+  \draw[-{Stealth},thick,dashed,U0] (5.15,7.7) -- (0.05,7.7);         \node[above] at (2.6,7.7) {\texttt{info} gửi cho mọi trình duyệt};
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.42\textwidth}
+  \small
+  \begin{block}{Vì sao WebSocket}
+    \footnotesize Server phải \hl{chủ động đẩy} trạng thái 4 lần/giây; lệnh lái tay đi ngược lại trên \textbf{cùng một kết nối TCP}. HTTP polling vừa chậm vừa tốn.
+  \end{block}
+  \begin{block}{Bản tin JSON}
+    \footnotesize Xuống: \texttt{info}, \texttt{state}.\\
+    Lên: 11 lệnh (\texttt{vel}, \texttt{goto}, \texttt{config}, \texttt{measure}, \dots).
+  \end{block}
+  \begin{block}{An toàn}
+    \footnotesize Chỉ nghe 127.0.0.1. Lệnh sai bị từ chối. Mọi trình duyệt ngắt kết nối $\Rightarrow$ UAV lái tay dừng.
+  \end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+% =================================================
+% SLIDE 21b2. CÁC NODE NS-3
+% =================================================
+\begin{frame}{Các node và kết nối trong NS-3}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.50\textwidth}
+\centering
+\begin{tikzpicture}[font=\scriptsize,
+  nd/.style={draw=MainBlue!70,fill=MainBlue!7,rounded corners=3pt,align=center,minimum height=7mm,text width=1.5cm}]
+  \node[nd] (rh) at (0,0) {\textbf{Remote host}\\1.0.0.2};
+  \node[nd,fill=gray!10,draw=gray] (pgw) at (0,-1.7) {\textbf{EPC}\\PGW, SGW, MME};
+  \foreach \m/\y in {0/0.9,1/-0.4,2/-1.7} \node[nd,fill=orange!12,draw=orange!70] (e\m) at (2.9,\y-0.4) {\textbf{eNB \m}\\UAV \m};
+  \foreach \m/\y in {0/0.9,1/-0.4,2/-1.7} \node[nd,fill=Good!8,draw=Good!70,text width=1.1cm] (u\m) at (5.1,\y-0.4) {nhóm UE};
+  \draw[thick] (rh) -- node[left,align=right]{p2p\\10 Gb/s\\1 ms} (pgw);
+  \foreach \m in {0,1,2} { \draw[thick] (pgw.east) -- (e\m.west); \draw[thick,decorate,decoration={snake,amplitude=0.6mm,segment length=2mm}] (e\m) -- (u\m); }
+  \node[font=\tiny] at (1.55,-0.15) {S1};
+  \draw[dashed,orange!80!black] (e0.south) -- (e1.north); \draw[dashed,orange!80!black] (e1.south) -- (e2.north);
+  \node[font=\tiny,text=orange!70!black] at (3.55,-0.5) {X2};
+  \node[font=\tiny] at (4.0,-2.45) {vô tuyến LTE};
+  \node[font=\tiny,align=center,text=Good] at (5.1,-2.85) {tổng 20 UE, IP 7.0.0.0/8};
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.48\textwidth}
+\scriptsize
+\begin{tabular}{@{}p{1.75cm}p{3.9cm}@{}}
+  \toprule
+  \textbf{Node} & \textbf{Cài đặt}\\
+  \midrule
+  Remote host (1) & Nguồn dữ liệu: một socket UDP cho mỗi UE, đổi tốc độ đầu mỗi khe\\
+  EPC (3) & PGW, SGW, MME; đường hầm GTP-U tới eNB\\
+  eNB (3) & Mỗi UAV một eNB: 30 dBm, 50 RB, chung tần số; bay theo kế hoạch (\texttt{WaypointMobility}, 100 m); scheduler PF/RR/\textbf{WPF}\\
+  UE (20) & Mỗi user một UE: \texttt{UdpServer} cổng 9 đo trễ, mất gói; gắn eNB theo kế hoạch, handover X2\\
+  Kênh & \texttt{AlHouraniPropagationLossModel} nhóm tự viết, cùng công thức với Python\\
+  \bottomrule
+\end{tabular}
+
+\vspace{2mm}
+Đo: \texttt{FlowMonitor} + bộ đếm mỗi khe (gói gửi, nhận, byte, độ trễ, cell đang gắn).
+\end{column}
+\end{columns}
+\end{frame}
+
+% =================================================
+% SLIDE 21c. LẬP TRÌNH MẠNG: GÓI TIN TRONG NS-3
+% =================================================
+\begin{frame}{Đường đi của gói tin trong NS-3 LTE}
+\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \node[font=\small\bfseries,text=MainBlue] at (0,0.6) {Remote host};
+  \node[st=MainBlue] (n0_0) at (0,-0.0) {UDP cổng 9\\{\scriptsize số thứ tự + giờ gửi}};
+  \node[st=MainBlue] (n0_1) at (0,-0.95) {IP};
+  \node[font=\small\bfseries,text=MainBlue] at (3.17,0.6) {EPC (PGW)};
+  \node[st=gray] (n31_0) at (3.17,-0.0) {GTP-U\\{\scriptsize đường hầm tới eNB}};
+  \node[st=gray] (n31_1) at (3.17,-0.95) {IP};
+  \node[font=\small\bfseries,text=MainBlue] at (6.33,0.6) {eNB trên UAV};
+  \node[st=orange] (n62_0) at (6.33,-0.0) {PDCP, RLC (1 MiB)};
+  \node[st=orange] (n62_1) at (6.33,-0.95) {\textbf{MAC: WPF ($b_k$)}};
+  \node[st=orange] (n62_2) at (6.33,-1.9) {PHY};
+  \node[font=\small\bfseries,text=MainBlue] at (9.5,0.6) {UE (user)};
+  \node[st=Good] (n93_1) at (9.5,0) {UDP\\{\scriptsize đo trễ, mất gói}};
+  \node[st=Good] (n93_0) at (9.5,-1.9) {PHY, MAC, RLC};
+  \draw[arr] (n93_0.north) -- (n93_1.south);
+  \draw[arr] (n0_0.east) -- (n31_0.west);
+  \draw[arr] (n31_0.east) -- node[below,font=\scriptsize]{S1-U} (n62_0.west);
+  \draw[arr] (n62_2.east) -- node[above,font=\scriptsize]{vô tuyến} (n93_0.west);
+  \draw[arr,dashed] (n62_2.south) -- ++(0,-0.6) node[below,font=\scriptsize]{handover X2 sang eNB khác};
+\end{tikzpicture}
+
+\vspace{4mm}
+\footnotesize
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  \textbf{Kênh} & \textbf{Cơ chế} & \textbf{Tác dụng}\\
+  \midrule
+  Trình duyệt $\leftrightarrow$ server & WebSocket, JSON & trạng thái, lệnh điều khiển\\
+  Server $\rightarrow$ Gazebo & gz-transport, protobuf & mọi vị trí trong 1 lời gọi, 20 lần/s\\
+  Python $\leftrightarrow$ NS-3 & tiến trình con, file CSV & kế hoạch vào, số đo ra\\
+  Trong NS-3 & socket UDP tự viết & đo độ trễ, mất gói từng gói\\
+  \bottomrule
+\end{tabular}
 \end{frame}
 
 % =================================================

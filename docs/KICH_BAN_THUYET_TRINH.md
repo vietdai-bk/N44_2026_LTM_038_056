@@ -1,6 +1,6 @@
 # Kịch bản thuyết trình
 
-Kịch bản đi theo bộ slide `slides/main.pdf` (31 trang). Tổng thời gian khoảng **22 phút**, cộng phần hỏi đáp. Mỗi slide
+Kịch bản đi theo bộ slide `slides/main.pdf` (34 trang). Tổng thời gian khoảng **25 phút**, cộng phần hỏi đáp. Mỗi slide
 có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thuộc từng chữ) và ghi chú cho người trình bày. Phần thuật toán
 (slide 9–19) là trọng tâm, nên chiếm gần nửa thời gian.
 
@@ -9,7 +9,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 | Mở đầu, bài toán | 1–8 | 6 phút |
 | Heuristic calib-ifair | 9–19 | 9 phút |
 | Thí nghiệm, kết quả | 20–26 | 5 phút |
-| Hệ thống, tổng kết | 27–31 | 2 phút |
+| Hệ thống, lập trình mạng, tổng kết | 27–34 | 5 phút |
 
 ---
 
@@ -270,7 +270,40 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 *Ghi chú: nếu có demo trực tiếp, chạy `python -m uavsim.live --gazebo`, chọn UAV 0, nhấp một góc bản đồ cho UAV bay đi,
 chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và bảng nhóm user thay đổi.*
 
-## Slide 28. Đánh đổi và hạn chế (40 giây)
+## Slide 28. Giao tiếp trình duyệt – server qua WebSocket (60 giây)
+
+> Đây là phần lập trình mạng của trạm điều khiển. Server mở hai cổng, chỉ nghe trên máy cục bộ: cổng 8000 là HTTP để tải
+> trang web, cổng 8001 là WebSocket. Nhóm chọn WebSocket thay cho HTTP polling vì server phải chủ động đẩy trạng thái
+> bốn lần mỗi giây tới mọi trình duyệt, còn lệnh lái tay phải đi ngược lại với độ trễ thấp, trên cùng một kết nối TCP.
+>
+> Hình bên trái là trình tự: trình duyệt tải trang, bắt tay WebSocket, nhận bản tin info rồi state mỗi khe. Khi người
+> dùng lái, trình duyệt gửi lệnh JSON như vel hay measure; server kiểm tra rồi phát info mới cho mọi trình duyệt. Có
+> mười một loại lệnh. Server chạy trên một vòng lặp asyncio, còn NS-3 chạy ở thread riêng để mô phỏng không bị dừng. Lệnh
+> sai chỉ bị từ chối, và khi mọi trình duyệt ngắt kết nối thì UAV lái tay tự dừng.
+
+## Slide 29. Các node và kết nối trong NS-3 (45 giây)
+
+> Trong NS-3, mạng gồm bốn loại node. Một remote host làm nguồn dữ liệu, mở một socket UDP cho mỗi người dùng. Remote
+> host nối với PGW của lõi EPC (gồm PGW, SGW, MME) bằng liên kết điểm-điểm 10 Gb/s, trễ 1 ms. Mỗi UAV là một eNB: phát 30 dBm,
+> 50 resource block, ba eNB dùng chung tần số, bay theo đúng quỹ đạo thuật toán đã tính, và chạy scheduler WPF. Mỗi người
+> dùng là một UE có ứng dụng UdpServer ở cổng 9 để đo độ trễ và mất gói. Các eNB nối với nhau qua giao diện X2 để
+> handover khi kế hoạch đổi UAV phục vụ. Kênh vô tuyến dùng mô hình Al-Hourani do nhóm viết lại trong C++, cùng công thức
+> với phía Python.
+
+## Slide 30. Đường đi của gói tin trong NS-3 LTE (50 giây)
+
+> Còn đây là đường đi của một gói dữ liệu trong NS-3. Remote host gửi UDP cổng 9, mỗi gói mang số thứ tự và thời điểm
+> gửi để đo độ trễ từng gói. Gói đi qua EPC bằng đường hầm GTP-U tới eNB trên UAV, qua PDCP, RLC, rồi scheduler ở tầng
+> MAC, chính là chỗ nhóm cài WPF để áp phần băng thông của thuật toán, rồi qua vô tuyến tới UE. Khi kế hoạch đổi UAV
+> phục vụ, eNB làm handover qua giao diện X2.
+>
+> Bảng dưới tóm tắt bốn kênh truyền thông của hệ thống: WebSocket với trình duyệt, gz-transport với Gazebo, tiến trình
+> con và file CSV với NS-3, và socket UDP bên trong NS-3.
+
+*Ghi chú: nếu hội đồng hỏi vì sao gửi vị trí sang Gazebo bằng một lời gọi service: gom mọi vị trí vào một bản tin
+protobuf giữ tải cố định 20 lời gọi mỗi giây, không phụ thuộc số UAV và user.*
+
+## Slide 31. Đánh đổi và hạn chế (40 giây)
 
 > Về đánh đổi: ở tải cao, throughput tổng thấp hơn baseline không biết nhóm khoảng 11%, và nhóm normal chịu độ trễ cao
 > hơn, nhưng tốc độ tối thiểu của họ vẫn cao hơn mọi baseline. Mức đánh đổi chỉnh được bằng trọng số.
@@ -278,7 +311,7 @@ chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và
 > Về hạn chế: đây là heuristic nên không đảm bảo tối ưu toàn cục; ngưỡng tốc độ tối thiểu chưa là ràng buộc cứng; công
 > suất và độ cao chưa được tối ưu; nhóm mới đánh giá một cấu hình với 3 seed, và chưa có baseline tối ưu lồi.
 
-## Slide 29. Kết luận (40 giây)
+## Slide 32. Kết luận (40 giây)
 
 > Tóm lại, nhóm rút ra sáu kết luận đo trên NS-3. Mô hình hàng đợi đúng ở mức gói tin. Giá trị tốc độ theo Shannon lạc
 > quan, NS-3 chỉ đạt 25–40%. Chia băng chỉ có tác dụng khi áp ở tầng MAC. calib-ifair ưu tiên được người dùng critical,
@@ -287,11 +320,11 @@ chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và
 >
 > Hướng phát triển gồm ràng buộc cứng cho nhóm critical, baseline tối ưu lồi, mở rộng thí nghiệm và học tăng cường.
 
-## Slide 30. Tài liệu tham khảo (10 giây)
+## Slide 33. Tài liệu tham khảo (10 giây)
 
 > Đây là các tài liệu nhóm tham khảo chính.
 
-## Slide 31. Cảm ơn (10 giây)
+## Slide 34. Cảm ơn (10 giây)
 
 > Nhóm em xin cảm ơn thầy cô và các bạn đã lắng nghe. Nhóm rất mong nhận được câu hỏi và góp ý.
 
