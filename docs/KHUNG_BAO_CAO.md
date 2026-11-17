@@ -167,6 +167,7 @@ Mỗi mục viết theo khuôn: **câu hỏi → thiết lập → bảng → h�
 | E9 | Thời gian thực | 40 khe; 20 khe với Gazebo | Lái tay, đồng bộ Gazebo, phát lại NS-3 có đúng không? |
 | E10 | Thuật toán đề xuất | 3 × 7 × 3 = 63 run LTE + 63 run lý tưởng | Đề xuất có tốt hơn baseline không? |
 | E11 | Ba nhóm user | 3 × 7 × 3 = 63 run LTE mới + dùng lại E5, E6, E10 | Có ưu tiên được critical không, giá phải trả? |
+| E12 | Hiệu năng server WebSocket | 1–50 client × 20 s | Bản tin, băng thông, độ trễ lệnh, khả năng mở rộng |
 
 **Bảng 6.2. Cấu hình chung của các thí nghiệm NS-3.**
 
@@ -456,6 +457,11 @@ Viết dạng bảng kiểm, mỗi dòng một yêu cầu và kết quả đo:
 | Gazebo đồng bộ | So vị trí UAV trong Gazebo với mô hình, 20 khe | Lệch lớn nhất 0.000 m |
 | Phiên ghi phát lại được trong NS-3 | Ghi 40 khe rồi phát lại, WPF | Lý tưởng: 19.99 so với 20.0 Mbps, mất 0.04%; LTE: 19.72 Mbps, trễ 134 ms |
 | An toàn | Gửi lệnh sai; ngắt kết nối; tắt server | Server không sập; UAV lái tay dừng; Gazebo đóng theo |
+
+**Bảng 6.16b. Hiệu năng server WebSocket (E12).** Lấy bảng E12 ở mục 6.10 của `BAO_CAO_DU_AN.md`
+(`experiments/results/websocket.csv`). **Kết luận:** 50 client, nhịp khe giữ 251 ms, lệnh khứ hồi < 3.5 ms (p95),
+9.4 kB/s mỗi client, CPU 3.5%: server một luồng asyncio chưa phải nút cổ chai. Đây là kết quả trực tiếp nhất cho phần
+lập trình mạng của môn học.
 
 ### 6.13. Tổng hợp
 

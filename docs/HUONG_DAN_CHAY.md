@@ -719,6 +719,7 @@ Các lệnh chạy từ thư mục dự án với Python trong `.venv`; NS-3 c�
 | E9 | `python -m uavsim.live --gazebo`, mở `http://localhost:8000` | |
 | E10 | `python -m uavsim.ns3 --link lte --algos calib-ifair kmeans-ifair calib-equal --scheduler wpf --set demand_mbps=1 --load 0.5 1 1.5 2 2.5 3 4 --seeds 3 --set slots=60`, rồi `python experiments/compare_proposed.py experiments/results/proposed` | khoảng 40 phút |
 | E11 | `python -m uavsim.ns3 --algos calib-ifair calib-ifair-shannon --scheduler wpf --set demand_mbps=1 --set important_frac=0.25 --set critical_frac=0.15 --load 0.5 1 1.5 2 2.5 3 4 --seeds 3 --set slots=60 --out experiments/results/ns3-classes-lte`; lệnh tương tự với `--algos kmeans-wmaxmin --out experiments/results/ns3-wmaxmin-lte`; rồi `python experiments/compare_classes.py experiments/results/classes` | khoảng 25 phút |
+| E12 | `python experiments/bench_websocket.py experiments/results/websocket` | khoảng 2 phút |
 | Kiểm thử | `python -m pytest -q tests` | khoảng 1 phút |
 
 Kết quả đã chạy có sẵn trong `experiments/results/`, mỗi thư mục kèm `config.json` để chạy lại đúng cấu hình.

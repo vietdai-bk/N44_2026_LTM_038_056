@@ -853,6 +853,7 @@ seed mà thuật toán thứ nhất tốt hơn.
 | E7 | Ba tầng | 63 + 42 = 105 run | Mô hình có đúng ở mức gói tin không? |
 | E8 | Thời gian chạy | | Chi phí tính toán |
 | E9 | Điều khiển thời gian thực | 40 khe; 20 khe với Gazebo | Lái tay, đồng bộ Gazebo, phát lại NS-3 có đúng không? |
+| E12 | Hiệu năng server WebSocket | 1–50 client, mỗi mức 20 s, 40 lệnh | Bản tin bao lớn, tốn bao nhiêu băng thông, lệnh trễ bao lâu, chịu bao nhiêu client? |
 | E10 | Thuật toán đề xuất | 3 thuật toán × 7 × 3 = 63 run LTE + 63 run lý tưởng | Thiết kế dựa trên số đo NS-3 có tốt hơn không? |
 | E11 | Ba nhóm user | 3 thuật toán × 7 × 3 = 63 run LTE (baseline không biết nhóm dùng lại E5, E6, E10) | Ưu tiên được user critical không, hơn max-min có trọng số không, giá phải trả là gì, LTE hay Shannon? |
 
@@ -1125,6 +1126,25 @@ important), lưu lượng 1 Mbps/user.
 | Phiên ghi phát lại được trong NS-3 | Ghi 40 khe (10 s) rồi phát lại, WPF | Liên kết lý tưởng: 19.99 so với 20.0 Mbps, độ trễ 3.89 so với 3.87 ms, mất 0.04%, chạy 0.3 s. LTE: 19.72 Mbps, độ trễ 134 ms, mất 1.4%, chạy 13.7 s; UE gắn đúng cell 100% |
 | An toàn | Gửi lệnh sai; ngắt mọi trình duyệt; tắt server | Server chỉ từ chối lệnh, không dừng; UAV lái tay dừng; Gazebo đóng theo server |
 
+**Hiệu năng server WebSocket (E12).** Server chạy calib-ifair (3 UAV, 20 user, khe 0.25 s, không Gazebo); N client
+cùng kết nối trên cùng máy và đọc liên tục mọi bản tin. Client đầu tiên gửi 40 lệnh, đo thời gian từ lúc gửi lệnh tới
+lúc nhận bản tin `info` phản hồi (khứ hồi). CPU là phần trăm một nhân của tiến trình server.
+
+| Số client | Bản tin `state` | Băng thông mỗi client | Tổng băng thông | Nhịp `state` (trung bình / p95) | Lệnh khứ hồi (trung vị / p95) | CPU server |
+|---|---|---|---|---|---|---|
+| 1 | 1.74 kB | 9.4 kB/s | 9.4 kB/s | 250.9 / 253.2 ms | 0.66 / 1.30 ms | 2.1% |
+| 5 | 1.74 kB | 9.4 kB/s | 47 kB/s | 250.9 / 253.2 ms | 0.73 / 1.56 ms | 2.2% |
+| 10 | 1.73 kB | 9.4 kB/s | 94 kB/s | 250.9 / 254.0 ms | 1.16 / 3.40 ms | 2.5% |
+| 20 | 1.73 kB | 9.4 kB/s | 187 kB/s | 250.9 / 254.8 ms | 1.45 / 1.89 ms | 2.8% |
+| 50 | 1.73 kB | 9.4 kB/s | 468 kB/s | 251.0 / 254.3 ms | 0.87 / 1.26 ms | 3.5% |
+
+Mỗi client nhận đúng 4 bản tin `state` mỗi giây, khoảng 1.7 kB một bản tin (`info` khoảng 1.2 kB), tức chưa tới
+10 kB/s: một kết nối mạng di động bình thường cũng đủ. Băng thông tổng tăng tuyến tính theo số client vì server gửi
+cùng một bản tin cho từng kết nối. Với 50 client, nhịp khe vẫn giữ 251 ms (lệch p95 dưới 5 ms so với 250 ms), lệnh
+khứ hồi dưới 3.5 ms ở p95 và CPU server chỉ 3.5%, nên vòng lặp asyncio một luồng chưa phải nút cổ chai. Độ trễ lệnh
+nhỏ hơn chu kỳ khe gần hai bậc, nên lệnh lái tay luôn kịp áp vào khe kế tiếp. Lưu ý: client chạy trên cùng máy, nên
+phép đo không gồm độ trễ mạng thật giữa trình duyệt và server.
+
 Kết quả phát lại lặp lại đúng mẫu của mục 6.6–6.8: ở tầng lý tưởng mô hình khớp NS-3, còn trên LTE độ trễ cao hơn nhiều
 do giao thức, dù throughput gần như đủ.
 
@@ -1287,7 +1307,7 @@ bù lại throughput tổng và mất gói; đường cong LTE hiệu chỉnh kh
 | Công cụ tính: khung mô phỏng số | Hoàn thành | 6 baseline + baseline biết nhóm, 4 bản ablation, môi trường Gymnasium, 42 test |
 | Công cụ đo: NS-3 LTE và kiểm chứng ba tầng | Hoàn thành | Khoảng 400 run, mọi handover thành công; khớp dưới 1%; khoảng chênh Shannon → LTE giải thích hết, còn ±3% |
 | Áp quyết định ở tầng MAC | Hoàn thành | Scheduler WPF; maxmin +16–18% (hover), khớp dự đoán |
-| Trạm điều khiển thời gian thực | Hoàn thành ở mức cơ bản | WebSocket, dashboard, Gazebo đồng bộ 0.000 m, đo NS-3 từ web |
+| Trạm điều khiển thời gian thực | Hoàn thành | WebSocket: 50 client, lệnh khứ hồi < 3.5 ms (p95), 9.4 kB/s mỗi client; Gazebo đồng bộ 0.000 m; đo NS-3 từ web |
 | Huấn luyện agent học tăng cường | Chưa làm | Môi trường đã sẵn sàng |
 
 Bên cạnh thuật toán, dự án cho thấy mô hình giải tích kiểu bài báo đủ tốt để xếp hạng các chiến lược điều khiển UAV,
@@ -1408,3 +1428,4 @@ kết quả tái lập được từng bit. Cách chạy lại được hướng
 | E7 | `ns3-demand-ideal`, `ns3-demand-wpf-ideal`, `ns3-proposed-ideal` | vài phút |
 | E10 | `ns3-proposed-lte`, tổng hợp ở `proposed.csv` | khoảng 40 phút |
 | E11 | `ns3-classes-lte`, `ns3-wmaxmin-lte`, tổng hợp ở `classes.csv` | khoảng 25 phút |
+| E12 | `websocket.csv` | khoảng 2 phút |

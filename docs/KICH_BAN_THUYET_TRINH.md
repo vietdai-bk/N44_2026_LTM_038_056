@@ -270,7 +270,7 @@ có: thời lượng gợi ý, lời nói (đọc tự nhiên, không cần thu�
 *Ghi chú: nếu có demo trực tiếp, chạy `python -m uavsim.live --gazebo`, chọn UAV 0, nhấp một góc bản đồ cho UAV bay đi,
 chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và bảng nhóm user thay đổi.*
 
-## Slide 28. Giao tiếp trình duyệt – server qua WebSocket (60 giây)
+## Slide 28. Giao tiếp trình duyệt – server qua WebSocket (70 giây)
 
 > Đây là phần lập trình mạng của trạm điều khiển. Server mở hai cổng, chỉ nghe trên máy cục bộ: cổng 8000 là HTTP để tải
 > trang web, cổng 8001 là WebSocket. Nhóm chọn WebSocket thay cho HTTP polling vì server phải chủ động đẩy trạng thái
@@ -280,6 +280,9 @@ chỉ cho hội đồng thấy người dùng đổi màu áo sang UAV khác và
 > dùng lái, trình duyệt gửi lệnh JSON như vel hay measure; server kiểm tra rồi phát info mới cho mọi trình duyệt. Có
 > mười một loại lệnh. Server chạy trên một vòng lặp asyncio, còn NS-3 chạy ở thread riêng để mô phỏng không bị dừng. Lệnh
 > sai chỉ bị từ chối, và khi mọi trình duyệt ngắt kết nối thì UAV lái tay tự dừng.
+>
+> Nhóm đo hiệu năng server với tới 50 trình duyệt cùng lúc: mỗi bản tin khoảng 1.7 kB, mỗi trình duyệt tốn 9.4 kB/s,
+> lệnh đi và về dưới 3.5 ms, nhịp khe vẫn giữ 250 ms và server chỉ dùng 3.5% CPU.
 
 ## Slide 29. Các node và kết nối trong NS-3 (45 giây)
 
