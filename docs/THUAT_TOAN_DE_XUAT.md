@@ -7,7 +7,7 @@ làm slide.
 nghiệm tối ưu. Các thành phần dựa trên kỹ thuật đã có (công bằng tỷ lệ có trọng số, max-min có trọng số, đặt UAV theo
 k-means, tìm kiếm cục bộ, scheduler PF có trọng số); điểm cải tiến là cách kết hợp (chia băng có tính nhiễu, tinh chỉnh
 vị trí theo cùng mục tiêu có trọng số nhóm, áp ở tầng MAC) và việc kiểm chứng ở mức gói tin bằng NS-3 LTE. Khi trình
-bày nên gọi là "heuristic cải tiến", không gọi là "thuật toán mới" hay "thuật toán tối ưu". Nội dung khớp với `BAO_CAO_DU_AN.md` (mục 4.10, 4.11, 5.5, 6.12) và với code trong `uavsim/algorithms.py`.
+bày nên gọi là "heuristic cải tiến", không gọi là "thuật toán mới" hay "thuật toán tối ưu". Nội dung khớp với báo cáo (mục 4.10, 4.11, 5.5, 6.12) và với code trong `uavsim/algorithms.py`.
 
 ---
 
@@ -279,7 +279,7 @@ $$
 | 4 | Throughput tổng (Mbps) | **49.9** | 44.3 | 44.1 |
 | 4 | Mất gói (%) | **37.6** | 44.6 | 44.8 |
 
-Bảng đầy đủ 6 thuật toán: `BAO_CAO_DU_AN.md` mục 6.12; số liệu `experiments/results/classes.csv`, hình
+Bảng đầy đủ 6 thuật toán: báo cáo mục 6.12; số liệu `experiments/results/classes.csv`, hình
 `experiments/results/classes.png`.
 
 ### Đọc kết quả

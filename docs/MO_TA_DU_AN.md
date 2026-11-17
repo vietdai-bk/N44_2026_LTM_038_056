@@ -27,7 +27,7 @@ trọng số Σ_k w_k log(r_k + r_0), tức công bằng tỷ lệ có trọng s
 tổng có phạt) và không biết nhóm user. Mọi thuật toán đều được chấm bằng cùng một bộ chỉ số đo trên NS-3: tổng
 throughput, min throughput, độ trễ, mất gói, và theo từng nhóm: min throughput và tỷ lệ đạt QoS. Baseline `kmeans-wmaxmin` (max-min có trọng số) cũng biết nhóm, để so sánh trên cùng thông tin. Bốn bản so sánh có
 cùng mục tiêu với thuật toán đề xuất: `kmeans-ifair`, `calib-equal` (bỏ một khối), `calib-ifair-noclass` (bỏ qua nhóm)
-và `calib-ifair-shannon` (tính tốc độ bằng Shannon như bài báo). Chi tiết ở `BAO_CAO_DU_AN.md`, mục 4.10.
+và `calib-ifair-shannon` (tính tốc độ bằng Shannon như bài báo). Chi tiết ở `THUAT_TOAN_DE_XUAT.md`.
 
 Vì đây là đồ án môn Lập trình mạng, ngoài kết quả tính theo công thức như các bài báo, nhóm còn phải đo lại ở mức gói
 tin bằng NS-3.
@@ -143,7 +143,7 @@ critical ở 2 Mbps/user giảm từ hơn 1 s xuống 41 ms. So với baseline c
 gấp đôi, còn throughput tổng như nhau. Cái giá là throughput tổng giảm 4–12% và nhóm normal chịu độ trễ cao
 hơn, dù min throughput của nhóm normal vẫn cao hơn baseline. Bản `calib-ifair-shannon` (cùng thuật toán nhưng tính tốc độ
 bằng Shannon) cho kết quả trùng trong 1–2%: lợi ích đến từ việc tính nhiễu, áp ở MAC và trọng số nhóm, không đến từ
-đường cong LTE hiệu chỉnh. Chi tiết ở `BAO_CAO_DU_AN.md`, mục 6.12, hình `experiments/results/classes.png`.
+đường cong LTE hiệu chỉnh. Chi tiết ở `THUAT_TOAN_DE_XUAT.md`, hình `experiments/results/classes.png`.
 
 ### 4.4. Kết luận nào của mô hình đứng vững trên NS-3
 
@@ -183,7 +183,6 @@ LapTrinhMang/
 ├── tests/                      # 46 test (test_uavsim.py, test_gazebo_pool.py)
 ├── docs/
 │   ├── MO_TA_DU_AN.md           # mô tả tổng quan
-│   ├── BAO_CAO_DU_AN.md         # báo cáo tóm tắt theo tiêu chí đánh giá
 │   └── THIET_KE_MO_PHONG.md     # thiết kế chi tiết
 └── README.md                    # giới thiệu, chạy nhanh
 ```

@@ -96,12 +96,11 @@ slides/              slide bảo vệ (LaTeX Beamer)
 
 | Tài liệu | Nội dung |
 |---|---|
-| [`docs/BAO_CAO_DU_AN.md`](docs/BAO_CAO_DU_AN.md) | Báo cáo đầy đủ: bài toán, mô hình, triển khai, kết quả, kết luận |
 | [`docs/THUAT_TOAN_DE_XUAT.md`](docs/THUAT_TOAN_DE_XUAT.md) | Bài toán tối ưu, mã giả, lưu đồ của calib-ifair |
 | [`docs/MO_TA_DU_AN.md`](docs/MO_TA_DU_AN.md) | Mô tả ngắn toàn dự án |
 | [`docs/THIET_KE_MO_PHONG.md`](docs/THIET_KE_MO_PHONG.md) | Thiết kế mô phỏng, công thức, thông số |
 | [`docs/HUONG_DAN_CHAY.md`](docs/HUONG_DAN_CHAY.md) | Hướng dẫn chạy chi tiết, kết quả từng thí nghiệm |
-| [`docs/KICH_BAN_THUYET_TRINH.md`](docs/KICH_BAN_THUYET_TRINH.md) | Kịch bản thuyết trình và câu hỏi thường gặp |
+| [`docs/TAI_LAP_KET_QUA.md`](docs/TAI_LAP_KET_QUA.md) | Tái lập trên máy khác và so với số chuẩn |
 | [`slides/main.pdf`](slides/main.pdf) | Slide bảo vệ |
 
 ## Hạn chế

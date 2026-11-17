@@ -1504,7 +1504,7 @@ So với `*-equal` trong `experiments/results/ns3-demand-lte` (scheduler PF, tr�
 cell), cùng seed và cùng lưu lượng. 42 run, khoảng 20 phút. Số liệu ghép cặp: `ns3-demand-wpf/paired_vs_equal.json`.
 
 Trong bảng này, "min thr" là throughput trung bình (cả lần chạy) của user kém nhất. Báo cáo dùng định nghĩa khác: trung
-bình theo khe của throughput nhỏ nhất trong khe (xem `BAO_CAO_DU_AN.md` mục 6.7).
+bình theo khe của throughput nhỏ nhất trong khe (xem báo cáo, mục 6.7).
 
 | | Mbps/user | Min thr equal → maxmin | Phân vị 10% | Thr tổng | Mất gói | Delay |
 |---|---|---|---|---|---|---|

@@ -13,3 +13,9 @@ slides/*.toc
 slides/*.fls
 slides/*.fdb_latexmk
 slides/*.xdv
+
+# báo cáo, kịch bản thuyết trình, ghi chú viết bài: nộp riêng, không đưa lên repo
+docs/BAO_CAO_DU_AN.md
+docs/KICH_BAN_THUYET_TRINH.md
+docs/KHUNG_BAO_CAO.md
+docs/GIAI_THICH_CALIB_IFAIR.md
