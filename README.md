@@ -48,6 +48,36 @@ Công thức, mã giả và lưu đồ: [`docs/THUAT_TOAN_DE_XUAT.md`](docs/THUA
 - **NS-3 3.47 LTE (C++):** phát lại kế hoạch của thuật toán và đo throughput, độ trễ, mất gói từng người dùng.
 - **Dashboard web và Gazebo:** điều khiển và quan sát thời gian thực, đo NS-3 ngay từ trình duyệt.
 
+## Trạm điều khiển thời gian thực
+
+Dashboard web nhận trạng thái mô hình qua WebSocket mỗi khe 0.25 s. Bản đồ vẽ UAV, người dùng (tròn: normal, vuông:
+important, thoi: critical; dấu × khi dưới ngưỡng QoS) và liên kết; hai bên là danh sách UAV, lái tay, tham số kịch bản,
+bảng theo nhóm người dùng và bảng từng người dùng.
+
+![Dashboard chạy calib-ifair với 3 UAV, 20 người dùng](docs/figures/dashboard.png)
+
+| Nền bản đồ SINR, người dùng tô theo SINR | "Ghi & đo": chạy NS-3 ngay từ web |
+|---|---|
+| ![Bản đồ SINR](docs/figures/dashboard_sinr.png) | ![Kết quả NS-3 trên dashboard](docs/figures/dashboard_ns3.png) |
+| Lớp nền là SINR tốt nhất tại mỗi điểm, tính có nhiễu từ các UAV khác. | Ghi 10 s rồi phát lại trong NS-3: mô hình 20.00 Mbps, NS-3 đo 19.99 Mbps. |
+
+| Đổi kịch bản khi đang chạy: 5 UAV, 40 người dùng |
+|---|
+| ![Dashboard với 5 UAV, 40 người dùng](docs/figures/dashboard_5uav.png) |
+| Bấm "Áp dụng" là kịch bản dựng lại từ khe 0; Gazebo cập nhật theo mà không cần khởi động lại. |
+
+## Mô phỏng 3D trong Gazebo
+
+Gazebo hiển thị đúng kịch bản của mô hình trên một bãi thảm họa, tỷ lệ 1 m Gazebo = 10 m mô hình. Vị trí UAV và người
+dùng được gửi sang 20 lần mỗi giây qua gz-transport và khớp mô hình (lệch 0.000 m). Gazebo chỉ hiển thị, không ảnh hưởng
+số liệu.
+
+![Toàn cảnh world Gazebo: 3 UAV X500 bay trên bãi thảm họa, 20 người dùng](docs/figures/gazebo.png)
+
+| Cận cảnh UAV và ba nhóm người dùng | Cách đọc |
+|---|---|
+| ![UAV X500 và người dùng](docs/figures/gazebo_x500_closeup.png) | **UAV:** quadrotor X500, cánh quạt quay, màu cánh trùng màu UAV trên dashboard.<br><br>**Người dùng:** áo mang màu của UAV đang phục vụ, áo đỏ khi không được phục vụ.<br><br>**Nhóm:** không vòng là normal, vòng vàng là important, vòng đỏ là critical.<br><br>Kích thước UAV và người được phóng to để nhìn rõ trên bản đồ 1:10; vị trí vẫn đúng tỷ lệ. |
+
 ## Cài đặt
 
 Yêu cầu: Ubuntu 22.04, Python 3.10, NS-3 3.47 có module `lte`. Gazebo Harmonic chỉ cần khi muốn xem 3D.
