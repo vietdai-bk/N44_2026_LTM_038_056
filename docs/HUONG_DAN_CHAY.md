@@ -28,8 +28,7 @@ so sánh mô hình vs NS-3, vẽ biểu đồ
 ```
 
 Tài liệu chi tiết về mô hình, công thức, thông số và thuật toán:
-[`THIET_KE_MO_PHONG.md`](THIET_KE_MO_PHONG.md). Đặc tả yêu cầu:
-`dac_ta_trien_khai_multi_uav.docx` (thư mục gốc).
+[`THIET_KE_MO_PHONG.md`](THIET_KE_MO_PHONG.md).
 
 ## Mô hình tóm tắt
 
