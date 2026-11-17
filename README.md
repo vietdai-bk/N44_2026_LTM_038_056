@@ -87,7 +87,7 @@ Mọi tham số, lệnh tái lập từng thí nghiệm và kết quả chi ti�
 uavsim/              mô hình, thuật toán, dashboard, kết nối NS-3 và Gazebo
 ns3/scratch/uav_lte/ kịch bản NS-3 LTE và scheduler Weighted PF
 experiments/         script vẽ biểu đồ, kết quả các thí nghiệm (results/)
-tests/               42 test tự động
+tests/               46 test tự động
 docs/                báo cáo, thiết kế, thuật toán, hướng dẫn, sơ đồ draw.io
 slides/              slide bảo vệ (LaTeX Beamer)
 ```

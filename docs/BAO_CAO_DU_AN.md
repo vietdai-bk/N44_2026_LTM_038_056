@@ -37,7 +37,7 @@ Nhóm gồm hai thành viên, cùng tham gia mọi hạng mục và thống nh�
 | Phân tích nguyên nhân chênh lệch | `validate.py`, thí nghiệm một liên kết, phân rã | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
 | Điều khiển thời gian thực | Server WebSocket, dashboard, tích hợp Gazebo | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
 | Chạy và phân tích thí nghiệm | Các bảng, hình ở chương 6 | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
-| Kiểm thử | 42 test tự động | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
+| Kiểm thử | 46 test tự động | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
 | Báo cáo, slide | Báo cáo, slide, kịch bản thuyết trình | Thái Viết Đại, Nguyễn Quang Phúc | 50% / 50% |
 | **Tổng** | | Thái Viết Đại / Nguyễn Quang Phúc | **50% / 50%** |
 
@@ -197,7 +197,7 @@ tạp, đổi lại không có động lực học bay thật.
 | Giải thích chênh lệch bằng số | Không | Không | Không | Có (phân rã, sai số ±3%) |
 | Áp cấp phát ở tầng MAC | Không áp dụng | Ít khi | Không | Có (WPF) |
 | Điều khiển thời gian thực, 3D | Không | Không | Có | Có, đồng bộ với mô hình |
-| Kiểm thử tự động, tái lập | Tùy | Tùy | Ít | 42 test, tái lập từng bit |
+| Kiểm thử tự động, tái lập | Tùy | Tùy | Ít | 46 test, tái lập từng bit |
 
 So với phiên bản trước, nhóm thay NS-3 Wi-Fi bằng LTE, thay cách chia lưu lượng đơn giản bằng bài toán cấp phát đầy đủ,
 và thêm phần kiểm chứng. Phần dashboard và Gazebo được làm lại để đồng bộ với mô hình thay vì chạy độc lập.
@@ -811,12 +811,14 @@ Mô hình dùng cấu hình mặc định ở mục 4.3 với 3 seed; NS-3 dùng
 
 ### 5.12. Kiểm thử
 
-Dự án có 42 test tự động. Các test kiểm tra công thức kênh và năng lượng với giá trị đã biết, công thức Shannon và LTE,
+Dự án có 46 test tự động. Các test kiểm tra công thức kênh và năng lượng với giá trị đã biết, công thức Shannon và LTE,
 việc từ chối quyết định sai, tính hợp lệ và khả năng tái lập của mọi baseline, việc maxmin cho tốc độ bằng nhau khi
 không có nhiễu, môi trường Gymnasium qua bộ kiểm tra chuẩn, và hàng đợi. Các test có chạy NS-3 kiểm tra rằng ở tải 30%
 mạng nhận đủ lưu lượng (sai số 10%), mất gói dưới 2% và UE gắn đúng cell 100%; trace hợp lệ; scheduler WPF chia tài
 nguyên theo tỷ lệ 4:1; và NS-3 lý tưởng khớp mô hình hàng đợi. Phần thời gian thực được kiểm tra rằng UAV lái tay đi
-đúng vận tốc lệnh, phiên ghi ra đúng định dạng kế hoạch và world Gazebo đi theo kịch bản của mô hình.
+đúng vận tốc lệnh, phiên ghi ra đúng định dạng kế hoạch và world Gazebo đi theo kịch bản của mô hình. Bốn test riêng cho Gazebo kiểm tra
+bể model: user đứng yên không bị gửi lại, lệnh đặt vị trí thất bại được gửi lại, tăng cấu hình không dựng lại model
+đã có, và cánh quạt chỉ bật hoặc tắt ở UAV thay đổi.
 
 ---
 
@@ -1304,7 +1306,7 @@ bù lại throughput tổng và mất gói; đường cong LTE hiệu chỉnh kh
 | Mục tiêu | Mức độ | Căn cứ |
 |---|---|---|
 | **Thuật toán cấp phát có ưu tiên người dùng** | **Hoàn thành** | **calib-ifair: min ×1.9–2.0; critical đạt QoS 96–97%** |
-| Công cụ tính: khung mô phỏng số | Hoàn thành | 6 baseline + baseline biết nhóm, 4 bản ablation, môi trường Gymnasium, 42 test |
+| Công cụ tính: khung mô phỏng số | Hoàn thành | 6 baseline + baseline biết nhóm, 4 bản ablation, môi trường Gymnasium, 46 test |
 | Công cụ đo: NS-3 LTE và kiểm chứng ba tầng | Hoàn thành | Khoảng 400 run, mọi handover thành công; khớp dưới 1%; khoảng chênh Shannon → LTE giải thích hết, còn ±3% |
 | Áp quyết định ở tầng MAC | Hoàn thành | Scheduler WPF; maxmin +16–18% (hover), khớp dự đoán |
 | Trạm điều khiển thời gian thực | Hoàn thành | WebSocket: 50 client, lệnh khứ hồi < 3.5 ms (p95), 9.4 kB/s mỗi client; Gazebo đồng bộ 0.000 m; đo NS-3 từ web |

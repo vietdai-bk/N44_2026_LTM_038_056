@@ -180,7 +180,7 @@ LapTrinhMang/
 ├── experiments/
 │   ├── plot_three_tier.py       # biểu đồ ba tầng
 │   └── results/                 # kết quả các lần chạy, mỗi thư mục có config.json
-├── tests/test_uavsim.py         # 42 test
+├── tests/                      # 46 test (test_uavsim.py, test_gazebo_pool.py)
 ├── docs/
 │   ├── MO_TA_DU_AN.md           # mô tả tổng quan
 │   ├── BAO_CAO_DU_AN.md         # báo cáo tóm tắt theo tiêu chí đánh giá
@@ -193,7 +193,7 @@ LapTrinhMang/
 Những phần đã xong gồm mô hình Python với sáu baseline, môi trường học tăng cường và animation; kịch bản NS-3 LTE,
 scheduler Weighted PF và chế độ liên kết lý tưởng; ma trận NS-3 LTE 90 run, thí nghiệm tách nhiễu và phân tích nguyên
 nhân chênh lệch; so sánh ba tầng trên 105 run với sai số dưới 1%; hệ thống điều khiển thời gian thực có dashboard, lái
-tay, hiển thị Gazebo và ghi phiên để phát lại trong NS-3; ba nhóm user có trọng số; và 42 test, kể cả các test chạy NS-3. Biểu đồ ba tầng nằm ở
+tay, hiển thị Gazebo và ghi phiên để phát lại trong NS-3; ba nhóm user có trọng số; và 46 test, kể cả các test chạy NS-3. Biểu đồ ba tầng nằm ở
 `experiments/results/three_tier_pf.png` và `three_tier_wpf.png`.
 
 Những việc chưa làm, theo thứ tự nhóm đề xuất: mở rộng ma trận NS-3 (scheduler RR, số UAV, môi trường, số user); huấn

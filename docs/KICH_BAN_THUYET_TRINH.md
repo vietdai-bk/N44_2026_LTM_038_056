@@ -326,7 +326,7 @@ protobuf giữ tải cố định 20 lời gọi mỗi giây, không phụ thu�
 
 > Tóm lại, nhóm đã làm bảy phần: thuật toán calib-ifair cùng các baseline và bản so sánh; mô hình Python; kịch bản NS-3
 > LTE viết bằng C++; scheduler WPF ở tầng MAC; phép kiểm chứng ba tầng; trạm điều khiển với server WebSocket và Gazebo;
-> và 12 thí nghiệm cùng 42 test tự động. Cột bên phải là kết quả kiểm chứng của từng phần.
+> và 12 thí nghiệm cùng 46 test tự động. Cột bên phải là kết quả kiểm chứng của từng phần.
 
 ## Slide 34. Đánh đổi và hạn chế (40 giây)
 

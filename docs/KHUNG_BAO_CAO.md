@@ -118,7 +118,7 @@ gửi).
 | 5.8 WPF | Công thức chỉ số WPF; phép thử 2 UE trọng số 0.8/0.2 → tỷ lệ 3.93 so với 4 | mục 5.8 |
 | 5.9 Thời gian thực | Hình 5.2 kiến trúc, Hình 5.3 dashboard, Hình 5.4 Gazebo | `figures/thoi_gian_thuc.png`, `dashboard.png`, `gazebo.png` |
 | 5.10 Giao thức mạng | Bảng cổng, bảng bản tin, bảng lệnh, sơ đồ trình tự, sơ đồ chồng giao thức LTE | mục 5.10 |
-| 5.12 Kiểm thử | Bảng 5.4 nhóm test (42 test) | mục 5.12 |
+| 5.12 Kiểm thử | Bảng 5.4 nhóm test (46 test) | mục 5.12 |
 
 ![Hình 5.1](figures/calib_ifair.png)
 

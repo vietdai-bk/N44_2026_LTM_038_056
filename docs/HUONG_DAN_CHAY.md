@@ -256,7 +256,7 @@ cho allocator heuristic. Reward thay được qua `reward_fn`. Chưa có agent n
 ## Kiểm thử
 
 ```bash
-.venv/bin/python -m pytest -q tests            # 42 test
+.venv/bin/python -m pytest -q tests            # 46 test
 ```
 
 Các test kiểm tra:

@@ -666,7 +666,7 @@ LapTrinhMang/
 │   ├── scratch/uav_lte/uav-lte.cc  # kịch bản NS-3 LTE
 │   ├── scratch/uav_lte/wpf-ff-mac-scheduler.{h,cc}  # scheduler Weighted PF (trọng số b_k)
 │   └── install.sh           # symlink vào NS-3 và build
-├── tests/test_uavsim.py     # 42 test
+├── tests/                  # 46 test (test_uavsim.py, test_gazebo_pool.py)
 ├── docs/THIET_KE_MO_PHONG.md  # tài liệu này
 ├── docs/MO_TA_DU_AN.md      # mô tả tổng quan dự án
 ├── experiments/plot_three_tier.py  # biểu đồ ba tầng lý thuyết / NS-3 lý tưởng / NS-3 LTE
@@ -995,7 +995,7 @@ Chế độ này chỉ có ý nghĩa khi có `demand_mbps`. Không có demand th
 ## 13. Kiểm thử
 
 ```bash
-.venv/bin/python -m pytest -q tests        # 42 passed
+.venv/bin/python -m pytest -q tests        # 46 passed
 ```
 
 | Test | Kiểm tra điều gì |
