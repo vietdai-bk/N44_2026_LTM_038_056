@@ -166,11 +166,12 @@ quyết định được ghi thành một *kế hoạch*: vị trí UAV, vị tr
 độ phục vụ lý thuyết của từng user ở từng khe. NS-3 đọc kế hoạch, dựng mạng, phát lại đúng kế hoạch đó và ghi số đo
 theo khe. Cuối cùng `ns3.py` đặt số đo cạnh số tính của mô hình, gộp nhiều seed và vẽ biểu đồ.
 
-Khi điều khiển thời gian thực, cứ 0.5 giây server chạy một khe của mô hình (một khe dài 1 giây, tức mô phỏng nhanh gấp
-đôi thời gian thực). Ở mỗi khe, thuật toán ra quyết định như bình thường, nhưng vận tốc của UAV đang được lái tay bị
-thay bằng lệnh gửi từ trình duyệt. Trạng thái mới được gửi tới mọi trình duyệt đang mở qua WebSocket, đồng thời vị trí
-được gửi sang Gazebo bằng một lần gọi service. Khi người dùng bấm "Ghi", phiên được lưu thành kế hoạch cùng định dạng
-với thí nghiệm, nên có thể phát lại trong NS-3.
+Khi điều khiển thời gian thực, server chạy một khe của mô hình mỗi 0.25 giây (khe dài 0.25 s, tức đúng thời gian thực
+ở tốc độ 1×; chọn được 0.5×, 2×, 4×). Ở mỗi khe, thuật toán ra quyết định như bình thường, nhưng vận tốc của UAV đang
+lái tay bị thay bằng lệnh gửi từ trình duyệt. Trạng thái mới được phát tới mọi trình duyệt đang mở qua WebSocket. Song
+song, server đặt vị trí trong Gazebo 20 lần mỗi giây, mỗi lần một lời gọi service `set_pose_vector` chứa vị trí nội suy
+giữa hai khe. Khi người dùng bấm "Ghi & đo", phiên được lưu thành kế hoạch cùng định dạng với thí nghiệm rồi phát lại
+trong NS-3. Chi tiết giao thức ở mục 5.10.
 
 ### 3.4. Thiết kế kiểm chứng ba tầng
 
@@ -717,11 +718,11 @@ Giao diện gồm ba cột. Cột trái là danh sách UAV (vị trí, tốc đ�
 tới), khối lái tay (phím W A S D, phím mũi tên hoặc nút trên màn hình, thanh tốc độ) và khối tham số kịch bản. Cột giữa
 là bản đồ: UAV, user tô theo UAV phục vụ hoặc theo SINR, đường liên kết, đường bay tới đích, tùy chọn nền bản đồ SINR
 tính trên lưới 48 × 48; di chuột lên user để xem SINR và tốc độ, nhấp lên bản đồ để UAV đang chọn bay tới điểm đó rồi
-dừng. Bên dưới là ba biểu đồ theo thời gian. Cột phải đặt tốc độ theo Shannon và tốc độ LTE dự đoán cạnh nhau, khối
-"Đo bằng NS-3", bảng nhóm user (số user, min tốc độ LTE dự đoán và tỷ lệ đạt QoS của từng nhóm) và bảng user xếp
+dừng. Bên dưới là ba biểu đồ theo thời gian. Cột phải gồm bảng nhóm user (số user, min tốc độ LTE dự đoán và tỷ lệ đạt QoS của từng nhóm), khối "Đo bằng NS-3" và bảng user xếp
 critical trước, trong mỗi nhóm user yếu nhất lên đầu. Trên bản đồ, nhóm user được phân biệt bằng hình dạng: normal là
-hình tròn, important hình vuông, critical hình thoi; màu vẫn là màu UAV phục vụ. Dải chỉ số trên cùng luôn hiện tổng rate, min rate, coverage, throughput,
-độ trễ, mất gói và công suất bay.
+hình tròn, important hình vuông, critical hình thoi; màu vẫn là màu UAV phục vụ. Dải chỉ số trên cùng có sáu ô: thuật toán và khe hiện tại, tổng rate, min rate,
+coverage (kèm chỉ số Jain), throughput (kèm mất gói) và độ trễ (kèm công suất bay). Số lớn là tốc độ LTE dự đoán, số
+nhỏ bên dưới là giá trị theo Shannon để so sánh. Giao diện chỉ giữ nhãn ngắn; giải thích chi tiết nằm trong báo cáo.
 
 Người dùng đổi được số UAV (1–8), số user (1–60), độ cao, công suất phát, lưu lượng, vận tốc tối đa, tốc độ đi bộ của
 user, seed, môi trường, phân bố user, bật tắt nhiễu, và tỷ lệ user important, critical (mặc định 25% và 15%). Bấm "Áp dụng" thì kịch bản dựng lại từ khe 0; giá trị ngoài
@@ -735,9 +736,7 @@ tưởng cho throughput 30.0 Mbps theo mô hình và 29.99 Mbps theo NS-3, chạ
 
 Khi một UAV được lái tay, vận tốc người dùng nhập (hoặc vận tốc hướng tới điểm đến) thay cho vận tốc thuật toán tính; mô
 hình vẫn co về vận tốc tối đa và giữ UAV trong vùng. Liên kết, băng thông và công suất vẫn do thuật toán quyết định, nên
-khi UAV lái tay bay xa, user của nó tự chuyển sang UAV có kênh tốt hơn. Server có các cơ chế an toàn: thả phím thì UAV
-đứng yên, mất kết nối với mọi trình duyệt thì UAV lái tay dừng, lệnh hay tham số sai chỉ bị từ chối, server chỉ nhận
-kết nối từ máy cục bộ.
+khi UAV lái tay bay xa, user của nó tự chuyển sang UAV có kênh tốt hơn. Các cơ chế an toàn của server được mô tả ở mục 5.10.
 
 Gazebo dùng bãi thảm họa có sẵn trong dự án `multi_uav` của nhóm làm nền và vẽ đúng kịch bản của mô hình. Tỷ lệ là 1 m
 trong Gazebo ứng với 10 m trong mô hình. Gazebo chỉ hiển thị, các model không chịu trọng lực và không va chạm.
@@ -752,13 +751,114 @@ chân, user critical vòng đỏ, user normal không có vòng. Dùng hình kh�
 người chi tiết của bãi cũng giúp Gazebo nhẹ hơn nhiều (tốc độ mô phỏng tăng từ khoảng 5% lên 70–95% thời gian thực).
 Camera mặc định nhìn chéo từ phía nam, thấy trọn vùng 1000 × 1000 m.
 
-### 5.10. Cấu hình thử nghiệm
+### 5.10. Giao thức và lập trình mạng
+
+Hệ thống có ba kênh truyền thông do nhóm tự lập trình: trình duyệt với server (HTTP và WebSocket), server với Gazebo
+(gz-transport), và Python với NS-3 (tiến trình con và file CSV). Bên trong NS-3 là một mạng IP/LTE mô phỏng đầy đủ.
+
+**a) Trình duyệt và server: HTTP + WebSocket.** Server mở hai cổng, cả hai chỉ nghe trên `127.0.0.1`:
+
+| Cổng | Giao thức | Thư viện | Nội dung |
+|---|---|---|---|
+| 8000 | HTTP/1.1 | `http.server.ThreadingHTTPServer` | Trang `index.html` và `/config.js` (báo cho trang biết cổng WebSocket); tắt cache |
+| 8001 | WebSocket trên TCP | `websockets` + `asyncio` | Bản tin JSON hai chiều |
+
+Dùng WebSocket thay cho HTTP polling vì server cần *đẩy* trạng thái 4 lần mỗi giây tới mọi trình duyệt, và lệnh lái tay
+cần đi ngược lại với độ trễ thấp trên cùng một kết nối TCP. Mỗi bản tin là một đối tượng JSON trong một frame văn bản.
+
+Server gửi xuống trình duyệt hai loại bản tin:
+
+| `type` | Khi nào gửi | Nội dung chính |
+|---|---|---|
+| `info` | Ngay khi kết nối; sau mỗi lệnh; khi trạng thái phép đo NS-3 đổi | Cấu hình, giới hạn tham số, danh sách thuật toán, UAV đang lái tay, đang chạy hay tạm dừng, tốc độ mô phỏng, có Gazebo không, trạng thái và kết quả phép đo, thông báo lỗi `note` |
+| `state` | Mỗi khe (0.25 s ở 1×), phát tới mọi trình duyệt | Khe `t`, thời gian, vị trí UAV và user, liên kết, SINR, tốc độ Shannon và LTE dự đoán từng user, nhóm user, số user và tốc độ từng UAV, điểm đến, các chỉ số tổng hợp, số khe đã ghi, chu kỳ khe |
+
+Trình duyệt gửi lên các lệnh, trường `cmd` xác định loại lệnh:
+
+| `cmd` | Tham số | Tác dụng |
+|---|---|---|
+| `vel` | `uav`, `vx`, `vy` | Đặt vận tốc UAV đang lái tay (m/s) |
+| `goto` | `uav`, `x`, `y` | UAV bay tới điểm rồi dừng |
+| `manual` | `uav`, `on` | Bật hoặc tắt lái tay |
+| `algo` | `name` | Đổi thuật toán |
+| `pause`, `resume` | – | Tạm dừng, chạy tiếp |
+| `speed` | `x` ∈ {0.5, 1, 2, 4} | Tốc độ mô phỏng |
+| `reset` | – | Dựng lại kịch bản từ khe 0 |
+| `config` | `set`: các tham số đổi | Áp tham số mới, dựng lại kịch bản |
+| `measure` | `seconds`, `link`, `scheduler` | Ghi một đoạn rồi đo bằng NS-3 |
+| `measure_cancel` | – | Hủy phép đo đang ghi |
+
+```
+Trình duyệt                                   Server
+    │── HTTP GET /, /config.js ─────────────────►│ (cổng 8000)
+    │◄──────────────── index.html, WS_PORT ───────│
+    │── WebSocket handshake ────────────────────►│ (cổng 8001)
+    │◄──────────────────────────── info ──────────│
+    │◄──────────────────────────── state ─────────│ mỗi khe
+    │◄──────────────────────────── state ─────────│
+    │── {"cmd":"vel","uav":0,"vx":15,"vy":0} ────►│ kiểm tra, áp vào khe kế
+    │◄──────────────────────────── info ──────────│ (phát cho mọi trình duyệt)
+    │── {"cmd":"measure",...} ──────────────────►│ ghi N khe ─► NS-3 (luồng riêng)
+    │◄──────────── info: recording ─► running ─► done + kết quả
+    │── đóng kết nối ───────────────────────────►│ còn 0 trình duyệt: dừng mọi UAV lái tay
+```
+
+Xử lý lỗi và an toàn: lệnh sai cú pháp, sai kiểu hoặc ngoài giới hạn chỉ bị từ chối (server ghi lý do vào `note` và
+gửi lại `info`), không làm sập server. Khi trình duyệt cuối cùng ngắt kết nối, mọi UAV lái tay dừng lại thay vì bay
+tiếp theo lệnh cũ. Thả phím thì trình duyệt gửi vận tốc 0. Trình duyệt tự kết nối lại sau 1 giây nếu mất kết nối.
+Vì chỉ nghe trên `127.0.0.1` và không xác thực, server không được thiết kế để mở ra mạng ngoài.
+
+**b) Mô hình đồng thời của server.** Toàn bộ server chạy trên một vòng lặp sự kiện `asyncio`:
+
+| Tác vụ | Chạy ở đâu | Việc làm |
+|---|---|---|
+| HTTP | Thread riêng (`ThreadingHTTPServer`) | Phục vụ file tĩnh, không chạm trạng thái mô phỏng |
+| `handle()` mỗi kết nối WebSocket | Coroutine | Nhận lệnh, kiểm tra, cập nhật trạng thái, phát `info` |
+| `loop()` | Coroutine | Mỗi chu kỳ chạy một khe, phát `state`, ngủ phần còn lại của chu kỳ để giữ nhịp thời gian thực |
+| `gazebo_loop()` | Coroutine, lời gọi service trong thread pool | 20 lần mỗi giây đặt vị trí nội suy trong Gazebo |
+| Phép đo NS-3 | Thread pool (`asyncio.to_thread`) | Chạy NS-3 vài giây đến vài phút mà mô phỏng không bị dừng |
+
+Vì mọi coroutine cùng chạy trên một thread, trạng thái mô phỏng không cần khóa; các thao tác có thể chặn lâu (gọi
+service Gazebo, chạy NS-3) được đẩy sang thread pool để không làm trễ nhịp khe.
+
+**c) Server và Gazebo: gz-transport.** Gazebo chạy như một tiến trình riêng. Server dùng `gz.transport13.Node` gửi
+một yêu cầu service `/world/<world>/set_pose_vector` chứa thông điệp protobuf `Pose_V` (vị trí của mọi UAV và user),
+chờ trả lời `Boolean` tối đa 100 ms. Gom mọi vị trí vào một lời gọi thay vì một lời gọi cho mỗi model giữ tải ở mức
+20 lời gọi mỗi giây bất kể số UAV và user.
+
+**d) Python và NS-3: tiến trình con và file.** `ns3.py` ghi kế hoạch (`uavs.csv`, `users.csv`), gọi chương trình NS-3
+bằng `subprocess.run` với tham số dòng lệnh, chờ kết thúc rồi đọc `ns3_slots.csv` và `flowmon.xml`. Khi chạy nhiều
+cấu hình, các tiến trình NS-3 chạy song song bằng `ThreadPoolExecutor`. Trao đổi qua file thay vì socket vì NS-3 chỉ
+phát lại kế hoạch có sẵn, không cần tương tác trong lúc chạy, và file thì lưu lại được để kiểm tra.
+
+**e) Mạng mô phỏng trong NS-3.** Ở chế độ LTE, mỗi gói dữ liệu đi qua các tầng sau:
+
+```
+Remote host                PGW/SGW (EPC)               eNB (UAV)                    UE (user)
+ bộ phát UDP              ┌──────────────┐          ┌──────────────┐           ┌──────────────┐
+ SeqTsHeader + 1200 B     │ IP           │  GTP-U   │ PDCP         │   LTE     │ PDCP         │
+ UDP (cổng 9)             │ GTP-U/UDP/IP │ ───────► │ RLC UM 1 MiB │  vô tuyến │ RLC          │
+ IP 1.0.0.0/8 ──p2p──────►│              │  (S1-U)  │ MAC: PF/RR/  │ ────────► │ MAC          │
+ 10 Gb/s, trễ 1 ms        └──────────────┘          │  WPF (b_k)   │ kênh      │ PHY          │
+                                                    │ PHY, AMC,    │ Al-Hourani│ UDP server   │
+                                                    │ HARQ         │           │ IP 7.0.0.0/8 │
+                                                    └──────┬───────┘           └──────────────┘
+                                                           │ X2: handover khi kế hoạch đổi UAV
+                                                         eNB khác
+```
+
+Remote host có một socket UDP cho mỗi UE, gửi đường xuống tới địa chỉ của UE ở cổng 9. Mỗi gói mang `SeqTsHeader`
+(số thứ tự và thời điểm gửi), nên phía UE tính được độ trễ và số gói mất của từng gói. Tốc độ gửi đổi đúng đầu mỗi khe
+theo kế hoạch. Ở chế độ liên kết lý tưởng, phần EPC và LTE được thay bằng một liên kết điểm-điểm riêng từ remote host
+tới mỗi UE, tốc độ bằng tốc độ phục vụ lý thuyết của khe đó, hàng đợi DropTail 1 MiB (mục 5.7).
+
+### 5.11. Cấu hình thử nghiệm
 
 Các thí nghiệm chạy trên máy 12 nhân, 19 GB RAM, GPU RTX 3050 Laptop (chỉ dùng cho Gazebo). NS-3 chạy 10 run song song.
 Mô hình dùng cấu hình mặc định ở mục 4.3 với 3 seed; NS-3 dùng 3 đến 5 seed, mỗi run 60 khe, thời gian khởi động
 0.5 s, scheduler mặc định là PF.
 
-### 5.11. Kiểm thử
+### 5.12. Kiểm thử
 
 Dự án có 42 test tự động. Các test kiểm tra công thức kênh và năng lượng với giá trị đã biết, công thức Shannon và LTE,
 việc từ chối quyết định sai, tính hợp lệ và khả năng tái lập của mọi baseline, việc maxmin cho tốc độ bằng nhau khi
@@ -1003,7 +1103,7 @@ LTE kèm độ lệch chuẩn. Ở mọi ô, vòng cam nằm đúng trên đư�
 
 ### 6.9. Thời gian chạy và độ phức tạp (E8)
 
-Thời gian chạy một khe của mô hình (đo trên máy ở mục 5.10):
+Thời gian chạy một khe của mô hình (đo trên máy ở mục 5.11):
 
 | Cấu hình | Thời gian mỗi khe |
 |---|---|
