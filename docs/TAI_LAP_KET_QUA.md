@@ -22,7 +22,7 @@ E10, E11 trên máy gốc). Số luồng chạy song song (`--parallel`) không 
 ```bash
 git clone https://github.com/vietdai-bk/uav-bs-resource-allocation.git LapTrinhMang
 cd LapTrinhMang
-python3 -m venv .venv
+python3 -m venv .venv                      # thêm --system-site-packages nếu dùng Gazebo
 .venv/bin/pip install -r requirements.txt
 ns3/install.sh ~/simulation/ns-3.47        # symlink kịch bản uav_lte vào NS-3 rồi build
 .venv/bin/python -m pytest -q tests        # phải ra: 46 passed

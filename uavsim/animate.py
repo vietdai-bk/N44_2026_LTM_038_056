@@ -43,7 +43,10 @@ def animate(cfg: SimConfig, names: list[str], out: Path, every: int = 2, fps: in
     colors = np.array([matplotlib.colors.to_rgba(UAV_COLORS[j % len(UAV_COLORS)]) for j in range(cfg.num_uavs)])
     cls = Network(cfg).user_class
     has_cls = bool(cfg.important_frac or cfg.critical_frac)
-    r_scale = max(f["rates"].max() for fr in runs.values() for f in fr) or 1.0
+    r_scale = max(f["thr"].max() for fr in runs.values() for f in fr) or 1.0
+    need = np.asarray(cfg.class_rmin_mbps)[cls] * 1e6 if has_cls else np.full(cfg.num_users, cfg.r_min)
+    if cfg.demand_mbps is not None:
+        need = np.minimum(need, 0.9 * cfg.demand_mbps * 1e6)
 
     def draw(i):
         for ax, (name, fr) in zip(axes, runs.items()):
@@ -57,14 +60,16 @@ def animate(cfg: SimConfig, names: list[str], out: Path, every: int = 2, fps: in
                 for p in f["user"][served]:
                     ax.plot(*zip(f["uav"][j], p), color=colors[j], lw=0.4, alpha=0.35)
             ucol = np.where(f["assoc"][:, None] >= 0, colors[np.maximum(f["assoc"], 0)], (0.6, 0.6, 0.6, 1))
-            ok = f["rates"] >= cfg.r_min
+            ok = f["thr"] >= need
             for c in range(3) if has_cls else (0,):
                 k = (cls == c) if has_cls else np.ones(cfg.num_users, bool)
                 good, bad = k & ok, k & ~ok
                 edge = "#d01010" if c == 2 else "k"
-                ax.scatter(*f["user"][good].T, s=(14 if c == 2 else 10) + 70 * f["rates"][good] / r_scale, c=ucol[good],
-                           marker=CLASS_MARKER[c], edgecolors=edge, lw=1.4 if c == 2 else 0.3, zorder=3)
-                ax.scatter(*f["user"][bad].T, s=30, c=ucol[bad], marker="x", zorder=3)  # dưới r_min
+                if good.any():
+                    ax.scatter(*f["user"][good].T, s=(14 if c == 2 else 10) + 70 * f["thr"][good] / r_scale, c=ucol[good],
+                               marker=CLASS_MARKER[c], edgecolors=edge, lw=1.4 if c == 2 else 0.3, zorder=3)
+                if bad.any():
+                    ax.scatter(*f["user"][bad].T, s=30, c=ucol[bad], marker="x", zorder=3)  # dưới ngưỡng QoS / r_min
             ax.scatter(*f["uav"].T, s=160, c=colors, marker="^", edgecolors="k", zorder=4)
             title = f"{name}   t={f['t']}\n"
             if "throughput" in f:
@@ -72,7 +77,10 @@ def animate(cfg: SimConfig, names: list[str], out: Path, every: int = 2, fps: in
             else:
                 title += f"sum {f['sum_rate'] / 1e6:.0f} Mbps · min {f['min_rate'] / 1e6:.2f} Mbps · cov {f['coverage']:.0%}"
             if has_cls:
-                title += f"\ncritical đạt QoS {f['sat_critical']:.0%} · min critical {f['min_critical'] / 1e6:.2f} Mbps"
+                for pcls in ("critical", "important", "normal"):
+                    if f"sat_{pcls}" in f:
+                        title += f"\n{pcls} đạt QoS {f[f'sat_{pcls}']:.0%} · min {pcls} {f[f'min_{pcls}'] / 1e6:.2f} Mbps"
+                        break
             ax.set_title(title, fontsize=9)
 
     idx = list(range(0, cfg.slots, every))

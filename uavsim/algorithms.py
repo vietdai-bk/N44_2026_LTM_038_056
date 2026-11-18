@@ -40,13 +40,16 @@ def kmeans(points, centroids, iters=20):
     return c
 
 
-def calibrated_se(cfg, uav_xy, user_xy, model="lte"):
+def calibrated_se(cfg, uav_xy, user_xy, model="lte", gain=None):
     """Hiệu suất phổ dự đoán (bit/s/Hz), có nhiễu từ mọi UAV đang phục vụ. Trả về (assoc, se).
 
     model="lte": ánh xạ LTE đã hiệu chỉnh trên NS-3 (đề xuất). model="shannon": log2(1+SINR) như các bài báo, dùng cho
-    baseline cùng mục tiêu để tách phần lợi ích do mô hình LTE."""
-    horiz = np.linalg.norm(uav_xy[:, None, :] - user_xy[None, :, :], axis=-1)
-    g = 10 ** (-path_loss_db(np.sqrt(horiz**2 + cfg.altitude**2), horiz, cfg) / 10)
+    baseline cùng mục tiêu để tách phần lợi ích do mô hình LTE. gain: độ lợi kênh thực tế (khi có fading nhỏ)."""
+    if gain is None:
+        horiz = np.linalg.norm(uav_xy[:, None, :] - user_xy[None, :, :], axis=-1)
+        g = 10 ** (-path_loss_db(np.sqrt(horiz**2 + cfg.altitude**2), horiz, cfg) / 10)
+    else:
+        g = gain
     assoc = g.argmax(0)
     k = np.arange(cfg.num_users)
     psd = cfg.p_max / cfg.bandwidth * (np.bincount(assoc, minlength=cfg.num_uavs) > 0)
@@ -104,7 +107,8 @@ class Heuristic:
         if self.alloc == "equal":
             w = np.ones(c.num_users)
         elif self.alloc == "ifair":
-            se = calibrated_se(c, net.uav_xy, net.user_xy, self.rate)[1]
+            g = net.gain if c.rician_k_db is not None else None
+            se = calibrated_se(c, net.uav_xy, net.user_xy, self.rate, gain=g)[1]
             w = (net.weight if self.weighted else 1.0) / np.maximum(se, SE_FLOOR)
         else:  # maxmin: b_k ∝ 1/SE_k cho rate bằng nhau trong mỗi UAV (bỏ qua nhiễu); wmaxmin: nhân trọng số nhóm
             snr = c.p_max / c.bandwidth * net.gain[assoc, np.arange(c.num_users)] / c.noise_psd

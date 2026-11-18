@@ -262,6 +262,21 @@ def test_wpf_scheduler_shares_resources_by_weight(tmp_path):
     assert thr["wpf"][0] / thr["wpf"][1] == pytest.approx(4.0, rel=0.1)
     assert sum(thr["wpf"]) == pytest.approx(sum(thr["pf"]), rel=0.02)
 
+    # dt = 0.1 s (< 0.15 s): trọng số WPF của khe trước không tràn sang khe sau khi đổi trọng số
+    short_slots = 12
+    short_cfg = SimConfig(num_uavs=1, num_users=2, slots=short_slots, dt=0.1)
+    d_short = tmp_path / "wpf_short"
+    (d_short / "plan").mkdir(parents=True)
+    (d_short / "plan/uavs.csv").write_text("slot,uav,x,y\n" + "".join(f"{s},0,500,500\n" for s in range(short_slots + 1)))
+    (d_short / "plan/users.csv").write_text("slot,user,x,y,serving,rate_bps,bw\n" + "".join(
+        f"{s},{k},550,500,{0 if s < short_slots else -1},{50e6 if s < short_slots else 0},"
+        f"{(0.05 if k == 0 else 0.95) if s < 2 else (0.9 if k == 0 else 0.1)}\n"
+        for s in range(short_slots + 1) for k in range(2)))
+    ns3.run_ns3(ns3.ns3_command(short_cfg, d_short / "plan", d_short, "wpf", 1.0), d_short, 300)
+    short_rows = [r for r in csv.DictReader(open(d_short / "ns3_slots.csv")) if int(r["slot"]) >= 4]
+    rx = [sum(int(r["rx_bytes"]) for r in short_rows if int(r["user"]) == k) for k in range(2)]
+    assert rx[0] > 4.0 * rx[1]
+
 
 def test_ns3_ideal_link_matches_queue_model(tmp_path):
     """link=ideal: tốc độ liên kết = rate lý thuyết, nên throughput NS-3 trùng mô hình hàng đợi."""
@@ -370,6 +385,11 @@ def test_live_goto_and_config():
         with pytest.raises(ValueError):
             s.apply_config(bad)
 
+    # có demand_mbps: min throughput nhóm trên dashboard không vượt lưu lượng gửi vào ở khe đầu (hàng đợi rỗng)
+    st_cls = LiveSession(SimConfig(demand_mbps=1.0, important_frac=0.25, critical_frac=0.15,
+                                   rate_model="lte", lte_alpha=0.401, lte_se_max=3.514), "calib-ifair").step()
+    assert st_cls["classes"]["min_critical"] <= 1.0 + 1e-6 and max(st_cls["user_thr"]) <= 1.0 + 1e-6
+
 
 def test_proposed_algorithm_feasible_and_fairer():
     """calib-ifair hợp lệ, tái lập được, và trên mô hình LTE hiệu chỉnh cho min rate cao hơn kmeans-equal."""
@@ -387,8 +407,10 @@ def test_proposed_algorithm_feasible_and_fairer():
     assert mins["calib-ifair"] > 1.3 * mins["kmeans-equal"]
 
 
-def test_user_classes_and_weighted_allocation():
+def test_user_classes_and_weighted_allocation(tmp_path):
     """Ba nhóm user: tỷ lệ đúng, không đổi vị trí user; calib-ifair có trọng số ưu tiên critical hơn bản bỏ qua nhóm."""
+    from uavsim.algorithms import associate_max_gain, calibrated_se
+    from uavsim.animate import animate
     from uavsim.network import user_classes
 
     base = dict(num_users=20, slots=20, demand_mbps=2.0, rate_model="lte", lte_alpha=0.401, lte_se_max=3.514)
@@ -417,3 +439,13 @@ def test_user_classes_and_weighted_allocation():
     bw = {n: REGISTRY[n]().allocate(net)[1] for n in ("kmeans-maxmin", "kmeans-wmaxmin")}
     crit_k = net.user_class == 2
     assert bw["kmeans-wmaxmin"][crit_k].sum() > bw["kmeans-maxmin"][crit_k].sum()
+
+    # fading nhỏ: ifair dùng đúng net.gain thực tế để liên kết và SE khớp nhau
+    net_fad = Network(SimConfig(rician_k_db=3.0, slots=2))
+    assoc_fad, _ = calibrated_se(net_fad.cfg, net_fad.uav_xy, net_fad.user_xy, gain=net_fad.gain)
+    assert np.array_equal(assoc_fad, associate_max_gain(net_fad))
+
+    # animate không lỗi khi chỉ có nhóm important (không có critical)
+    out_gif = tmp_path / "partial.gif"
+    animate(SimConfig(slots=4, demand_mbps=1.0, important_frac=0.25, critical_frac=0.0), ["calib-ifair"], out_gif, every=2)
+    assert out_gif.exists() and out_gif.stat().st_size > 0

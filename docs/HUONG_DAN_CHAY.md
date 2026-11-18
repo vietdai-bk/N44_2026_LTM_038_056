@@ -190,12 +190,11 @@ suy 20 lần mỗi giây, nên chuyển động liền mạch.
 | Dải chỉ số | Các chỉ số kết quả: tỷ lệ critical đạt QoS (kèm important, normal), min throughput nhóm critical (kèm normal), throughput (kèm lưu lượng gửi), độ trễ, mất gói |
 | Đội UAV | Số user mỗi UAV đang phục vụ; trạng thái tự động, lái tay, bay tới. Nhấp để chọn |
 | Lái tay | W A S D, phím mũi tên hoặc nút điều hướng; thanh tốc độ; nút trả về tự động. Nhấp lên bản đồ để UAV đang chọn bay tới điểm đó rồi dừng |
-| Bản đồ | UAV, user (màu theo UAV hoặc theo SINR, to theo rate, hình theo nhóm: tròn normal, vuông important, thoi critical, dấu × khi dưới `r_min`), liên kết, đường bay tới đích; tùy chọn nền bản đồ SINR; di chuột để xem SINR và rate của từng user |
+| Bản đồ | UAV, user (màu theo UAV hoặc theo SINR, to theo throughput, hình theo nhóm: tròn normal, vuông important, thoi critical, dấu × khi dưới ngưỡng QoS của nhóm), liên kết, đường bay tới đích; tùy chọn nền bản đồ SINR; di chuột để xem SINR và throughput của từng user |
 | Tham số kịch bản | Số UAV (1–8), số user (1–60), độ cao, công suất, lưu lượng, vận tốc tối đa, user đi bộ, seed, môi trường, phân bố user, bật tắt nhiễu, tỷ lệ user important và critical. Bấm "Áp dụng" để dựng lại kịch bản, Gazebo cập nhật ngay không cần khởi động lại |
-| Ba tầng · khe hiện tại | Shannon và LTE dự đoán đặt cạnh nhau |
-| Nhóm user · khe hiện tại | Số user, min tốc độ LTE dự đoán và tỷ lệ đạt QoS của từng nhóm normal, important, critical |
+| Nhóm user | Số user, min throughput và tỷ lệ đạt QoS của từng nhóm normal, important, critical |
 | Đo bằng NS-3 | Chọn thời lượng ghi, liên kết (lý tưởng hoặc LTE), scheduler (WPF, PF, RR) rồi bấm "Ghi & đo": server ghi đoạn đó từ khe 0, chạy NS-3 và trả bảng mô hình so với NS-3 về web |
-| User · khe hiện tại | Bảng user có cột nhóm, critical lên trước, trong mỗi nhóm user yếu nhất lên đầu; tô đỏ user dưới `r_min` |
+| User | Bảng user có cột nhóm, critical lên trước, trong mỗi nhóm user yếu nhất lên đầu; tô đỏ user dưới ngưỡng QoS của nhóm |
 
 Phiên đo được lưu ở `experiments/results/live-<thời gian>/` (kế hoạch, cấu hình, số mô hình, số đo NS-3). Có thể phát
 lại bằng dòng lệnh: `python -m uavsim.ns3 --replay <thư mục> --link ideal|lte`.
@@ -209,7 +208,7 @@ Lưu ý:
   `MULTI_UAV_DIR`), tỷ lệ 1 m Gazebo = 10 m mô hình. World dựng sẵn 8 UAV và bể hình người (60 user × 9 màu áo, kèm vòng vàng/đỏ cho nhóm important/critical); model chưa
   dùng nằm dưới mặt đất, nên đổi số UAV, số user không cần khởi động lại Gazebo. 54 người có sẵn của bãi được bỏ trong một bản sao của
   `disaster_site` (dự án gốc không bị sửa). Tắt server thì Gazebo đóng theo;
-- Gazebo cần `gz sim` 8 (Harmonic), Python bindings `gz.transport13`, `gz.msgs10`. UAV và người được vẽ bằng khối cơ bản, không cần tải mesh.
+- Gazebo cần `gz sim` 8 (Harmonic), Python bindings `gz.transport13`, `gz.msgs10` (tạo `.venv` với `--system-site-packages`). Mesh quadrotor X500 và vòng nhóm đã kèm sẵn trong `uavsim/assets/gazebo/`; người dùng vẽ bằng khối cơ bản.
 
 ### Animation
 
@@ -660,7 +659,7 @@ lưu lượng mỗi user. Màu theo tầng: đường xanh dương = lý thuyế
 thuyết), đường xanh lá có dải mờ = NS-3 LTE ± độ lệch chuẩn. Ở mọi ô, vòng cam nằm đúng trên đường xanh dương, còn
 đường xanh lá tách ra.
 
-![Ba tầng, scheduler PF](experiments/results/three_tier_pf.png)
+![Ba tầng, scheduler PF](../experiments/results/three_tier_pf.png)
 
 Chi tiết ở mục 14.9 của tài liệu thiết kế.
 

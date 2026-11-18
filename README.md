@@ -85,7 +85,7 @@ Yêu cầu: Ubuntu 22.04, Python 3.10, NS-3 3.47 có module `lte`. Gazebo Harmon
 ```bash
 git clone https://github.com/vietdai-bk/uav-bs-resource-allocation.git
 cd uav-bs-resource-allocation
-python3 -m venv .venv
+python3 -m venv .venv                  # thêm --system-site-packages nếu dùng Gazebo
 .venv/bin/pip install -r requirements.txt
 
 # đưa kịch bản NS-3 vào thư mục NS-3 rồi build

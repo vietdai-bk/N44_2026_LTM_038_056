@@ -141,12 +141,19 @@ class LiveSession:
         # dự đoán LTE: cùng SINR, ánh xạ SINR -> tốc độ đo được trên NS-3 (thay cho Shannon)
         se = np.where(sinr < 0.1, 0.0, np.minimum(LTE_CAL_ALPHA * np.log2(1 + sinr), LTE_CAL_SE_MAX))
         lte = np.where(a.bw > 0, a.bw * c.bandwidth * se, 0.0)
+        if c.demand_mbps is None:
+            thr_u = lte
+        elif c.rate_model == "lte":
+            thr_u = m["thr_per_user"]
+        else:
+            thr_u = np.minimum(m["thr_per_user"], lte)
         speed = np.minimum(np.linalg.norm(a.velocity, axis=1), c.v_max)
         self.last = {
             "t": s, "time": s * c.dt, "dt": c.dt, "area": c.area, "r_min": c.r_min, "v_max": c.v_max,
             "uav": uav_xy.round(2).tolist(), "users": user_xy.round(2).tolist(),
             "assoc": a.assoc.tolist(), "rate": (rates / 1e6).round(3).tolist(),
             "lte_rate": (lte / 1e6).round(3).tolist(),
+            "user_thr": (thr_u / 1e6).round(3).tolist(),
             "sinr_db": (10 * np.log10(np.maximum(sinr, 1e-9))).round(1).tolist(),
             "sum_rate": m["sum_rate"] / 1e6, "min_rate": m["min_rate"] / 1e6,
             "lte_sum": float(lte.sum() / 1e6), "lte_min": float(lte.min() / 1e6),
@@ -159,9 +166,9 @@ class LiveSession:
             "delay_ms": _num(m.get("delay_ms")), "loss": _num(m.get("loss")),
             "queue_mbit": _num(m.get("queue_bits", 0.0) / 1e6),
             "user_class": net.user_class.tolist(),
-            # min tốc độ LTE dự đoán (Mbps) và tỷ lệ đạt QoS của từng nhóm có mặt
+            # min throughput (hoặc tốc độ LTE dự đoán khi không đặt demand) và tỷ lệ đạt QoS của từng nhóm có mặt
             "classes": {k: (v / 1e6 if k.startswith("min_") else v) for k, v in
-                        class_metrics(lte, net.user_class, c, None if c.demand_mbps is None else c.demand_mbps * 1e6).items()},
+                        class_metrics(thr_u, net.user_class, c, None if c.demand_mbps is None else c.demand_mbps * 1e6).items()},
         }
         return self.last
 
@@ -190,7 +197,9 @@ class LiveSession:
                 "recorded": len(self.rec.model) if self.rec else 0,
                 "config": {k: getattr(c, k) for k in EDITABLE},
                 "fixed": {"area": c.area, "bandwidth_mhz": c.bandwidth / 1e6, "fc_ghz": c.fc / 1e9, "dt": c.dt,
-                          "r_min_mbps": c.r_min / 1e6, "buffer_mib": c.buffer_bytes / 2**20},
+                          "r_min_mbps": c.r_min / 1e6, "buffer_mib": c.buffer_bytes / 2**20,
+                          "class_rmin_mbps": list(c.class_rmin_mbps), "noise_psd_dbm": c.noise_psd_dbm,
+                          "channel": c.channel, "beta0_db": c.beta0_db},
                 "limits": {k: v for k, v in EDITABLE.items() if v is not None}}
 
 
@@ -364,8 +373,10 @@ def serve_static(port: int, ws_port: int):
 async def amain(args):
     import websockets
 
-    # mặc định có lưu lượng để dashboard có delay, mất gói; khe ngắn để lái mượt
-    overrides = {"demand_mbps": 1.0, "dt": args.dt, "important_frac": 0.25, "critical_frac": 0.15} | parse_set(args.set)
+    # mặc định dùng mô hình hàng đợi LTE đã hiệu chỉnh để throughput/trễ/mất gói khớp thực tế; khe ngắn để lái mượt
+    overrides = {"demand_mbps": 1.0, "dt": args.dt, "important_frac": 0.25, "critical_frac": 0.15,
+                 "rate_model": "lte", "lte_alpha": LTE_CAL_ALPHA, "lte_se_max": LTE_CAL_SE_MAX,
+                 "work_conserving": True, "load_coupled": True} | parse_set(args.set)
     cfg = SimConfig.from_json(args.config, **overrides) if args.config else SimConfig(**overrides)
     session = LiveSession(cfg, args.algo)
     out = Path(args.out)

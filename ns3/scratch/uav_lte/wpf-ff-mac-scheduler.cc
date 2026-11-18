@@ -77,6 +77,7 @@ WpfFfMacScheduler::DoDispose()
     m_ulHarqCurrentProcessId.clear();
     m_ulHarqProcessesStatus.clear();
     m_ulHarqProcessesDciBuffer.clear();
+    m_dlWeight.clear();
     delete m_cschedSapProvider;
     delete m_schedSapProvider;
     delete m_ffrSapUser;
@@ -267,6 +268,7 @@ WpfFfMacScheduler::DoCschedUeReleaseReq(
     m_ulHarqProcessesDciBuffer.erase(params.m_rnti);
     m_flowStatsDl.erase(params.m_rnti);
     m_flowStatsUl.erase(params.m_rnti);
+    m_dlWeight.erase(params.m_rnti);
     m_ceBsrRxed.erase(params.m_rnti);
     auto it = m_rlcBufferReq.begin();
     while (it != m_rlcBufferReq.end())

@@ -510,10 +510,15 @@ main(int argc, char* argv[])
     };
     if (scheduler == "wpf")
     {
+        double t1 = std::min(0.01, 0.2 * dt);
+        double t2 = std::min(0.15, 0.6 * dt);
         for (uint32_t s = 0; s < slots; s++)
         {
-            Simulator::Schedule(Seconds(warmup + s * dt + 0.01), [&applyWeights, s]() { applyWeights(s); });
-            Simulator::Schedule(Seconds(warmup + s * dt + 0.15), [&applyWeights, s]() { applyWeights(s); });
+            Simulator::Schedule(Seconds(warmup + s * dt + t1), [&applyWeights, s]() { applyWeights(s); });
+            if (t2 > t1)
+            {
+                Simulator::Schedule(Seconds(warmup + s * dt + t2), [&applyWeights, s]() { applyWeights(s); });
+            }
         }
     }
 

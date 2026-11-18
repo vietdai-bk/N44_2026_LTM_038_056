@@ -432,21 +432,30 @@ function onState(m) {
   $("sOffer").textContent = info && info.config.demand_mbps ? `gửi ${fmt(info.config.demand_mbps * m.users.length, 1)} Mbps` : "";
   $("sDelay").textContent = fmt(m.delay_ms, 0); $("sLoss").textContent = m.loss === null ? "–" : fmt(100 * m.loss, 1);
   if (info) { setPill("pRec", "danger", `Ghi ${m.recorded} khe`); if (info.measure && info.measure.status === "recording") $("mProg").style.width = `${Math.min(100, 100 * m.recorded / info.measure.slots)}%`; }
+  renderCls();
   if (m.t % 2 === 0) { renderUavs(); renderUsers(); drawCharts(); }
 }
-function renderUsers() {
-  const s = cur, rmin = s.r_min / 1e6;
-  // critical trước, rồi important, normal; trong mỗi nhóm user yếu nhất lên đầu
-  const rows = s.users.map((_, k) => [k, s.assoc[k], s.sinr_db[k], s.lte_rate[k], s.user_class[k]])
-    .sort((a, b) => b[4] - a[4] || a[3] - b[3]);
-  $("uSum").textContent = `${rows.filter(r => r[3] < rmin).length} dưới r_min`;
-  $("userTbl").tBodies[0].innerHTML = rows.map(([k, j, snr, r, c]) =>
-    `<tr style="${r < rmin ? "background:var(--danger-bg)" : ""}"><td>#${k}</td><td><span class="badge ${CLS_BADGE[c]}">${CLS_NAME[c]}</span></td><td><span style="color:${j >= 0 ? color(j) : "inherit"}">●</span> ${j >= 0 ? j : "–"}</td><td>${fmt(snr, 1)}</td><td>${fmt(r, 2)}</td></tr>`).join("");
+function userNeed(c) {
+  const f = info && info.fixed, rmin = f && f.class_rmin_mbps ? f.class_rmin_mbps[c] : (cur ? cur.r_min / 1e6 : 1);
+  const dem = info && info.config && info.config.demand_mbps;
+  return dem ? Math.min(rmin, 0.9 * dem) : rmin;
+}
+function renderCls() {
+  const s = cur; if (!s) return;
   const cnt = [0, 1, 2].map(c => s.user_class.filter(x => x === c).length);
   $("clsTbl").innerHTML = [2, 1, 0].map(c => {
     const n = CLS_KEY[c], has = cnt[c] > 0;
     return `<tr><td><span class="badge ${CLS_BADGE[c]}">${CLS_NAME[c]}</span></td><td>${cnt[c]}</td><td>${has ? fmt(s.classes["min_" + n], 2) : "–"}</td><td>${has ? fmt(100 * s.classes["sat_" + n], 0) + "%" : "–"}</td></tr>`;
   }).join("");
+}
+function renderUsers() {
+  const s = cur, thr = s.user_thr || s.lte_rate;
+  // critical trước, rồi important, normal; trong mỗi nhóm user yếu nhất lên đầu
+  const rows = s.users.map((_, k) => [k, s.assoc[k], s.sinr_db[k], thr[k], s.user_class[k]])
+    .sort((a, b) => b[4] - a[4] || a[3] - b[3]);
+  $("uSum").textContent = `${rows.filter(r => r[3] < userNeed(r[4])).length} dưới QoS`;
+  $("userTbl").tBodies[0].innerHTML = rows.map(([k, j, snr, r, c]) =>
+    `<tr style="${r < userNeed(c) ? "background:var(--danger-bg)" : ""}"><td>#${k}</td><td><span class="badge ${CLS_BADGE[c]}">${CLS_NAME[c]}</span></td><td><span style="color:${j >= 0 ? color(j) : "inherit"}">●</span> ${j >= 0 ? j : "–"}</td><td>${fmt(snr, 1)}</td><td>${fmt(r, 2)}</td></tr>`).join("");
 }
 const CLS_KEY = ["normal", "important", "critical"], CLS_NAME = ["normal", "important", "critical"];
 const CLS_BADGE = ["neutral", "warn", "danger"];
@@ -473,7 +482,7 @@ function renderMeasure(m) {
   if (st === "idle") { $("mProg").style.width = "0"; if (m.note) msg.textContent = m.note; }
   if (st === "recording") msg.textContent = `Đang ghi ${m.slots} khe…`;
   if (st === "running") { $("mProg").style.width = "100%"; msg.textContent = "NS-3 đang chạy…"; }
-  if (st === "error") { res.innerHTML = `<div class="alert err">${m.error}</div>`; msg.textContent = ""; }
+  if (st === "error") { res.innerHTML = `<div class="alert err"></div>`; res.firstChild.textContent = m.error; msg.textContent = ""; }
   if (st === "done") {
     const r = m.result, row = (l, a, b, d = 2) => `<span class="l">${l}</span><span>${fmt(a, d)}</span><span class="ns3col">${fmt(b, d)}</span>`;
     msg.textContent = `${r.slots} khe · NS-3 ${r.link === "lte" ? "LTE" : "lý tưởng"} · ${r.scheduler.toUpperCase()} · ${fmt(r.wall_s, 1)} s · ${m.algo}`;
@@ -501,21 +510,28 @@ function heatColor(db) {  // nền bản đồ SINR: xám trung tính để ch�
   const t = Math.max(0, Math.min(1, (db + 5) / 45));
   return `hsl(215, 16%, ${99 - 27 * t}%)`;
 }
-// bản đồ SINR: user giả định ở mỗi ô, SNR từ UAV mạnh nhất trên nhiễu từ các UAV còn lại (cùng kênh Al-Hourani)
+// bản đồ SINR: user giả định ở mỗi ô, SNR từ UAV mạnh nhất trên nhiễu từ các UAV đang phát còn lại
 const ENV = { suburban: [4.88, .43, .1, 21], urban: [9.61, .16, 1, 20], dense_urban: [12.08, .11, 1.6, 23], highrise: [27.23, .08, 2.3, 34] };
-function gainDb(h, H, fc, env) {
-  const [a, b, el, en] = ENV[env], d = Math.hypot(h, H), th = Math.atan2(H, h) * 180 / Math.PI;
+function gainDb(h, H, fc, env, fx) {
+  const d = Math.hypot(h, H);
+  if (fx && fx.channel === "los") return (fx.beta0_db ?? -60) - 20 * Math.log10(d);
+  const [a, b, el, en] = ENV[env], th = Math.atan2(H, h) * 180 / Math.PI;
   const p = 1 / (1 + a * Math.exp(-b * (th - a)));
   return -(20 * Math.log10(4 * Math.PI * fc * d / 299792458) + p * el + (1 - p) * en);
 }
 function buildHeat(uav, s) {
-  const c = info.config, N = 48, area = s.area, out = new Float32Array(N * N);
-  const noise = 10 ** ((-169 - 30) / 10), psd = c.p_max / 10e6, active = s.uav_load.map(n => n > 0);
+  const c = info.config, fx = info.fixed || {}, N = 48, area = s.area, out = new Float32Array(N * N);
+  const bw = (fx.bandwidth_mhz || 10) * 1e6, fc = (fx.fc_ghz || 2) * 1e9;
+  const noise = 10 ** (((fx.noise_psd_dbm ?? -169) - 30) / 10), psd = c.p_max / bw, active = s.uav_load.map(n => n > 0);
   for (let iy = 0; iy < N; iy++) for (let ix = 0; ix < N; ix++) {
     const x = (ix + .5) * area / N, y = (iy + .5) * area / N;
-    let best = 0, tot = 0;
-    uav.forEach((q, j) => { if (!active[j]) return; const g = psd * 10 ** (gainDb(Math.hypot(q[0] - x, q[1] - y), c.altitude, 2e9, c.environment) / 10); tot += g; best = Math.max(best, g); });
-    const intf = c.interference ? tot - best : 0;
+    let best = 0, bestJ = -1, tot = 0;
+    uav.forEach((q, j) => {
+      const g = psd * 10 ** (gainDb(Math.hypot(q[0] - x, q[1] - y), c.altitude, fc, c.environment, fx) / 10);
+      if (g > best) { best = g; bestJ = j; }
+      if (active[j]) tot += g;
+    });
+    const intf = c.interference ? tot - (bestJ >= 0 && active[bestJ] ? best : 0) : 0;
     out[iy * N + ix] = best > 0 ? 10 * Math.log10(best / (intf + noise)) : -20;
   }
   return { N, data: out };
@@ -534,7 +550,7 @@ function draw() {
   g.fillStyle = "#fff"; g.fillRect(ox, oy, side, side);
   if (showHeat && info) {
     const key = s.t + ":" + s.uav.length;
-    if (key !== heatKey && s.t % 2 === 0) { heat = buildHeat(s.uav, s); heatKey = key; }
+    if (key !== heatKey && (!heatKey || s.t % 2 === 0 || !info.running)) { heat = buildHeat(s.uav, s); heatKey = key; }
     if (heat) { const c = side / heat.N; for (let iy = 0; iy < heat.N; iy++) for (let ix = 0; ix < heat.N; ix++) { g.fillStyle = heatColor(heat.data[iy * heat.N + ix]); g.fillRect(ox + ix * c, oy + side - (iy + 1) * c, c + .5, c + .5); } }
   }
   g.strokeStyle = css("--grid"); g.lineWidth = 1;
@@ -551,12 +567,12 @@ function draw() {
     g.beginPath(); g.arc(X(t[0]), Y(t[1]), 6, 0, 7); g.stroke(); g.beginPath(); g.moveTo(X(t[0]) - 9, Y(t[1])); g.lineTo(X(t[0]) + 9, Y(t[1])); g.moveTo(X(t[0]), Y(t[1]) - 9); g.lineTo(X(t[0]), Y(t[1]) + 9); g.stroke();
   });
   // user
-  const rmin = s.r_min / 1e6, maxR = Math.max(...s.lte_rate, 1e-9);
+  const thr = s.user_thr || s.lte_rate, maxR = Math.max(...thr, 1e-9);
   users.forEach(([x, y], k) => {
-    const r = s.lte_rate[k], j = s.assoc[k], px = X(x), py = Y(y);
-    if (r < rmin) { g.strokeStyle = css("--danger"); g.lineWidth = 2; g.beginPath(); g.moveTo(px - 5, py - 5); g.lineTo(px + 5, py + 5); g.moveTo(px + 5, py - 5); g.lineTo(px - 5, py + 5); g.stroke(); return; }
+    const r = thr[k], j = s.assoc[k], c = s.user_class[k], px = X(x), py = Y(y);
+    if (r < userNeed(c)) { g.strokeStyle = css("--danger"); g.lineWidth = 2; g.beginPath(); g.moveTo(px - 5, py - 5); g.lineTo(px + 5, py + 5); g.moveTo(px + 5, py - 5); g.lineTo(px - 5, py + 5); g.stroke(); return; }
     g.fillStyle = colorMode === "sinr" ? sinrColor(s.sinr_db[k]) : j >= 0 ? color(j) : css("--text-3");
-    userShape(g, s.user_class[k], px, py, 3.5 + 4.5 * Math.sqrt(r / maxR)); g.fill();
+    userShape(g, c, px, py, 3.5 + 4.5 * Math.sqrt(r / maxR)); g.fill();
     g.strokeStyle = colorMode === "sinr" ? css("--text-2") : "#fff"; g.lineWidth = 1.5; g.stroke();
   });
   // UAV
@@ -591,7 +607,7 @@ map.addEventListener("mousemove", e => {
   const u = cur.uav.findIndex(q => Math.hypot(q[0] - p[0], q[1] - p[1]) * view.S < 14);
   let text = `(${fmt(p[0], 0)}, ${fmt(p[1], 0)}) m`;
   if (u >= 0) text = `UAV ${u} · phục vụ ${cur.uav_load[u]} user`;
-  else if (bd < 10) text = `#${best} ${CLS_NAME[cur.user_class[best]]} · ${fmt(cur.sinr_db[best], 1)} dB · ${fmt(cur.lte_rate[best], 2)} Mbps`;
+  else if (bd < 10) text = `#${best} ${CLS_NAME[cur.user_class[best]]} · ${fmt(cur.sinr_db[best], 1)} dB · ${fmt((cur.user_thr || cur.lte_rate)[best], 2)} Mbps`;
     tip.textContent = text; tip.style.display = "block";
   tip.style.left = Math.min(p[2] + 14, map.clientWidth - tip.offsetWidth - 6) + "px"; tip.style.top = Math.max(6, p[3] - 30) + "px";
 });
@@ -601,7 +617,7 @@ function renderLegend() {
   const uavs = Array.from({ length: n }, (_, j) => `<span><svg width="10" height="10"><polygon points="5,0 10,10 0,10" fill="${color(j)}"/></svg>UAV ${j}</span>`).join("");
   const users = colorMode === "sinr" ? `<span><i style="display:inline-block;width:40px;height:8px;background:linear-gradient(90deg,${sinrColor(-5)},${sinrColor(40)})"></i>SINR −5…40 dB</span>` : `<span>● normal ■ important ◆ critical</span>`;
   const heatLeg = showHeat ? `<span><i style="display:inline-block;width:40px;height:8px;border:1px solid var(--line);background:linear-gradient(90deg,${heatColor(-5)},${heatColor(40)})"></i>nền SINR</span>` : "";
-  $("legend").innerHTML = uavs + users + heatLeg + `<span style="color:var(--danger)">✕ < r_min</span>`;
+  $("legend").innerHTML = uavs + users + heatLeg + `<span style="color:var(--danger)">✕ &lt; QoS</span>`;
 }
 
 // ---------------- biểu đồ

@@ -1,4 +1,4 @@
-"""Tham số mô phỏng. Giá trị mặc định lấy theo các paper multi-UAV BS hay dùng (xem docs/MODEL.md)."""
+"""Tham số mô phỏng. Giá trị mặc định lấy theo các paper multi-UAV BS hay dùng (xem docs/THIET_KE_MO_PHONG.md)."""
 import json
 from dataclasses import asdict, dataclass, fields
 
