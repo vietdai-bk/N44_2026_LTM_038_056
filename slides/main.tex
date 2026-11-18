@@ -1,6 +1,6 @@
 % Slide bảo vệ đồ án Lập trình mạng, dựng theo template ~/Downloads/main.tex (pdfLaTeX, tiếng Việt T5).
 % Biên dịch: cd slides && latexmk -pdf main.tex
-\documentclass[aspectratio=169,10pt]{beamer}
+\documentclass[aspectratio=169,10pt,t]{beamer}
 
 % =================================================
 % TIẾNG VIỆT
@@ -14,9 +14,10 @@
 % =================================================
 \usepackage{graphicx}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,calc}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{etoolbox}
 \usepackage{amsmath,amssymb}
 \usepackage{url}
 \usepackage{appendixnumberbeamer}
@@ -71,12 +72,12 @@
 }
 \setbeamerfont{block title}{size=\small,series=\bfseries}
 \setbeamertemplate{block begin}{%
-  \vskip0.7ex
+  \vskip0pt
   {\usebeamerfont{block title}\color{MainBlue}\insertblocktitle\par}%
   \vskip0.3ex
   \usebeamerfont{block body}%
 }
-\setbeamertemplate{block end}{\vskip0.5ex}
+\setbeamertemplate{block end}{\vskip1ex}
 \setbeamertemplate{enumerate items}[default]
 \setbeamercolor{itemize item}{fg=MainBlue}
 \setbeamercolor{itemize subitem}{fg=MainBlue}
@@ -95,6 +96,8 @@
 
 \title{Cấp phát tài nguyên cho mạng nhiều UAV làm trạm gốc có ưu tiên người dùng}
 \date{}
+
+\AtBeginEnvironment{column}{\raggedright}
 
 \begin{document}
 
@@ -122,6 +125,8 @@
 \begin{frame}{Nội dung trình bày}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
+  \begin{minipage}[t][3.25cm][t]{\linewidth}
   \begin{block}{1. Bài toán}
     \begin{itemize}
       \item Kịch bản UAV làm trạm gốc.
@@ -130,8 +135,11 @@
       \item Phát biểu bài toán, bài toán tối ưu.
     \end{itemize}
   \end{block}
+  \end{minipage}
+
   \begin{block}{2. Heuristic calib-ifair}
     \begin{itemize}
+      \item Điểm mới, đóng góp chính.
       \item Liên kết và SINR có nhiễu.
       \item Chia băng ifair, ví dụ số.
       \item Di chuyển calib.
@@ -140,17 +148,21 @@
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
+  \begin{minipage}[t][3.25cm][t]{\linewidth}
   \begin{block}{3. Kiểm chứng bằng NS-3 LTE}
     \begin{itemize}
-      \item Ba tầng kiểm chứng; vì sao lý thuyết lạc quan.
+      \item Ba tầng kiểm chứng; chênh lệch Shannon -- LTE.
       \item Baseline, cài đặt, thông số thí nghiệm.
       \item Kết quả: so với baseline, theo nhóm user.
-      \item Lợi ích đến từ đâu.
+      \item Phân tích đóng góp của từng thành phần.
     \end{itemize}
   \end{block}
+  \end{minipage}
+
   \begin{block}{4. Hệ thống và tổng kết}
     \begin{itemize}
-      \item Dashboard, WebSocket, các node NS-3, đường đi gói tin.
+      \item Dashboard, WebSocket, Gazebo, NS-3, đường đi gói tin.
       \item Tổng kết phần đã làm.
       \item Đánh đổi, hạn chế.
       \item Kết luận.
@@ -166,6 +178,7 @@
 \begin{frame}{Bối cảnh và vấn đề}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.53\textwidth}
+\vspace{0pt}
   \begin{block}{Bối cảnh}
     \small
     Thiên tai, sự kiện đông người: trạm gốc mặt đất hỏng hoặc quá tải.
@@ -176,15 +189,16 @@
     \begin{itemize}
       \item Vị trí UAV quyết định chất lượng kênh.
       \item Các UAV dùng chung băng tần nên \alert{nhiễu nhau}.
-      \item Người dùng \hl{không quan trọng như nhau}: đội cứu hộ, y tế cần kết nối chắc hơn người dân.
+      \item Các nhóm người dùng có \hl{yêu cầu ưu tiên khác nhau}: cứu hộ, y tế cần được ưu tiên kết nối.
     \end{itemize}
   \end{block}
-  \begin{block}{Khoảng trống}
+  \begin{block}{Vấn đề cần kiểm chứng}
     \small
-    Các bài báo thường tính bằng công thức Shannon. Kết quả khi đo ở mức gói tin trên mạng LTE thật thì sao?
+    Mô hình Shannon chưa phản ánh đầy đủ cơ chế truyền LTE. Đồ án kiểm chứng hiệu quả cấp phát tài nguyên ở mức gói tin bằng NS-3 LTE.
   \end{block}
 \end{column}
 \begin{column}{0.43\textwidth}
+\vspace{0pt}
   \centering
   \includegraphics[width=\linewidth]{gazebo.png}
 
@@ -197,35 +211,54 @@
 % SLIDE 4. KỊCH BẢN
 % =================================================
 \begin{frame}{Kịch bản và ba nhóm người dùng}
+
 \begin{columns}[T,onlytextwidth]
-\begin{column}{0.58\textwidth}
-  \centering
-  \includegraphics[width=\linewidth]{kich_ban.png}
+\begin{column}{0.59\textwidth}
+\vspace{0pt}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm,font=\small]
+  \fill[MainBlue!3,rounded corners] (-0.4,-0.4) rectangle (7.5,4.8);
+  \foreach \x/\name/\col in {0.8/A/U0,3.5/B/orange,6.3/C/Good} {
+    \node[draw=\col,fill=\col!12,rounded corners,minimum width=1.5cm,minimum height=8mm,text=MainBlue] (u\name) at (\x,4) {UAV \name};
+  }
+  \foreach \name/\x/\y/\u/\col in {n1/0.2/1.4/A/U0,n2/1.5/0.6/A/U0,n3/2.6/1.5/B/orange,n4/4.3/0.6/B/orange,n5/5.7/1.4/C/Good,n6/6.8/0.5/C/Good} {
+    \node[circle,fill=\col,inner sep=3.5pt] (\name) at (\x,\y) {};
+    \draw[\col!65] (u\u.south) -- (\name);
+  }
+  \node[rectangle,fill=orange!80,inner sep=4pt] (imp) at (1.3,2.3) {};
+  \draw[U0!65] (uA.south) -- (imp);
+  \node[diamond,fill=Bad,inner sep=4pt] (crit) at (4.0,1.9) {};
+  \draw[orange!65] (uB.south) -- (crit);
+  \draw[Bad,dashed,-{Stealth}] (uC.south west) -- node[pos=0.35,above,sloped,font=\scriptsize,fill=white,inner sep=1pt]{nhiễu đồng kênh} (crit);
+  \node[font=\scriptsize,anchor=west] at (-0.1,-0.05) {$\bullet$ normal \quad \textcolor{orange}{$\blacksquare$} important \quad \textcolor{Bad}{$\blacklozenge$} critical};
+\end{tikzpicture}
+
+\small 3 UAV, 20 user; vùng $1\times1$ km; độ cao 100 m.
 \end{column}
 \begin{column}{0.38\textwidth}
-  \small
-  \begin{tabularx}{\linewidth}{@{}lccc@{}}
-    \toprule
-    \textbf{Nhóm} & $w_c$ & $r_{\min,c}$ & \textbf{Tỷ lệ}\\
-    \midrule
-    normal & 1 & 0.5 Mbps & 60\%\\
-    important & 2 & 1 Mbps & 25\%\\
-    \textcolor{Bad}{critical} & 4 & 2 Mbps & 15\%\\
-    \bottomrule
-  \end{tabularx}
-
-  \begin{block}{Quyết định mỗi khe $\Delta t$}
-    \scriptsize
-    \begin{itemize}
-      \item $a_k$: user $k$ nối UAV nào.
-      \item $b_k$: phần băng thông cho user $k$.
-      \item $p_k = b_k P_{\max}$: công suất theo băng.
-      \item $q_m$: vị trí UAV $m$ (qua vận tốc $v_m$).
-    \end{itemize}
-  \end{block}
-  \scriptsize 3 UAV, 20 user, vùng $1\times1$ km, độ cao 100 m, $B = 10$ MHz.
+\vspace{0pt}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Nhóm & $w_c$ & $r_{\min,c}$ & Tỷ lệ\\
+\midrule
+normal & 1 & 0.5 Mbps & 60\%\\
+important & 2 & 1 Mbps & 25\%\\
+\textcolor{Bad}{critical} & 4 & 2 Mbps & 15\%\\
+\bottomrule
+\end{tabular}
+\begin{block}{Quyết định mỗi khe}
+\begin{itemize}
+\item $a_k$: UAV phục vụ user $k$.
+\item $b_k$: phần băng được cấp.
+\item $p_k=b_k P_{\max}$.
+\item $v_m$: vận tốc UAV.
+\end{itemize}
+\end{block}
+\small Băng thông mỗi UAV: $B=10$ MHz.
 \end{column}
 \end{columns}
+
 \end{frame}
 
 % =================================================
@@ -234,6 +267,7 @@
 \begin{frame}{Phát biểu bài toán}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Đầu vào}
     \small
     \begin{itemize}
@@ -249,6 +283,7 @@
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Mục tiêu}
     \small
     Ưu tiên user critical, rồi important, \textbf{nhưng không bỏ rơi} user normal; giữ hiệu quả tổng ở mức chấp nhận được.
@@ -262,9 +297,9 @@
       \item Thuật toán biết vị trí và nhóm của user.
     \end{itemize}
   \end{block}
-  \begin{block}{Câu hỏi kiểm chứng}
+  \begin{block}{Mục tiêu kiểm chứng}
     \small
-    Kết quả có đứng vững khi đo ở mức gói tin trên NS-3 LTE không?
+    Đánh giá khả năng ưu tiên người dùng và mức đánh đổi throughput khi triển khai trên NS-3 LTE.
   \end{block}
 \end{column}
 \end{columns}
@@ -276,6 +311,7 @@
 \begin{frame}{Mô hình kênh, SINR và tốc độ}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Suy hao kênh không -- đất (Al-Hourani, đô thị)}
     \small
     \begin{itemize}
@@ -288,11 +324,12 @@
     \small
     \begin{itemize}
       \item Bài báo dùng Shannon: $\log_2(1+\mathrm{SINR})$.
-      \item LTE đo trên NS-3 chỉ đạt \alert{25--40\%} Shannon và có trần $\approx 3.5$, nên nhóm dùng $\SE$ \hl{hiệu chỉnh từ NS-3}.
+      \item Throughput NS-3 LTE trong thí nghiệm chỉ đạt \alert{25--40\%} Shannon và có trần $\approx 3.5$, nên nhóm dùng $\SE$ \hl{hiệu chỉnh từ NS-3}.
     \end{itemize}
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{SINR: chất lượng tín hiệu user nhận được}
     \vspace{-2mm}
     \[
@@ -318,6 +355,7 @@
 \begin{frame}{Băng thông của mỗi UAV: tài nguyên cần chia}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.56\textwidth}
+\vspace{0pt}
   \begin{block}{Mỗi UAV có một kênh LTE $B = 10$ MHz}
     \small
     \begin{itemize}
@@ -334,6 +372,7 @@
   \end{block}
 \end{column}
 \begin{column}{0.40\textwidth}
+\vspace{0pt}
   \centering
   \begin{tikzpicture}[x=1cm,y=1cm]
     % hai UAV dùng chung một băng
@@ -354,8 +393,8 @@
     \node[font=\tiny,anchor=west] at (0,1.95) {\textcolor{black!50}{$\blacksquare$} normal \quad \textcolor{orange}{$\blacksquare$} important \quad \textcolor{Bad}{$\blacksquare$} critical};
     % kết quả tốc độ
     \node[align=left,font=\scriptsize,anchor=north west] at (0,1.6) {
-      normal: \ $0.06 \times 10 \times 3.0 = 1.9$ Mbps\\
-      important: $0.19 \times 10 \times 2.0 = 3.8$ Mbps\\
+      normal: \ $0.0625 \times 10 \times 3.0 = 1.875$ Mbps\\
+      important: $0.1875 \times 10 \times 2.0 = 3.75$ Mbps\\
       critical: \ \ $0.75 \times 10 \times 1.0 = 7.5$ Mbps};
   \end{tikzpicture}
 
@@ -377,13 +416,14 @@
 \begin{block}{Hàm mục tiêu: công bằng tỷ lệ có trọng số}
 \vspace{-3mm}
 \[
-\max\ \sum_{\text{khe } n}\ \sum_{\text{user } k} w_k \log r_k[n]
+\max\ \sum_{\text{khe } n}\ \sum_{\text{user } k} w_k \log\big(r_k[n] + r_0\big)
 \qquad w = 1,\ 2,\ 4 \text{ cho normal, important, critical}
 \]
-\small Đọc là: \hl{tăng tốc độ chung}, nhưng \alert{phạt rất nặng ai bị gần 0}; user critical có trọng số gấp 4.
+\small Hàm mục tiêu cân bằng hiệu quả và công bằng, \hl{hạn chế tốc độ quá thấp}; nhóm critical có trọng số gấp 4 nhóm normal.
 \end{block}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.55\textwidth}
+\vspace{0pt}
   \begin{block}{Biến quyết định và ràng buộc (mỗi khe)}
     \small
     Chọn: user nối UAV nào, phần băng mỗi user, vị trí mới của UAV.
@@ -395,7 +435,8 @@
   \end{block}
 \end{column}
 \begin{column}{0.41\textwidth}
-  \begin{block}{Vì sao tổng log có trọng số}
+\vspace{0pt}
+  \begin{block}{Cơ sở lựa chọn hàm mục tiêu}
     \scriptsize
     \begin{itemize}
       \item Tối đa tổng tốc độ: dồn băng cho user kênh tốt, bỏ rơi user ở rìa.
@@ -406,16 +447,17 @@
 \end{column}
 \end{columns}
 \vspace{1mm}
-\scriptsize Ngưỡng QoS từng nhóm \textbf{không} là ràng buộc cứng (quá tải thì vô nghiệm), chỉ dùng để chấm điểm.
+\scriptsize $r_0 = 1$ kbit/s để tránh log 0. Ngưỡng QoS từng nhóm \textbf{không} là ràng buộc cứng (quá tải thì vô nghiệm), chỉ dùng để chấm điểm.
 Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. Ký hiệu đầy đủ: phụ lục B, C.
 \end{frame}
 
 % =================================================
 % SLIDE 7. VÌ SAO DÙNG HEURISTIC
 % =================================================
-\begin{frame}{Vì sao giải bằng heuristic}
+\begin{frame}{Lựa chọn phương pháp heuristic}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.47\textwidth}
+\vspace{0pt}
   \begin{block}{(P) khó giải chính xác}
     \small
     \begin{itemize}
@@ -432,6 +474,7 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
   \end{block}
 \end{column}
 \begin{column}{0.49\textwidth}
+\vspace{0pt}
   \centering
   \textbf{\small Tách (P) theo từng khe thành 3 khối}
   \vspace{3mm}
@@ -445,6 +488,42 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
   \end{tikzpicture}
 \end{column}
 \end{columns}
+\end{frame}
+
+% =================================================
+% ĐÓNG GÓP CHÍNH
+% =================================================
+\begin{frame}{Điểm mới và đóng góp chính}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.49\textwidth}
+\vspace{0pt}
+  \begin{minipage}[t][1.65cm][t]{\linewidth}
+  \begin{block}{1. Chia băng ifair}
+    \small Chia băng theo \hl{SINR có nhiễu} và \hl{trọng số nhóm} $w_k$: $b_k \propto w_k/\SE_k$. User critical được ưu tiên mà normal không bị bỏ rơi.
+  \end{block}
+  \end{minipage}
+
+  \begin{block}{2. Di chuyển calib}
+    \small Sau k-means, \hl{tìm cục bộ} 17 nước đi cho mỗi UAV, chọn nước làm tiện ích tăng nhiều nhất. Mỗi khe chỉ mất 5--14 ms.
+  \end{block}
+\end{column}
+\begin{column}{0.49\textwidth}
+\vspace{0pt}
+  \begin{minipage}[t][1.65cm][t]{\linewidth}
+  \begin{block}{3. Áp quyết định ở tầng MAC}
+    \small Sửa scheduler PF của NS-3 thành \hl{WPF} nhận trọng số $b_k$. Không có bước này, chia băng mất tác dụng.
+  \end{block}
+  \end{minipage}
+
+  \begin{block}{4. Kiểm chứng ở mức gói tin + hệ thống mạng}
+    \small Kiểm chứng ba tầng: lý thuyết khớp NS-3 lý tưởng ($<$1\%); mô hình LTE hiệu chỉnh dự đoán NS-3 LTE trong $\pm$2\%. Trạm điều khiển: web $\leftrightarrow$ server (WebSocket) $\rightarrow$ Gazebo (gz-transport).
+  \end{block}
+\end{column}
+\end{columns}
+
+\vspace{2mm}
+\centering\footnotesize Ba nhóm, tải 2--4 Mbps/user: critical đạt QoS \good{96--97\%} (baseline 59--87\%).\\
+Mọi user cùng nhóm: min throughput \good{$\times$1.9--2.0} so với kmeans-equal.
 \end{frame}
 
 % =================================================
@@ -501,28 +580,30 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
 % SLIDE 9. LƯU ĐỒ
 % =================================================
 \begin{frame}{Lưu đồ calib-ifair (mỗi khe)}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.42\textwidth}
-  \centering
-  \includegraphics[height=0.80\textheight]{calib_ifair.png}
-\end{column}
-\begin{column}{0.54\textwidth}
-  \small
-  \begin{enumerate}
-    \setlength{\itemsep}{3pt}
-    \item Nối mỗi user với UAV có kênh mạnh nhất.
-    \item Tính SINR \hl{có nhiễu} từ mọi UAV đang phục vụ, đổi ra $\SE_k$.
-    \item \hl{ifair}: chia băng $b_k \propto w_k / \max(\SE_k, 0.05)$.
-    \item Với từng UAV: còn xa tâm cụm k-means thì bay thẳng tới tâm.
-    \item Đã tới: thử 17 nước đi, giữ nước làm tiện ích $U$ tăng nhiều nhất, không làm giảm số UAV có user.
-    \item Gửi $b_k$ xuống tầng MAC (scheduler WPF), $v_m$ cho UAV.
-  \end{enumerate}
-  \begin{block}{Thời gian}
-    \small
-    5.5 ms/khe (3 UAV, 20 user); 13.6 ms/khe (8 UAV, 60 user). Khe dài 250 ms.
-  \end{block}
-\end{column}
-\end{columns}
+
+\centering
+\begin{tikzpicture}[font=\small,
+ flowstep/.style={draw=MainBlue!65,fill=MainBlue!5,rounded corners,align=center,text width=3.7cm,minimum height=1.1cm,inner sep=3pt},
+ choice/.style={draw=Accent,fill=Accent!7,rounded corners,align=center,text width=3.6cm,minimum height=1cm}]
+\node[flowstep] (a) at (0,0) {\textbf{1. Liên kết}\\Chọn UAV có kênh mạnh nhất};
+\node[flowstep] (b) at (4.8,0) {\textbf{2. Chất lượng kênh}\\SINR có nhiễu $\rightarrow\widehat{SE}_k$};
+\node[flowstep,fill=orange!12] (c) at (9.6,0) {\textbf{3. Chia băng ifair}\\$b_k\propto w_k/\max(\SE_k,0.05)$};
+\draw[arr] (a) -- (b); \draw[arr] (b) -- (c);
+\node[choice] (d) at (9.6,-1.9) {\textbf{4. Xét từng UAV}\\Còn xa tâm cụm k-means?};
+\draw[arr] (c) -- (d);
+\node[flowstep] (e) at (4.8,-1.9) {\textbf{Tiếp cận}\\Bay về tâm cụm};
+\draw[arr] (d.west) -- node[above,font=\scriptsize]{Có} (e.east);
+\node[flowstep,fill=orange!12] (f) at (9.6,-3.8) {\textbf{Tinh chỉnh calib}\\Thử 17 nước đi, chọn $U$ tốt nhất};
+\draw[arr] (d.south) -- node[right,font=\scriptsize]{Không} (f.north);
+\node[flowstep] (g) at (0,-3.8) {\textbf{5. Thực thi}\\$b_k\rightarrow$ WPF; $v_m\rightarrow$ UAV};
+\draw[arr] (e.west) -| (g.north);
+\draw[arr] (f.west) -- node[above,font=\scriptsize,align=center]{Lặp bước 4 cho mọi UAV} (g.east);
+\end{tikzpicture}
+
+\vspace{2mm}
+\small Tinh chỉnh: tính lại $U$ toàn mạng; không làm giảm số UAV có user.\\
+\small \textbf{Thời gian:} 5.5 ms (3 UAV, 20 user); 13.6 ms (8 UAV, 60 user), dưới khe 250 ms.
+
 \end{frame}
 
 % =================================================
@@ -531,6 +612,7 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
 \begin{frame}{Khối 1: liên kết và SINR có nhiễu}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.52\textwidth}
+\vspace{0pt}
   \begin{block}{Liên kết}
     \small Mỗi user nối với UAV có \hl{kênh mạnh nhất}.
   \end{block}
@@ -545,6 +627,7 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
   \end{block}
 \end{column}
 \begin{column}{0.44\textwidth}
+\vspace{0pt}
   \centering
   \begin{tikzpicture}[x=1cm,y=1cm]
     \fill[U0] (0,3) -- ++(0.4,0) -- ++(-0.2,0.35) -- cycle; \node[font=\scriptsize] at (0.2,3.6) {UAV A (phục vụ)};
@@ -583,18 +666,20 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
 \end{block}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Ý nghĩa}
     \small
     \begin{itemize}
       \item Nhóm ưu tiên cao hơn: nhiều băng hơn.
       \item Kênh xấu hơn: được \hl{bù} nhiều băng hơn.
-      \item Kết quả: trong một UAV, tốc độ đúng tỷ lệ \hl{1 : 2 : 4}; critical nhanh gấp 4 normal dù kênh xấu hơn.
-      \item Sàn $\SE \ge 0.05$: user gần mất sóng không hút hết băng.
+      \item Khi mọi $\SE_k \ge 0.05$ trong cùng UAV: \hl{tốc độ dự đoán} tỷ lệ \hl{1 : 2 : 4}; throughput LTE thực đo không được bảo đảm theo tỷ lệ này.
+      \item Dùng $\max(\SE_k, 0.05)$ ở mẫu số để user gần mất sóng không hút hết băng.
     \end{itemize}
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
-  \begin{block}{Vì sao không chia thẳng theo tổng log}
+\vspace{0pt}
+  \begin{block}{Cơ sở lựa chọn quy tắc ifair}
     \small
     Tối đa tổng log cho riêng phần chia băng thì nghiệm là chia băng \textbf{chỉ theo} $w$, không nhìn kênh,
     nên user critical ở rìa vẫn chậm.
@@ -613,21 +698,25 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
 \small Một UAV, $B = 10$ MHz, ba user có hiệu suất phổ khác nhau:
 \vspace{2mm}
 
-\begin{tabularx}{\linewidth}{@{}lccXXX@{}}
+{\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{@{}lcc*{3}{>{\centering\arraybackslash}X}@{}}
   \toprule
-  \textbf{User} & $w$ & $\SE$ (bit/s/Hz) & \textbf{Chia đều} & \textbf{max-min (không trọng số)} & \textbf{ifair}\\
+  \textbf{User} & $w$ & \shortstack{$\SE$\\(bit/s/Hz)} & \textbf{Chia đều} & \shortstack{\textbf{max-min}\\\textbf{(không trọng số)}} & \textbf{ifair}\\
   \midrule
-  normal & 1 & 3.0 & $b=0.33$, \ 10.0 Mbps & $b=0.18$, \ 5.45 Mbps & $b=0.06$, \ \textbf{1.88 Mbps}\\
-  important & 2 & 2.0 & $b=0.33$, \ 6.67 Mbps & $b=0.27$, \ 5.45 Mbps & $b=0.19$, \ \textbf{3.75 Mbps}\\
-  \textcolor{Bad}{critical} & 4 & 1.0 & $b=0.33$, \ \alert{3.33 Mbps} & $b=0.55$, \ 5.45 Mbps & $b=0.75$, \ \good{7.50 Mbps}\\
+  normal & 1 & 3.0 & \shortstack{$b=1/3$\\10.00 Mbps} & \shortstack{$b\approx0.1818$\\5.45 Mbps} & \shortstack{$b=0.0625$\\\textbf{1.88 Mbps}}\\
+  important & 2 & 2.0 & \shortstack{$b=1/3$\\6.67 Mbps} & \shortstack{$b\approx0.2727$\\5.45 Mbps} & \shortstack{$b=0.1875$\\\textbf{3.75 Mbps}}\\
+  \textcolor{Bad}{critical} & 4 & 1.0 & \shortstack{$b=1/3$\\\alert{3.33 Mbps}} & \shortstack{$b\approx0.5455$\\5.45 Mbps} & \shortstack{$b=0.75$\\\good{7.50 Mbps}}\\
   \midrule
   \textbf{Tổng} & & & 20.0 Mbps & 16.4 Mbps & 13.1 Mbps\\
   \bottomrule
 \end{tabularx}
+}
 
 \vspace{3mm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Cách tính ifair}
     \scriptsize
     $x_k = w_k/\SE_k = 0.33,\ 1,\ 4$; tổng $5.33$\\
@@ -636,7 +725,8 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
-  \begin{block}{Đọc bảng}
+\vspace{0pt}
+  \begin{block}{Nhận xét}
     \scriptsize
     Chia đều: critical (kênh xấu nhất) chậm nhất. max-min: mọi user bằng nhau, critical không được ưu tiên.
     ifair: critical nhanh nhất, đổi lại tổng tốc độ giảm. Đây là đánh đổi có chủ đích, chỉnh được bằng $w$.
@@ -651,6 +741,7 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
 \begin{frame}{Khối 2: so sánh ba cách chia băng bằng biểu đồ}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.62\textwidth}
+\vspace{0pt}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
@@ -669,6 +760,7 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
 \end{tikzpicture}
 \end{column}
 \begin{column}{0.35\textwidth}
+\vspace{0pt}
   \small
   Cùng ví dụ trang trước: một UAV 10 MHz, kênh của critical xấu nhất ($\SE = 1$), của normal tốt nhất ($\SE = 3$).
   \begin{itemize}
@@ -676,7 +768,7 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
     \item \textbf{max-min}: ai cũng như nhau, critical \textbf{không} được ưu tiên.
     \item \hl{ifair}: critical nhanh nhất, đúng tỷ lệ \hl{1 : 2 : 4}.
   \end{itemize}
-  \scriptsize Giá phải trả: tổng 20.0 $\rightarrow$ 13.1 Mbps. Số liệu minh họa, không phải số đo.
+  \scriptsize Đánh đổi throughput tổng: 20.0 $\rightarrow$ 13.1 Mbps. Số liệu minh họa, không phải số đo.
 \end{column}
 \end{columns}
 \end{frame}
@@ -687,6 +779,7 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
 \begin{frame}{Khối 3: di chuyển calib}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.52\textwidth}
+\vspace{0pt}
   \begin{block}{Hai pha cho mỗi UAV}
     \small
     \textbf{1. Tiếp cận:} còn xa tâm cụm user (k-means) hơn một bước bay thì bay thẳng về tâm cụm.\\[2mm]
@@ -703,6 +796,7 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
   \end{block}
 \end{column}
 \begin{column}{0.44\textwidth}
+\vspace{0pt}
   \centering
   \begin{tikzpicture}[scale=1.05]
     \fill[MainBlue!6] (-2.3,-2.3) rectangle (2.3,2.3);
@@ -723,9 +817,9 @@ Mỗi khe, heuristic giải bản tham lam với tốc độ dự đoán LTE. K�
 % =================================================
 % THUẬT TOÁN CHẠY THẾ NÀO
 % =================================================
-\begin{frame}{Thuật toán chạy thế nào: cùng kịch bản, hai cách làm}
+\begin{frame}{So sánh diễn biến mô phỏng trên cùng kịch bản}
 \centering
-\includegraphics[height=0.78\textheight]{snapshots.png}
+\includegraphics[height=0.74\textheight]{snapshots.png}
 
 \scriptsize Mô phỏng, 2 Mbps/user, seed 1. Hàng trên kmeans-equal: tới khe 59 chỉ \alert{1/3 user critical} đạt QoS (dấu $\times$).
 Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 3 user critical} đạt QoS, throughput tương đương (30 so với 29 Mbps).
@@ -737,6 +831,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \begin{frame}{Áp quyết định ở tầng MAC và kiểm chứng ba tầng}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \footnotesize
   \textbf{\color{MainBlue}Scheduler Weighted PF}
   \begin{itemize}
@@ -745,6 +840,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
   \end{itemize}
 \end{column}
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \footnotesize
   \textbf{\color{MainBlue}Kết quả}
   \begin{itemize}
@@ -762,13 +858,14 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 % =================================================
 % PHÂN RÃ SHANNON -> NS-3
 % =================================================
-\begin{frame}{Vì sao lý thuyết lạc quan: phân rã Shannon $\rightarrow$ NS-3}
+\begin{frame}{Phân rã chênh lệch throughput Shannon -- NS-3 LTE}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.58\textwidth}
+\vspace{0pt}
 \centering
 \begin{tikzpicture}
 \begin{axis}[ybar, bar width=16pt, width=\linewidth, height=6.0cm,
-  symbolic x coords={S,G,T,D,N}, xtick=data,
+  symbolic x coords={S,G,T,D,N}, xtick={S,G,T,D,N}, bar shift=0pt,
   xticklabels={{Shannon\\(bài báo)},{3GPP\\36.942},{+ trần\\3.51},{+ độ dốc\\0.40},{NS-3\\đo}},
   xticklabel style={align=center,font=\scriptsize},
   ymin=0, ymax=150, ylabel={Throughput tổng (Mbps)}, ylabel style={font=\small},
@@ -782,6 +879,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 {\scriptsize kmeans-equal, tải 1.0, trung bình 5 seed.}
 \end{column}
 \begin{column}{0.40\textwidth}
+\vspace{0pt}
   \small
   \begin{block}{Ba nguyên nhân}
     \footnotesize
@@ -792,7 +890,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
     \end{enumerate}
   \end{block}
   \begin{block}{Kết quả}
-    \footnotesize NS-3 chỉ đạt \alert{25--40\%} Shannon. Thêm hai hằng số đo từ NS-3, mô hình dự đoán đúng \good{$\pm$2\%} (NS-3/mô hình = 1.02, 0.99, 1.00 trên 3 cấu hình).\\[1mm]
+    \footnotesize Trong thí nghiệm, throughput NS-3 đạt \alert{25--40\%} giá trị Shannon. Thêm hai hằng số đo từ NS-3, mô hình dự đoán đúng \good{$\pm$2\%} (NS-3/mô hình = 1.02, 0.99, 1.00 trên 3 cấu hình).\\[1mm]
     Đã loại trừ: kênh cài khác nhau (lệch $\le$0.1 dB), tính nhiễu sai, HARQ (lỗi khối $<$0.1\%).
   \end{block}
 \end{column}
@@ -821,13 +919,15 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \vspace{2mm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
-  \begin{block}{Vì sao chọn các baseline này}
+\vspace{0pt}
+  \begin{block}{Cơ sở lựa chọn baseline}
     \scriptsize
-    equal đại diện ``tối đa hiệu quả'', maxmin đại diện ``tối đa công bằng'' -- hai cách phổ biến trong các bài báo UAV-BS.
-    wmaxmin là đối thủ \textbf{cùng biết nhóm} để so sánh công bằng.
+    equal là mốc chia đều tài nguyên; maxmin là mốc công bằng không trọng số.
+    wmaxmin sử dụng \textbf{cùng thông tin nhóm} để đánh giá phương pháp đề xuất.
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Điều kiện so sánh}
     \scriptsize
     Cùng kịch bản, cùng seed (vị trí user, nhóm), cùng lưu lượng; liên kết theo kênh mạnh nhất; mọi thuật toán chấm bằng cùng chỉ số đo trên NS-3.
@@ -842,6 +942,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \begin{frame}{Cài đặt hệ thống}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.44\textwidth}
+\vspace{0pt}
   \small
   \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.40\linewidth}>{\raggedright\arraybackslash}X@{}}
     \toprule
@@ -860,6 +961,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
   \scriptsize Mỗi thí nghiệm lưu kèm cấu hình; chạy lại cho kết quả trùng từng chữ số.
 \end{column}
 \begin{column}{0.52\textwidth}
+\vspace{0pt}
   \centering
   \textbf{\small Quy trình đo một thuật toán}
   \vspace{2mm}
@@ -881,6 +983,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \begin{frame}{Thông số thí nghiệm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \scriptsize
   \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.44\linewidth}>{\raggedright\arraybackslash}X@{}}
     \toprule
@@ -899,6 +1002,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
   \end{tabularx}
 \end{column}
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \scriptsize
   \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.44\linewidth}>{\raggedright\arraybackslash}X@{}}
     \toprule
@@ -911,7 +1015,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
     Trọng số nhóm $w$ & 1 / 2 / 4\\
     $r_{\min}$ theo nhóm & 0.5 / 1 / 2 Mbps\\
     Số seed & 3 (cùng seed cho mọi thuật toán)\\
-    Số run NS-3 cho thí nghiệm nhóm & 63 mới + dùng lại run cũ\\
+    Số run NS-3 cho thí nghiệm nhóm & 126 (6 thuật toán $\times$ 7 tải $\times$ 3 seed)\\
     Tổng số run NS-3 của dự án & khoảng 500\\
     \bottomrule
   \end{tabularx}
@@ -927,6 +1031,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \begin{frame}{Thiết lập thí nghiệm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.36\textwidth}
+\vspace{0pt}
   \begin{block}{NS-3 3.47 LTE}
     \scriptsize
     \begin{itemize}
@@ -943,12 +1048,13 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
   \end{block}
 \end{column}
 \begin{column}{0.60\textwidth}
+\vspace{0pt}
   \scriptsize
   \begin{tabularx}{\linewidth}{@{}lXlc@{}}
     \toprule
     \textbf{Thuật toán} & \textbf{Mục tiêu} & \textbf{Tốc độ dùng} & \textbf{Biết nhóm}\\
     \midrule
-    kmeans-equal & gần $\max\sum r$ & -- & không\\
+    kmeans-equal & Chia đều tài nguyên & -- & không\\
     kmeans-maxmin & $\max\min r$ & Shannon, bỏ nhiễu & không\\
     kmeans-wmaxmin & $\max\min r/w$ & Shannon, bỏ nhiễu & \textbf{có}\\
     calib-ifair-noclass & $\sum\log r$ & LTE, có nhiễu & không\\
@@ -974,6 +1080,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \vspace{1mm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \footnotesize
   \begin{itemize}
     \item Từ 2 Mbps/user, min throughput \good{$\times$1.92--2.03} so với kmeans-equal, thắng cả \textbf{3/3 seed}.
@@ -981,6 +1088,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
   \end{itemize}
 \end{column}
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \footnotesize
   \begin{itemize}
     \item Throughput tổng giữ trong \good{$\pm$4\%}.
@@ -999,22 +1107,25 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \begin{frame}{Kết quả 2: ưu tiên ba nhóm người dùng}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.64\textwidth}
+\vspace{0pt}
   \centering
   \includegraphics[width=\linewidth]{classes_slide.png}
 
   {\scriptsize NS-3 LTE, 3 critical, 5 important, 12 normal; WPF; 3 seed.}
 \end{column}
 \begin{column}{0.34\textwidth}
+\vspace{0pt}
   \footnotesize
   \begin{block}{Critical đạt QoS}
     calib-ifair \good{95--100\%} ở mọi tải.\\
-    Biết nhóm (wmaxmin): 86--87\%.\\
+    Ở tải 2--4 Mbps/user:\\
+    wmaxmin: khoảng 85--87\%.\\
     Không biết nhóm: 59--69\%.
   \end{block}
   \begin{block}{Không bỏ rơi normal}
     Min normal 0.95 Mbps, \textbf{gần gấp đôi} wmaxmin (0.49) ở 4 Mbps/user.
   \end{block}
-  \begin{block}{Cái giá}
+  \begin{block}{Đánh đổi}
     Throughput tổng \alert{$-$11\%} ở tải cao so với baseline không biết nhóm; chỉnh được bằng $w$.
   \end{block}
 \end{column}
@@ -1046,17 +1157,18 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \end{tabularx}
 \vspace{2mm}
 
-\scriptsize Ở 1 Mbps/user (tải vừa), calib-ifair tốt hơn ở mọi chỉ số: critical 100\% đạt QoS, độ trễ critical 208 $\rightarrow$ 6 ms, mất gói 2.2\% $\rightarrow$ 0.8\%.
+\scriptsize So với kmeans-equal ở 1 Mbps/user, calib-ifair cải thiện các chỉ số trong bảng: critical 100\% đạt QoS, độ trễ critical 208 $\rightarrow$ 6 ms, mất gói 2.2\% $\rightarrow$ 0.8\%.
 \end{frame}
 
 % =================================================
 % SLIDE 20. LỢI ÍCH ĐẾN TỪ ĐÂU
 % =================================================
-\begin{frame}{Lợi ích đến từ đâu}
+\begin{frame}{Phân tích đóng góp của từng thành phần}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.52\textwidth}
+\vspace{0pt}
   \small
-  \begin{tabularx}{\linewidth}{@{}Xc@{}}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xc@{}}
     \toprule
     \textbf{So sánh (4 Mbps/user)} & \textbf{Kết quả}\\
     \midrule
@@ -1072,11 +1184,12 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
   \scriptsize * thí nghiệm không chia nhóm (mọi $w=1$).
 \end{column}
 \begin{column}{0.44\textwidth}
+\vspace{0pt}
   \begin{block}{Kết luận}
     \small
     Lợi ích đến từ: \hl{trọng số nhóm}, \hl{tính nhiễu khi chia băng}, \hl{tinh chỉnh vị trí} và \hl{áp ở tầng MAC}.
   \end{block}
-  \begin{block}{Phát hiện ngoài dự kiến}
+  \begin{block}{Ảnh hưởng của mô hình tốc độ}
     \small
     Đường cong LTE hiệu chỉnh giúp \textbf{dự đoán} số đo NS-3 ($\pm$2\%) nhưng \textbf{không} làm thuật toán tốt hơn:
     thứ tự ưu tiên giữa các user gần như giống nhau dù dùng Shannon hay LTE.
@@ -1091,12 +1204,14 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \begin{frame}{Trạm điều khiển thời gian thực}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.66\textwidth}
+\vspace{0pt}
   \centering
   \includegraphics[width=\linewidth]{dashboard.png}
 
   {\scriptsize Dashboard web chạy calib-ifair: bảng nhóm user cho thấy 100\% critical đạt QoS.}
 \end{column}
 \begin{column}{0.31\textwidth}
+\vspace{0pt}
   \small
   \begin{itemize}
     \setlength{\itemsep}{3pt}
@@ -1105,7 +1220,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
     \item Đổi 13 tham số khi đang chạy, kể cả tỷ lệ nhóm.
     \item \textbf{Ghi \& đo}: chạy NS-3 ngay từ web.
     \item Gazebo: áo cùng màu UAV phục vụ, vòng vàng important, vòng đỏ critical.
-    \item Giao thức và đo hiệu năng: 3 slide tiếp theo.
+    \item Giao thức và đo hiệu năng: 4 slide tiếp theo.
   \end{itemize}
 \end{column}
 \end{columns}
@@ -1118,6 +1233,7 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \begin{frame}{Giao tiếp trình duyệt -- server qua WebSocket}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.56\textwidth}
+\vspace{0pt}
 \centering
 \begin{tikzpicture}[x=1cm,y=-0.62cm,font=\scriptsize]
   \node[box,text width=2.1cm] (b) at (0,0) {\textbf{Trình duyệt}};
@@ -1133,9 +1249,10 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \end{tikzpicture}
 \end{column}
 \begin{column}{0.42\textwidth}
+\vspace{0pt}
   \small
-  \begin{block}{Vì sao WebSocket}
-    \footnotesize Server phải \hl{chủ động đẩy} trạng thái 4 lần/giây; lệnh lái tay đi ngược lại trên \textbf{cùng một kết nối TCP}. HTTP polling vừa chậm vừa tốn.
+  \begin{block}{Vai trò của WebSocket}
+    \footnotesize Server phải \hl{chủ động đẩy} trạng thái 4 lần/giây; lệnh lái tay đi ngược lại trên \textbf{cùng một kết nối TCP}. Kết nối duy trì giúp giảm số yêu cầu so với HTTP polling.
   \end{block}
   \begin{block}{Bản tin JSON}
     \footnotesize Xuống: \texttt{info}, \texttt{state}.\\
@@ -1152,85 +1269,134 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \end{frame}
 
 % =================================================
+% LẬP TRÌNH MẠNG: WEB -> SERVER -> GAZEBO
+% =================================================
+\begin{frame}{Điều khiển từ web tới Gazebo}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.56\textwidth}
+\vspace{0pt}
+\centering
+\begin{tikzpicture}[x=1cm,y=-0.62cm,font=\scriptsize]
+  \node[box,text width=1.5cm] (b) at (0,0) {\textbf{Trình duyệt}};
+  \node[box,text width=1.5cm,fill=orange!12,draw=orange!70] (s) at (3.0,0) {\textbf{Server}\\asyncio};
+  \node[box,text width=1.5cm,fill=Accent!12,draw=Accent] (g) at (6.0,0) {\textbf{Gazebo}};
+  \foreach \x in {0,3.0,6.0} \draw[gray,thick] (\x,0.9) -- (\x,9.0);
+  \draw[-{Stealth},thick,orange] (0.05,1.8) -- (2.95,1.8);  \node[above] at (1.5,1.8) {\texttt{vel}/\texttt{goto} (WS)};
+  \node[fill=white,draw=gray,rounded corners=2pt] at (3.0,2.9) {khe 0.25 s: calib-ifair};
+  \draw[-{Stealth},thick,dashed,U0] (2.95,4.0) -- (0.05,4.0); \node[above] at (1.5,4.0) {\texttt{state} (WS)};
+  \draw[-{Stealth},thick,Accent] (3.05,5.1) -- (5.95,5.1); \node[above] at (4.5,5.1) {\texttt{set\_pose\_vector}};
+  \draw[-{Stealth},thick,dashed,Accent] (5.95,6.1) -- (3.05,6.1); \node[above] at (4.5,6.1) {\texttt{Boolean} (ok)};
+  \node[font=\tiny,text width=3cm,align=center] at (4.5,7.0) {lặp 20 lần/s, nội suy giữa 2 khe};
+  \draw[-{Stealth},thick,Accent!70] (3.05,8.2) -- (5.95,8.2); \node[above] at (4.5,8.2) {\texttt{cmd\_vel} rotor (pub/sub)};
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.42\textwidth}
+\vspace{0pt}
+  \begin{block}{gz-transport (thư viện mạng của Gazebo)}
+    \scriptsize Bản tin \hl{protobuf} qua ZeroMQ. \textbf{Service} hỏi--đáp: đặt vị trí, thêm model. \textbf{Topic} pub/sub: tốc độ rotor (gửi khi publisher đã có subscriber).
+  \end{block}
+  \begin{block}{Hai tác vụ asyncio song song}
+    \scriptsize \texttt{loop}: mỗi 0.25 s chạy thuật toán, đẩy \texttt{state} qua WS.\\
+    \texttt{gazebo\_loop}: mỗi 50 ms nội suy $p = p_0 + f(p_1 - p_0)$, gọi service ở luồng phụ (\texttt{to\_thread}) nên không chặn WS.
+  \end{block}
+  \begin{block}{Gọn bản tin, chịu lỗi}
+    \scriptsize Một \texttt{Pose\_V} chứa mọi UAV; user chỉ gửi \hl{hình đã đổi chỗ}. Đổi màu áo bằng đổi hình dựng sẵn (Gazebo mất \texttt{material\_color} khi đang đặt vị trí). Timeout 100 ms; lỗi thì bỏ, lần sau gửi lại; mỗi 2 s cất lại hình thừa.
+  \end{block}
+  \begin{block}{Đo được}
+    \scriptsize Gazebo lệch mô hình \good{0.000 m} (20 khe); 16/20 lời gọi trả lời trong 100 ms.
+  \end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+% =================================================
 % SLIDE 21b2. CÁC NODE NS-3
 % =================================================
 \begin{frame}{Các node và kết nối trong NS-3}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{0.50\textwidth}
+
 \centering
-\begin{tikzpicture}[font=\scriptsize,
-  nd/.style={draw=MainBlue!70,fill=MainBlue!7,rounded corners=3pt,align=center,minimum height=7mm,text width=1.5cm}]
-  \node[nd] (rh) at (0,0) {\textbf{Remote host}\\1.0.0.2};
-  \node[nd,fill=gray!10,draw=gray] (pgw) at (0,-1.7) {\textbf{EPC}\\PGW, SGW, MME};
-  \foreach \m/\y in {0/0.9,1/-0.4,2/-1.7} \node[nd,fill=orange!12,draw=orange!70] (e\m) at (2.9,\y-0.4) {\textbf{eNB \m}\\UAV \m};
-  \foreach \m/\y in {0/0.9,1/-0.4,2/-1.7} \node[nd,fill=Good!8,draw=Good!70,text width=1.1cm] (u\m) at (5.1,\y-0.4) {nhóm UE};
-  \draw[thick] (rh) -- node[left,align=right]{p2p\\10 Gb/s\\1 ms} (pgw);
-  \foreach \m in {0,1,2} { \draw[thick] (pgw.east) -- (e\m.west); \draw[thick,decorate,decoration={snake,amplitude=0.6mm,segment length=2mm}] (e\m) -- (u\m); }
-  \node[font=\tiny] at (1.55,-0.15) {S1};
-  \draw[dashed,orange!80!black] (e0.south) -- (e1.north); \draw[dashed,orange!80!black] (e1.south) -- (e2.north);
-  \node[font=\tiny,text=orange!70!black,anchor=west] at (3.0,-0.15) {X2};
-  \node[font=\tiny] at (4.0,-1.4) {vô tuyến};
-  \node[font=\tiny,align=center,text=Good] at (5.1,-2.85) {tổng 20 UE, IP 7.0.0.0/8};
+\begin{tikzpicture}[font=\small,
+ nd/.style={draw=MainBlue!65,fill=MainBlue!5,rounded corners,align=center,text width=2.0cm,minimum height=9mm},
+ lab/.style={font=\scriptsize,fill=white,inner sep=2pt}]
+\node[nd] (rh) at (0,0) {\textbf{Remote host}\\1.0.0.2};
+\node[nd,fill=gray!10] (epc) at (3.8,0) {\textbf{EPC}\\PGW, SGW, MME};
+\foreach \i/\y in {0/1.7,1/0,2/-1.7} {
+ \node[nd,draw=orange!80!black,fill=orange!10] (e\i) at (8,\y) {\textbf{eNB \i / UAV \i}};
+ \node[nd,draw=Good,fill=Good!7,text width=1.5cm] (u\i) at (12,\y) {Nhóm UE};
+ \draw[arr] (epc.east) -- node[pos=0.58,lab,sloped,above]{S1} (e\i.west);
+ \draw[arr] (e\i.east) -- node[midway,lab,above]{LTE} (u\i.west);
+}
+\draw[arr] (rh.east) -- node[midway,lab,above]{p2p} node[midway,lab,below,align=center]{10 Gb/s\\1 ms} (epc.west);
+\draw[<->,dashed,thick,orange!80!black] (e0.south) -- node[midway,lab,right]{X2} (e1.north);
+\draw[<->,dashed,thick,orange!80!black] (e1.south) -- node[midway,lab,right]{X2} (e2.north);
 \end{tikzpicture}
-\end{column}
-\begin{column}{0.48\textwidth}
-\scriptsize
-\begin{tabular}{@{}p{1.75cm}p{3.9cm}@{}}
-  \toprule
-  \textbf{Node} & \textbf{Cài đặt}\\
-  \midrule
-  Remote host (1) & Nguồn dữ liệu: một socket UDP cho mỗi UE, đổi tốc độ đầu mỗi khe\\
-  EPC (3) & PGW, SGW, MME; đường hầm GTP-U tới eNB\\
-  eNB (3) & Mỗi UAV một eNB: 30 dBm, 50 RB, chung tần số; bay theo kế hoạch (\texttt{WaypointMobility}, 100 m); scheduler PF/RR/\textbf{WPF}\\
-  UE (20) & Mỗi user một UE: \texttt{UdpServer} cổng 9 đo trễ, mất gói; gắn eNB theo kế hoạch, handover X2\\
-  Kênh & \texttt{AlHouraniPropagationLossModel} nhóm tự viết, cùng công thức với Python\\
-  \bottomrule
-\end{tabular}
 
 \vspace{2mm}
-Đo: \texttt{FlowMonitor} + bộ đếm mỗi khe (gói gửi, nhận, byte, độ trễ, cell đang gắn).
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+\vspace{0pt}
+\small
+\textbf{Mạng truy nhập}
+\begin{itemize}
+\item 3 eNB: 30 dBm, 50 RB, độ cao 100 m.
+\item 20 UE, dải IP 7.0.0.0/8; handover X2.
+\item Kênh Al-Hourani; scheduler PF/RR/WPF.
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+\vspace{0pt}
+\small
+\textbf{Lưu lượng và đo lường}
+\begin{itemize}
+\item Remote host gửi UDP cổng 9 tới từng UE.
+\item Quỹ đạo, liên kết, $b_k$ theo kế hoạch Python.
+\item FlowMonitor và bộ đếm từng user, từng khe.
+\end{itemize}
 \end{column}
 \end{columns}
+
 \end{frame}
 
 % =================================================
 % SLIDE 21c. LẬP TRÌNH MẠNG: GÓI TIN TRONG NS-3
 % =================================================
 \begin{frame}{Đường đi của gói tin trong NS-3 LTE}
+
 \centering
-\begin{tikzpicture}[font=\footnotesize]
-  \node[font=\small\bfseries,text=MainBlue] at (0,0.6) {Remote host};
-  \node[st=MainBlue] (n0_0) at (0,-0.0) {UDP cổng 9\\{\scriptsize số thứ tự + giờ gửi}};
-  \node[st=MainBlue] (n0_1) at (0,-0.95) {IP};
-  \node[font=\small\bfseries,text=MainBlue] at (3.17,0.6) {EPC (PGW)};
-  \node[st=gray] (n31_0) at (3.17,-0.0) {GTP-U\\{\scriptsize đường hầm tới eNB}};
-  \node[st=gray] (n31_1) at (3.17,-0.95) {IP};
-  \node[font=\small\bfseries,text=MainBlue] at (6.33,0.6) {eNB trên UAV};
-  \node[st=orange] (n62_0) at (6.33,-0.0) {PDCP, RLC (1 MiB)};
-  \node[st=orange] (n62_1) at (6.33,-0.95) {\textbf{MAC: WPF ($b_k$)}};
-  \node[st=orange] (n62_2) at (6.33,-1.9) {PHY};
-  \node[font=\small\bfseries,text=MainBlue] at (9.5,0.6) {UE (user)};
-  \node[st=Good] (n93_1) at (9.5,0) {UDP\\{\scriptsize đo trễ, mất gói}};
-  \node[st=Good] (n93_0) at (9.5,-1.9) {PHY, MAC, RLC};
-  \draw[arr] (n93_0.north) -- (n93_1.south);
-  \draw[arr] (n0_0.east) -- (n31_0.west);
-  \draw[arr] (n31_0.east) -- node[below,font=\scriptsize]{S1-U} (n62_0.west);
-  \draw[arr] (n62_2.east) -- node[above,font=\scriptsize]{vô tuyến} (n93_0.west);
-  \draw[arr,dashed] (n62_2.south) -- ++(0,-0.6) node[below,font=\scriptsize]{handover X2 sang eNB khác};
+\begin{tikzpicture}[font=\footnotesize,y=0.82cm,
+ nd/.style={draw=MainBlue!65,fill=MainBlue!5,rounded corners,align=center,text width=2.45cm,minimum height=7mm},
+ lab/.style={font=\scriptsize,fill=white,inner sep=2pt}]
+\foreach \x/\title in {0/Remote host,3.8/EPC,7.6/eNB trên UAV,11.4/UE (user)}
+ \node[font=\small\bfseries,text=MainBlue] at (\x,0.8) {\title};
+\node[nd] (src) at (0,0) {UDP cổng 9};
+\node[nd] (ip) at (0,-1.3) {IP};
+\node[nd,draw=gray,fill=gray!8] (core) at (3.8,-1.3) {IP / GTP-U};
+\node[nd,draw=orange,fill=orange!10] (rlc) at (7.6,-1.3) {PDCP / RLC\\Bộ đệm 1 MiB};
+\node[nd,draw=orange,fill=orange!10] (mac) at (7.6,-2.5) {MAC: WPF ($b_k$)};
+\node[nd,draw=orange,fill=orange!10] (phy) at (7.6,-3.7) {PHY};
+\node[nd,draw=Good,fill=Good!7] (rx) at (11.4,-3.7) {PHY / MAC / RLC\\PDCP / IP};
+\node[nd,draw=Good,fill=Good!7] (udp) at (11.4,0) {UDP\\Đo trễ, mất gói};
+\draw[arr] (src) -- node[midway,lab,right]{Số thứ tự + giờ gửi} (ip);
+\draw[arr] (ip.east) -- (core.west);
+\draw[arr] (core.east) -- node[midway,lab,above]{S1-U} (rlc.west);
+\draw[arr] (rlc) -- (mac); \draw[arr] (mac) -- (phy);
+\draw[arr] (phy.east) -- node[midway,lab,above]{LTE} (rx.west);
+\draw[arr] (rx.north) -- (udp.south);
 \end{tikzpicture}
 
-\vspace{4mm}
+\vspace{2mm}
 \footnotesize
 \begin{tabular}{@{}lll@{}}
-  \toprule
-  \textbf{Kênh} & \textbf{Cơ chế} & \textbf{Tác dụng}\\
-  \midrule
-  Trình duyệt $\leftrightarrow$ server & WebSocket, JSON & trạng thái, lệnh điều khiển\\
-  Server $\rightarrow$ Gazebo & gz-transport, protobuf & mọi vị trí trong 1 lời gọi, 20 lần/s\\
-  Python $\leftrightarrow$ NS-3 & tiến trình con, file CSV & kế hoạch vào, số đo ra\\
-  Trong NS-3 & socket UDP tự viết & đo độ trễ, mất gói từng gói\\
-  \bottomrule
+\toprule
+\textbf{Kênh} & \textbf{Cơ chế} & \textbf{Tác dụng}\\
+\midrule
+Trình duyệt $\leftrightarrow$ server & WebSocket, JSON & Trạng thái, lệnh điều khiển\\
+Server $\rightarrow$ Gazebo & gz-transport, protobuf & Cập nhật vị trí 20 lần/s\\
+Python $\leftrightarrow$ NS-3 & Tiến trình con, file CSV & Kế hoạch vào, số đo ra\\
+Trong NS-3 & Socket UDP tự viết & Đo trễ, mất gói từng gói\\
+\bottomrule
 \end{tabular}
+
 \end{frame}
 
 % =================================================
@@ -1239,15 +1405,15 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \begin{frame}{Tổng kết các phần nhóm đã thực hiện}
 \scriptsize
 \renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{\linewidth}{@{}p{3.1cm}Xp{3.3cm}@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.3cm}@{}}
   \toprule
   \textbf{Thành phần} & \textbf{Nhóm đã làm} & \textbf{Kết quả kiểm chứng}\\
   \midrule
-  \textbf{Thuật toán calib-ifair} & Chia băng ifair (SINR có nhiễu, trọng số nhóm) + di chuyển calib; 6 baseline, 1 baseline biết nhóm, 4 bản ablation & Critical đạt QoS \good{96--97\%}; min $\times$1.9--2.0\\
+  \textbf{Thuật toán calib-ifair} & Chia băng ifair (SINR có nhiễu, trọng số nhóm) + di chuyển calib; 6 baseline, 1 baseline biết nhóm, 4 bản ablation & Critical QoS \good{96--97\%} (ba nhóm); min $\times$1.9--2.0 (cùng nhóm)\\
   Mô hình Python & Kênh Al-Hourani, SINR, tốc độ Shannon/LTE, hàng đợi FIFO, năng lượng bay & Tái lập từng bit\\
-  NS-3 LTE (C++) & eNB bay theo kế hoạch, handover X2, bộ phát UDP tự viết, kênh Al-Hourani cài lại trong NS-3 & $\sim$400 run, mọi handover thành công\\
+  NS-3 LTE (C++) & eNB bay theo kế hoạch, handover X2, bộ phát UDP tự viết, kênh Al-Hourani cài lại trong NS-3 & Khoảng 500 run toàn dự án; handover thành công\\
   Scheduler WPF (C++) & Sửa scheduler PF của NS-3 để nhận trọng số $b_k$ & Tỷ lệ 3.93 so với 4 mong đợi\\
-  Kiểm chứng ba tầng & Chế độ liên kết lý tưởng, so lý thuyết -- NS-3 lý tưởng -- NS-3 LTE & Khớp \good{$<$1\%} (105 run)\\
+  Kiểm chứng ba tầng & Chế độ liên kết lý tưởng, so lý thuyết -- NS-3 lý tưởng -- NS-3 LTE & Lý thuyết -- NS-3 lý tưởng: \good{$<$1\%} (105 run)\\
   Trạm điều khiển & Server asyncio + WebSocket, dashboard web, Gazebo qua gz-transport, đo NS-3 từ web & 50 client, lệnh \good{$<$3.5 ms}; Gazebo lệch 0.000 m\\
   Thí nghiệm, kiểm thử & 12 thí nghiệm (E1--E12), 46 test tự động & Báo cáo, slide, mã nguồn trên GitHub\\
   \bottomrule
@@ -1261,16 +1427,18 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \begin{frame}{Đánh đổi và hạn chế}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Đánh đổi có chủ đích}
     \small
     \begin{itemize}
       \item Throughput tổng ở tải cao thấp hơn baseline không biết nhóm khoảng 11\%; mất gói cao hơn.
-      \item Nhóm normal chịu độ trễ cao hơn, nhưng min throughput vẫn cao hơn mọi baseline.
+      \item Ở tải 2--4 Mbps/user, normal có độ trễ cao hơn kmeans-equal; min throughput cao hơn các baseline k-means.
       \item Mức đánh đổi chỉnh được bằng trọng số $w$.
     \end{itemize}
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Hạn chế}
     \small
     \begin{itemize}
@@ -1291,24 +1459,27 @@ Hàng dưới calib-ifair: UAV xanh dịch xuống giữa hai cụm, \good{cả 
 \begin{frame}{Kết luận}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.60\textwidth}
+\vspace{0pt}
   \footnotesize
   \renewcommand{\arraystretch}{1.1}
-  \begin{tabularx}{\linewidth}{@{}Xl@{}}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xl@{}}
     \toprule
     \textbf{Kết luận} & \textbf{Trên NS-3 LTE}\\
     \midrule
-    calib-ifair ưu tiên được critical & \good{96--97\%} đạt QoS\\
-    Hơn max-min có trọng số cùng biết nhóm & \good{Đúng}, tổng như nhau\\
-    Min throughput tăng, tổng giữ nguyên & \good{$\times$1.9--2.0}, tổng $\pm$4\%\\
-    Chia băng chỉ có tác dụng khi áp ở MAC & \good{Đúng} (WPF)\\
-    Mô hình đúng ở mức gói tin & \good{Đúng}, sai số $<$1\%\\
-    Giá trị tuyệt đối theo Shannon & \alert{Lạc quan}, 25--40\%\\
-    LTE hiệu chỉnh tốt hơn Shannon khi quyết định & \alert{Không}\\
-    Server WebSocket đủ nhanh cho thời gian thực & \good{Đúng}, 50 client, $<$3.5 ms\\
+    Ưu tiên nhóm critical & \good{96--97\%} đạt QoS\\
+    So với max-min có trọng số & Min critical tăng 9--16\%\\
+    Mọi user cùng nhóm & \good{$\times$1.9--2.0}, tổng $\pm$4\%\\
+    Thực thi chia băng ở MAC & Scheduler WPF\\
+    Lý thuyết so với NS-3 lý tưởng & Sai số \good{$<$1\%}\\
+    LTE hiệu chỉnh so với NS-3 LTE & Sai số khoảng \good{$\pm$2\%}\\
+    Throughput NS-3 so với Shannon & Đạt 25--40\%\\
+    LTE hiệu chỉnh và Shannon & Hiệu quả tương đương\\
+    Hiệu năng WebSocket với 50 client & RTT p95 $<$3.5 ms\\
     \bottomrule
   \end{tabularx}
 \end{column}
 \begin{column}{0.38\textwidth}
+\vspace{0pt}
   \begin{block}{Hướng phát triển}
     \small
     \begin{itemize}
@@ -1376,15 +1547,18 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 \end{block}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Tốc độ theo bài báo (Shannon)}
     \vspace{-2mm}
     \[ r_k = b_k\, B \log_2(1 + \mathrm{SINR}_k) \]
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Tốc độ LTE hiệu chỉnh từ NS-3}
     \vspace{-2mm}
     \[ \SE_k = \min\big(0.401\log_2(1+\mathrm{SINR}_k),\ 3.514\big) \]
+    \scriptsize Khi $\mathrm{SINR}_k \ge 0.1$ ($-10$ dB); dưới ngưỡng này, $\SE_k = 0$.
   \end{block}
 \end{column}
 \end{columns}
@@ -1400,6 +1574,7 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 \end{block}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.55\textwidth}
+\vspace{0pt}
   \begin{block}{Ràng buộc (mọi UAV $m$, mọi khe $n$)}
     \small
     \begin{tabular}{@{}ll@{}}
@@ -1412,7 +1587,8 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
   \end{block}
 \end{column}
 \begin{column}{0.41\textwidth}
-  \begin{block}{Vì sao tổng log có trọng số}
+\vspace{0pt}
+  \begin{block}{Cơ sở lựa chọn hàm mục tiêu}
     \scriptsize
     \begin{itemize}
       \item $\max\sum r$: dồn băng cho user kênh tốt, bỏ rơi user ở rìa.
@@ -1441,6 +1617,7 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 \end{block}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Hai hằng số đo từ NS-3}
     \small
     $\alpha = 0.401$: độ dốc LTE thật so với Shannon.\\
@@ -1449,6 +1626,7 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Ràng buộc thêm}
     \small
     Trong pha tìm kiếm cục bộ, không nhận nước đi làm giảm số UAV có user: nếu thiếu, tìm kiếm cục bộ hay ``tắt'' một UAV để giảm nhiễu tức thời
@@ -1460,19 +1638,21 @@ P_{\text{LoS}}(\theta) = \frac{1}{1 + a\,e^{-b(\theta - a)}},\qquad
 
 \begin{frame}{Phụ lục D: công thức ifair}
 \begin{block}{Công thức}
-\vspace{-3mm}
+\vspace{-4mm}
 \[
 b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'} / \max(\SE_{k'},\ 0.05)}
 \quad\Longrightarrow\quad
 \hat r_k = \frac{B\,w_k}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}/\SE_{k'}}
 \]
+\scriptsize Biểu thức tốc độ bên phải áp dụng khi mọi $\SE_k \ge 0.05$ trong UAV.
 \end{block}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.48\textwidth}
+\vspace{0pt}
   \begin{block}{Ý nghĩa}
     \small
     \begin{itemize}
-      \item Khi mọi $\SE_k \ge 0.05$: trong một UAV, $\hat r_k / w_k$ bằng nhau (\hl{max-min có trọng số}), critical được tốc độ gấp 4 lần normal dù kênh xấu hơn.
+      \item Khi mọi $\SE_k \ge 0.05$, tốc độ dự đoán trong cùng UAV thỏa $\hat r_k/w_k$ bằng nhau (\hl{max-min có trọng số}).
       \item $\SE_k = 0$: vẫn được băng nhưng tốc độ 0.
       \item User kênh xấu (SE nhỏ) được bù nhiều băng hơn.
       \item Sàn 0.05: user gần mất sóng không hút hết băng.
@@ -1480,7 +1660,8 @@ b_k = \frac{w_k / \max(\SE_k,\ 0.05)}{\displaystyle\sum_{k':\,a_{k'}=a_k} w_{k'}
   \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
-  \begin{block}{Vì sao không dùng nghiệm tổng log}
+\vspace{0pt}
+  \begin{block}{Phân biệt ifair và nghiệm tổng log}
     \small
     Bài toán con $\max\sum w_k\log(b_k B\,\SE_k)$, $\sum b_k\le1$ có nghiệm $b_k = w_k/\sum w$: băng tỷ lệ với $w$,
     \textbf{không phụ thuộc kênh}, nên user critical ở rìa vẫn chậm.
