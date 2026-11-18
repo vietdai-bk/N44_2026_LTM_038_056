@@ -44,7 +44,7 @@ def animate(cfg: SimConfig, names: list[str], out: Path, every: int = 2, fps: in
     cls = Network(cfg).user_class
     has_cls = bool(cfg.important_frac or cfg.critical_frac)
     r_scale = max(f["thr"].max() for fr in runs.values() for f in fr) or 1.0
-    need = np.asarray(cfg.class_rmin_mbps)[cls] * 1e6 if has_cls else np.full(cfg.num_users, cfg.r_min)
+    need = np.asarray(cfg.class_rmin_mbps)[cls] * 1e6  # cùng ngưỡng với class_metrics và dashboard
     if cfg.demand_mbps is not None:
         need = np.minimum(need, 0.9 * cfg.demand_mbps * 1e6)
 
@@ -69,7 +69,7 @@ def animate(cfg: SimConfig, names: list[str], out: Path, every: int = 2, fps: in
                     ax.scatter(*f["user"][good].T, s=(14 if c == 2 else 10) + 70 * f["thr"][good] / r_scale, c=ucol[good],
                                marker=CLASS_MARKER[c], edgecolors=edge, lw=1.4 if c == 2 else 0.3, zorder=3)
                 if bad.any():
-                    ax.scatter(*f["user"][bad].T, s=30, c=ucol[bad], marker="x", zorder=3)  # dưới ngưỡng QoS / r_min
+                    ax.scatter(*f["user"][bad].T, s=30, c=ucol[bad], marker="x", zorder=3)  # dưới ngưỡng QoS
             ax.scatter(*f["uav"].T, s=160, c=colors, marker="^", edgecolors="k", zorder=4)
             title = f"{name}   t={f['t']}\n"
             if "throughput" in f:
