@@ -83,8 +83,8 @@ số liệu.
 Yêu cầu: Ubuntu 22.04, Python 3.10, NS-3 3.47 có module `lte`. Gazebo Harmonic chỉ cần khi muốn xem 3D.
 
 ```bash
-git clone https://github.com/vietdai-bk/uav-bs-resource-allocation.git
-cd uav-bs-resource-allocation
+git clone https://github.com/vietdai-bk/N44_2026_LTM_038_056.git
+cd N44_2026_LTM_038_056
 python3 -m venv .venv                  # thêm --system-site-packages nếu dùng Gazebo
 .venv/bin/pip install -r requirements.txt
 

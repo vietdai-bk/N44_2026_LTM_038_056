@@ -20,7 +20,7 @@ E10, E11 trên máy gốc). Số luồng chạy song song (`--parallel`) không 
 ## 2. Cài đặt
 
 ```bash
-git clone https://github.com/vietdai-bk/uav-bs-resource-allocation.git LapTrinhMang
+git clone https://github.com/vietdai-bk/N44_2026_LTM_038_056.git LapTrinhMang
 cd LapTrinhMang
 python3 -m venv .venv                      # thêm --system-site-packages nếu dùng Gazebo
 .venv/bin/pip install -r requirements.txt
